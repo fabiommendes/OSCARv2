@@ -22,10 +22,15 @@ slower speed.
 Create a very simple modularization strategy. Basically we are replacing execfile()
 with loading strings of text and calling exec()
 
-[??]
+[fede8d7f177e4ba6f1e5f25b6c16ed2d40039ca3]
 Convert script to Python 3 and execute Black. Python 3 is now running 
 approximately twice as slower as Python 2 and black formatted code is about
 50% as big with 120 chars lines.
+
+[529683bce6e9b9818359a69d5b6c57d7eea535b5]
+Split data loading into several modules. Now, what used to be inside OSCAR-loadD
+is moved to oscar.oscar_data.*. The names of modules are temporary e we still 
+expect a lot of refactoring. It takes ~3.3 seconds to load all data modules.
 
 [??]
 Eliminate all exec's from code
