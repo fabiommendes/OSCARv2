@@ -25,7 +25,7 @@ with loading strings of text and calling exec()
 [??]
 Convert script to Python 3 and execute Black. Python 3 is now running 
 approximately twice as slower as Python 2 and black formatted code is about
-twice as big.
+50% as big with 120 chars lines.
 
 [??]
 Eliminate all exec's from code
