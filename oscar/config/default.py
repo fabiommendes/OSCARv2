@@ -337,11 +337,7 @@ if scen_ALL != "":
         scen_Ehalo
     ) = (
         scen_ENOX
-    ) = (
-        scen_ECO
-    ) = (
-        scen_EVOC
-    ) = scen_ESO2 = scen_ENH3 = scen_EOC = scen_EBC = scen_RFant = scen_RFnat = scen_ALL
+    ) = scen_ECO = scen_EVOC = scen_ESO2 = scen_ENH3 = scen_EOC = scen_EBC = scen_RFant = scen_RFnat = scen_ALL
     if scen_RFant[:3] == "RCP":
         scen_RFant = "cst"
     if scen_RFnat[:3] == "RCP":

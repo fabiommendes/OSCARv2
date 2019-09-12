@@ -18,9 +18,18 @@ Consolidate all files into a single script to avoid problems with readfile()
 when converting to Python 3. For some reason tests are running at a noticiable
 slower speed.
 
-## Eliminate all exec's from code
+[8cc787be95de190c47e4fe98b4a3eebdf8f0b4dd]
+Create a very simple modularization strategy. Basically we are replacing execfile()
+with loading strings of text and calling exec()
 
-## Convert to Python 3
+[??]
+Convert script to Python 3 and execute Black. Python 3 is now running 
+approximately twice as slower as Python 2 and black formatted code is about
+twice as big.
+
+[??]
+Eliminate all exec's from code
+
 
 ## Extract data
 
