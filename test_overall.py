@@ -9,7 +9,7 @@ import numpy as np
 
 execfile('OSCAR.py')
 
-nb_run = 500
+nb_run = 5
 break_if_error = False
 
 ##################################################################

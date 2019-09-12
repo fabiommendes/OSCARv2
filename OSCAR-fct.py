@@ -47,17 +47,17 @@ def OSCAR_lite(p=p,fT=fT,\
 
     # plot variables
     var_plot = []
-    if plot is 'all' or plot is 'CO2' or 'CO2' in plot:
+    if plot == 'all' or plot is 'CO2' or 'CO2' in plot:
         var_plot += ['D_CO2','OSNK','LSNK','ELUC','D_AREA','D_npp','D_efire','D_fmort','D_rh1','D_fmet','D_rh2','D_FIN','D_FOUT','D_FCIRC','EFIRE_luc','FMORT_luc','RH1_luc','FMET_luc','RH2_luc','EHWP1_luc','EHWP2_luc','EHWP3_luc']
-    if plot is 'all' or plot is 'CH4' or 'CH4' in plot:
+    if plot == 'all' or plot is 'CH4' or 'CH4' in plot:
         var_plot += ['D_CH4','D_OHSNK_CH4','D_HVSNK_CH4','D_XSNK_CH4','D_EWET','D_EBB_CH4']
-    if plot is 'all' or plot is 'N2O' or 'N2O' in plot:
+    if plot == 'all' or plot is 'N2O' or 'N2O' in plot:
         var_plot += ['D_N2O','D_HVSNK_N2O','D_EBB_N2O']
-    if plot is 'all' or plot is 'O3' or 'O3' in plot:
+    if plot == 'all' or plot is 'O3' or 'O3' in plot:
         var_plot += ['D_O3t','D_O3s','D_EESC','D_N2O_lag','D_gst']
-    if plot is 'all' or plot is 'AER' or 'AER' in plot:
+    if plot == 'all' or plot is 'AER' or 'AER' in plot:
         var_plot += ['D_SO4','D_POA','D_BC','D_NO3','D_SOA','D_AERh','RF_SO4','RF_POA','RF_BC','RF_NO3','RF_SOA','RF_cloud']
-    if plot is 'all' or plot is 'clim' or 'clim' in plot:
+    if plot == 'all' or plot is 'clim' or 'clim' in plot:
         var_plot += ['RF','D_gst','D_gyp','RF_CO2','RF_CH4','RF_H2Os','RF_N2O','RF_halo','RF_O3t','RF_O3s','RF_SO4','RF_POA','RF_BC','RF_NO3','RF_SOA','RF_cloud','RF_BCsnow','RF_LCC']
 
     # save variables
