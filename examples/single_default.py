@@ -1,6 +1,7 @@
 import csv
 
-execfile('OSCAR.py')
+from oscar.runtime.run import *
+
 break_if_error = False
 drive_list = []
 param_list = []

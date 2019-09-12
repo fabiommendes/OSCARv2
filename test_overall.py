@@ -7,7 +7,7 @@ import numpy as np
 ##################################################################
 ##################################################################
 
-execfile('OSCAR.py')
+raise NotImplementedError
 
 nb_run = 500
 break_if_error = False
@@ -268,7 +268,7 @@ for nrun in range(nb_run):
                        mod_SLR])
 
     # RELOAD
-    execfile('OSCAR-load.py')
+    execfile('oscar-script.py')
 
     # RUN
     OUT = OSCAR_lite(var_output=['D_CO2','D_CH4','D_N2O','RF_halo','D_O3t','D_O3s','D_SO4','D_POA','D_BC','D_NO3','D_SOA','D_AERh','RF','D_gst'])

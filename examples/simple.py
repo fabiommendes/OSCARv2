@@ -1,13 +1,8 @@
 import csv
 
 import numpy as np
+from oscar.runtime.run_random import *
 
-
-##################################################################
-##################################################################
-##################################################################
-
-execfile('OSCAR.py')
 
 nb_run = 5
 break_if_error = False
@@ -268,7 +263,7 @@ for nrun in range(nb_run):
                        mod_SLR])
 
     # RELOAD
-    execfile('OSCAR-load.py')
+    reload_params()
 
     # RUN
     OUT = OSCAR_lite(var_output=['D_CO2','D_CH4','D_N2O','RF_halo','D_O3t','D_O3s',

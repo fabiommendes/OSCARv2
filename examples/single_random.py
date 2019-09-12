@@ -1,9 +1,8 @@
 import csv
 
 import numpy as np
+from oscar.runtime.run_random import *
 
-
-execfile('OSCAR.py')
 break_if_error = False
 drive_list = []
 param_list = []
