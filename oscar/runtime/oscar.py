@@ -1,72 +1,27 @@
+import numpy as np
 from scipy.optimize import fmin, fsolve
 from scipy.special import gammainc
-
-from ..config import *
-from .oscar_data import *
-from .oscar_param import *
-
-################################################################################
-# OSCAR FORMAT
-################################################################################
-
-
-##################################################
-#   A. FORMAT DRIVERS
-##################################################
-print("FORMATING")
-
-# remove attribution axis
-# drivers
-for VAR in (
-        ["EFF", "ECH4", "EN2O"]
-        + ["LUC", "HARV", "SHIFT"]
-        + ["EHFC", "EPFC", "EODS"]
-        + ["ENOX", "ECO", "EVOC", "ESO2", "ENH3", "EOC", "EBC"]
-        + ["RFcon", "RFvolc", "RFsolar"]
-):
-    exec(VAR + " = np.sum(np.sum(np.sum(" + VAR + ",3),2),1)")
-# parameters
-for VAR in ["ECH4", "EN2O"] + ["ENOX", "ECO", "EVOC", "ESO2", "ENH3", "EOC", "EBC"]:
-    exec(VAR + "_0 = np.sum(np.sum(np.sum(" + VAR + "_0,2),1),0)")
-
-################################################################################
-# OSCAR FUNCTION
-################################################################################
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 
 from matplotlib.font_manager import FontProperties
 
+from ..config import *
+from .oscar_data import *
+from .oscar_param import *
 
-##################################################
-#   1. OSCAR LITE
-##################################################
+
+def reduce_driver(driver):
+    return np.sum(np.sum(np.sum(driver, 3), 2), 1)
+
+
+def reduce_param(param):
+    return np.sum(np.sum(np.sum(param, 2), 1), 0)
 
 
 def OSCAR_lite(
         p=p,
         fT=fT,
-        EFF=EFF,
-        ECH4=ECH4,
-        EN2O=EN2O,
-        LUC=LUC,
-        HARV=HARV,
-        SHIFT=SHIFT,
-        EHFC=EHFC,
-        EPFC=EPFC,
-        EODS=EODS,
-        ENOX=ENOX,
-        ECO=ECO,
-        EVOC=EVOC,
-        ESO2=ESO2,
-        ENH3=ENH3,
-        EOC=EOC,
-        EBC=EBC,
-        RFcon=RFcon,
-        RFvolc=RFvolc,
-        RFsolar=RFsolar,
         force_CO2=False,
         force_GHG=False,
         force_halo=False,
@@ -897,6 +852,8 @@ def OSCAR_lite(
         # ===========
 
         print("PLOTTING", plot)
+        from ..plot import plot_AER, plot_CH4, plot_clim, plot_CO2, plot_N2O, plot_O3
+
         if plot == "all" or plot == "CO2" or "CO2" in plot:
             plot_CO2(
                 D_CO2_t,
@@ -986,621 +943,38 @@ def OSCAR_lite(
     return AllowExecClassHack.output
 
 
-##################################################
-#   2. CONTROL PLOTS
-##################################################
+#
+# REMOVE ATTRIBUTION AXIS
+#
 
-# =========
-# 2.1. CO2
-# =========
+# Drivers
+EFF = reduce_driver(EFF)
+ECH4 = reduce_driver(ECH4)
+EN2O = reduce_driver(EN2O)
+LUC = reduce_driver(LUC)
+HARV = reduce_driver(HARV)
+SHIFT = reduce_driver(SHIFT)
+EHFC = reduce_driver(EHFC)
+EPFC = reduce_driver(EPFC)
+EODS = reduce_driver(EODS)
+ENOX = reduce_driver(ENOX)
+ECO = reduce_driver(ECO)
+EVOC = reduce_driver(EVOC)
+ESO2 = reduce_driver(ESO2)
+ENH3 = reduce_driver(ENH3)
+EOC = reduce_driver(EOC)
+EBC = reduce_driver(EBC)
+RFcon = reduce_driver(RFcon)
+RFvolc = reduce_driver(RFvolc)
+RFsolar = reduce_driver(RFsolar)
 
-
-def plot_CO2(
-        D_CO2,
-        OSNK,
-        LSNK,
-        ELUC,
-        EFF,
-        D_AREA,
-        D_npp,
-        D_efire,
-        D_fmort,
-        D_rh1,
-        D_fmet,
-        D_rh2,
-        D_FIN,
-        D_FOUT,
-        D_FCIRC,
-        D_MORT_luc,
-        D_EFIRE_luc,
-        D_RH1_luc,
-        D_RH2_luc,
-        EHWP1_luc,
-        EHWP2_luc,
-        EHWP3_luc,
-):
-    plt.figure()
-
-    # atmospheric CO2
-    ax = plt.subplot(2, 3, 1)
-    plt.plot(1700 + np.arange(ind_final + 1), D_CO2, color="k", lw=2, label="OSCAR")
-    plt.plot(1700 + np.arange(len(CO2_ipcc)), CO2_ipcc - CO2_0, color="r", lw=2, ls="--",
-             label="IPCC")
-    if ind_final > ind_cdiac:
-        plt.plot(
-            1700 + np.arange(min(len(CO2_rcp), ind_final + 1)),
-            CO2_rcp[: min(len(CO2_rcp), ind_final + 1), 0] - CO2_0,
-            color="0.8",
-            lw=2,
-            ls=":",
-            label="RCP2.6",
-        )
-        plt.plot(
-            1700 + np.arange(min(len(CO2_rcp), ind_final + 1)),
-            CO2_rcp[: min(len(CO2_rcp), ind_final + 1), 1] - CO2_0,
-            color="0.6",
-            lw=2,
-            ls=":",
-            label="RCP4.5",
-        )
-        plt.plot(
-            1700 + np.arange(min(len(CO2_rcp), ind_final + 1)),
-            CO2_rcp[: min(len(CO2_rcp), ind_final + 1), 2] - CO2_0,
-            color="0.4",
-            lw=2,
-            ls=":",
-            label="RCP6.0",
-        )
-        plt.plot(
-            1700 + np.arange(min(len(CO2_rcp), ind_final + 1)),
-            CO2_rcp[: min(len(CO2_rcp), ind_final + 1), 3] - CO2_0,
-            color="0.2",
-            lw=2,
-            ls=":",
-            label="RCP8.5",
-        )
-    plt.title("$\Delta$CO2 (ppm)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-    plt.xticks(rotation=27)
-    ax.set_xlim([1700, 1700 + ind_final])
-
-    # budget fluxes
-    ax = plt.subplot(2, 3, 2)
-    plt.plot([1700, 1700 + ind_final + 1], [0, 0], "k-")
-    plt.plot(1700 + np.arange(ind_final + 1), np.sum(EFF, 1), color="#666666", lw=2,
-             label="EFF")
-    plt.plot(1700 + np.arange(ind_final + 1), np.sum(ELUC, 1), color="#993300", lw=2,
-             label="ELUC")
-    plt.plot(1700 + np.arange(ind_final + 1), OSNK, color="#000099", lw=2, label="OSNK")
-    plt.plot(1700 + np.arange(ind_final + 1), LSNK, color="#009900", lw=2, label="LSNK")
-    plt.plot(
-        1700 + np.arange(ind_final) + 1, alpha_CO2 * (D_CO2[1:] - D_CO2[:-1]),
-        color="#FFCC00", lw=2, label="d_CO2"
-    )
-    plt.plot(1700 + np.arange(len(EFF_gcp)), EFF_gcp, color="#666666", ls="--")
-    plt.plot(1700 + np.arange(len(ELUC_gcp)), ELUC_gcp, color="#CC3300", ls="--")
-    plt.plot(1700 + np.arange(len(OSNK_gcp)), OSNK_gcp, color="#000099", ls="--")
-    plt.plot(1700 + np.arange(len(LSNK_gcp)), LSNK_gcp, color="#009900", ls="--")
-    plt.plot(1700 + np.arange(len(d_CO2_gcp)), d_CO2_gcp, color="#FFCC00", ls="--")
-    plt.plot([1700, 1700], [0, 0], "k--", label="GCP")
-    plt.title("CO2 fluxes (GtC/yr)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-    plt.xticks(rotation=27)
-    ax.set_xlim([1700, 1700 + ind_final])
-
-    # airborne fraction
-    ax = plt.subplot(2, 3, 3)
-    plt.plot([1700, 1700 + ind_final + 1], [0, 0], "k-")
-    plt.plot(
-        1700 + np.arange(ind_final) + 1,
-        alpha_CO2 * (D_CO2[1:] - D_CO2[:-1]) / np.sum(EFF + ELUC, 1)[1:],
-        color="#FFCC00",
-        lw=1,
-        label="AF",
-    )
-    plt.plot(1700 + np.arange(ind_final + 1), -OSNK / np.sum(EFF + ELUC, 1),
-             color="#000099", lw=1, label="OF")
-    plt.plot(1700 + np.arange(ind_final + 1), -LSNK / np.sum(EFF + ELUC, 1),
-             color="#009900", lw=1, label="LF")
-    plt.plot(
-        np.arange(1959, 1700 + ind_cdiac + 1),
-        np.ones([ind_cdiac - 259 + 1])
-        * np.mean((alpha_CO2 * (D_CO2[1:] - D_CO2[:-1]) / np.sum(EFF + ELUC, 1)[1:])[
-                  259 - 1: ind_cdiac]),
-        color="k",
-        lw=2,
-        label="OSCAR",
-    )
-    plt.plot(
-        np.arange(1959, 1700 + ind_cdiac + 1),
-        np.ones([ind_cdiac - 259 + 1]) * np.mean(
-            (d_CO2_gcp / (EFF_gcp + ELUC_gcp))[259: ind_cdiac + 1]),
-        color="r",
-        lw=2,
-        ls="--",
-        label="GCP",
-    )
-    plt.title("airborne fraction", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-    plt.xticks(rotation=27)
-    ax.set_xlim([1700, 1700 + ind_final])
-    ax.set_ylim([-0.2, 1.2])
-
-    # ELUC details
-    ax = plt.subplot(2, 3, 4)
-    plt.plot([1700, 1700 + ind_final + 1], [0, 0], "k-")
-    plt.plot(1700 + np.arange(ind_final + 1), np.sum(ELUC, 1), color="k", ls="-.", lw=2,
-             label="ELUC")
-    plt.plot(
-        1700 + np.arange(ind_final + 1),
-        np.sum(np.sum(np.sum(np.sum(D_EFIRE_luc + D_RH1_luc + D_RH2_luc, 4), 3), 2), 1),
-        color="#009900",
-        lw=2,
-        label="ELUC_bio",
-    )
-    plt.plot(
-        1700 + np.arange(ind_final + 1),
-        np.sum(np.sum(np.sum(np.sum(EHWP1_luc + EHWP2_luc + EHWP3_luc, 4), 3), 2), 1),
-        color="#993300",
-        lw=2,
-        label="ELUC_hwp",
-    )
-    plt.plot(
-        1700 + np.arange(ind_final + 1),
-        np.sum(np.sum(np.sum(np.sum(EHWP1_luc, 4), 3), 2), 1),
-        color="#FF3300",
-        lw=1,
-        label="EHWP1",
-    )
-    plt.plot(
-        1700 + np.arange(ind_final + 1),
-        np.sum(np.sum(np.sum(np.sum(EHWP2_luc, 4), 3), 2), 1),
-        color="#CC9900",
-        lw=1,
-        label="EHWP2",
-    )
-    plt.plot(
-        1700 + np.arange(ind_final + 1),
-        np.sum(np.sum(np.sum(np.sum(EHWP3_luc, 4), 3), 2), 1),
-        color="#663300",
-        lw=1,
-        label="EHWP3",
-    )
-    plt.title("ELUC fluxes (GtC/yr)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-
-    # LSNK details
-    ax = plt.subplot(2, 3, 5)
-    plt.plot([1700, 1700 + ind_final + 1], [0, 0], "k-")
-    plt.plot(1700 + np.arange(ind_final + 1), -LSNK, color="k", lw=2, ls="-.",
-             label="$-$LSNK")
-    plt.plot(
-        1700 + np.arange(ind_final + 1),
-        np.sum(np.sum(D_npp * (AREA_0 + D_AREA), 2), 1),
-        color="#009900",
-        lw=2,
-        label="D_NPP",
-    )
-    plt.plot(
-        1700 + np.arange(ind_final + 1),
-        np.sum(np.sum(D_efire * (AREA_0 + D_AREA), 2), 1),
-        color="#FF3300",
-        lw=2,
-        label="D_EFIRE",
-    )
-    plt.plot(
-        1700 + np.arange(ind_final + 1),
-        np.sum(np.sum(D_fmort * (AREA_0 + D_AREA), 2), 1),
-        color="#336633",
-        lw=2,
-        label="D_FMORT",
-    )
-    plt.plot(
-        1700 + np.arange(ind_final + 1),
-        np.sum(np.sum((D_rh1 + D_rh2) * (AREA_0 + D_AREA), 2), 1),
-        color="#663300",
-        lw=2,
-        label="D_RH",
-    )
-    plt.title("LSNK fluxes (GtC/yr)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-
-    # OSNK details
-    ax = plt.subplot(2, 3, 6)
-    plt.plot([1700, 1700 + ind_final + 1], [0, 0], "k-")
-    plt.plot(1700 + np.arange(ind_final + 1), -OSNK, color="k", lw=2, ls="-.",
-             label="$-$OSNK")
-    plt.plot(1700 + np.arange(ind_final + 1), np.sum(D_FIN, 1), color="#000099", lw=2,
-             label="D_FIN")
-    plt.plot(1700 + np.arange(ind_final + 1), np.sum(D_FOUT, 1), color="#0099FF", lw=2,
-             label="D_FOUT")
-    plt.plot(1700 + np.arange(ind_final + 1), np.sum(D_FCIRC, 1), color="#663399", lw=2,
-             label="D_FCIRC")
-    plt.title("OSNK fluxes (GtC/yr)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-
-
-# =========
-# 2.2. CH4
-# =========
-
-
-def plot_CH4(D_CH4, D_OHSNK_CH4, D_HVSNK_CH4, D_XSNK_CH4, D_EWET, D_EBB_CH4, ECH4):
-    plt.figure()
-
-    # atmospheric CH4
-    ax = plt.subplot(2, 3, 1)
-    plt.plot(1700 + np.arange(ind_final + 1), D_CH4, color="k", lw=2, label="OSCAR")
-    plt.plot(1700 + np.arange(len(CH4_ipcc)), CH4_ipcc - CH4_0, color="r", lw=2, ls="--",
-             label="IPCC")
-    if ind_final > ind_cdiac:
-        plt.plot(
-            1700 + np.arange(min(len(CH4_rcp), ind_final + 1)),
-            CH4_rcp[: min(len(CH4_rcp), ind_final + 1), 0] - CH4_0,
-            color="0.8",
-            lw=2,
-            ls=":",
-            label="RCP2.6",
-        )
-        plt.plot(
-            1700 + np.arange(min(len(CH4_rcp), ind_final + 1)),
-            CH4_rcp[: min(len(CH4_rcp), ind_final + 1), 1] - CH4_0,
-            color="0.6",
-            lw=2,
-            ls=":",
-            label="RCP4.5",
-        )
-        plt.plot(
-            1700 + np.arange(min(len(CH4_rcp), ind_final + 1)),
-            CH4_rcp[: min(len(CH4_rcp), ind_final + 1), 2] - CH4_0,
-            color="0.4",
-            lw=2,
-            ls=":",
-            label="RCP6.0",
-        )
-        plt.plot(
-            1700 + np.arange(min(len(CH4_rcp), ind_final + 1)),
-            CH4_rcp[: min(len(CH4_rcp), ind_final + 1), 3] - CH4_0,
-            color="0.2",
-            lw=2,
-            ls=":",
-            label="RCP8.5",
-        )
-    plt.title("$\Delta$CH4 (ppb)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-    plt.xticks(rotation=27)
-    ax.set_xlim([1700, 1700 + ind_final])
-
-    # budget fluxes
-    ax = plt.subplot(2, 3, 2)
-    plt.plot([1700, 1700 + ind_final + 1], [0, 0], "k-")
-    plt.plot(1700 + np.arange(ind_final + 1), np.sum(ECH4, 1), color="#666666", lw=2,
-             label="ECH4")
-    plt.plot(1700 + np.arange(ind_final + 1), np.sum(D_EBB_CH4, 1), color="#993300", lw=2,
-             label="D_EBB")
-    plt.plot(1700 + np.arange(ind_final + 1), np.sum(D_EWET, 1), color="#006666", lw=2,
-             label="D_EWET")
-    plt.plot(
-        1700 + np.arange(ind_final + 1), (D_OHSNK_CH4 + D_HVSNK_CH4 + D_XSNK_CH4),
-        color="#990066", lw=2, label="D_SNK"
-    )
-    plt.plot(
-        1700 + np.arange(ind_final) + 1, alpha_CH4 * (D_CH4[1:] - D_CH4[:-1]),
-        color="#FFCC00", lw=2, label="d_CH4"
-    )
-    plt.title("CH4 fluxes (MtC/yr)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-    plt.xticks(rotation=27)
-    ax.set_xlim([1700, 1700 + ind_final])
-
-    # lifetime
-    ax = plt.subplot(2, 3, 3)
-    plt.plot(
-        1700 + np.arange(ind_final + 1),
-        alpha_CH4
-        * (CH4_0 + D_CH4)
-        / (
-                alpha_CH4 * CH4_0 * (
-                1 / tau_CH4_OH + 1 / tau_CH4_hv + 1 / tau_CH4_soil + 1 / tau_CH4_ocean)
-                - D_OHSNK_CH4
-                - D_HVSNK_CH4
-                - D_XSNK_CH4
-        ),
-        color="k",
-        lw=2,
-        label="OSCAR",
-    )
-    plt.plot(
-        1700 + np.arange(ind_final + 1),
-        alpha_CH4 * (CH4_0 + D_CH4) / (alpha_CH4 * CH4_0 / tau_CH4_OH - D_OHSNK_CH4),
-        color="k",
-        lw=1,
-        label="OH only",
-    )
-    plt.title("CH4 lifetime (yr)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-    plt.xticks(rotation=27)
-    ax.set_xlim([1700, 1700 + ind_final])
-
-    # wetlands
-    ax = plt.subplot(2, 3, 4)
-    plt.title("wetlands", fontsize="medium")
-
-    # biomass burning
-    ax = plt.subplot(2, 3, 5)
-    plt.title("biomass burning", fontsize="medium")
-
-
-# =========
-# 2.3. N2O
-# =========
-
-
-def plot_N2O(D_N2O, D_HVSNK_N2O, D_EBB_N2O, EN2O):
-    plt.figure()
-
-    # atmospheric N2O
-    ax = plt.subplot(2, 3, 1)
-    plt.plot(1700 + np.arange(ind_final + 1), D_N2O, color="k", lw=2, label="OSCAR")
-    plt.plot(1700 + np.arange(len(N2O_ipcc)), N2O_ipcc - N2O_0, color="r", lw=2, ls="--",
-             label="IPCC")
-    if ind_final > ind_cdiac:
-        plt.plot(
-            1700 + np.arange(min(len(N2O_rcp), ind_final + 1)),
-            N2O_rcp[: min(len(N2O_rcp), ind_final + 1), 0] - N2O_0,
-            color="0.8",
-            lw=2,
-            ls=":",
-            label="RCP2.6",
-        )
-        plt.plot(
-            1700 + np.arange(min(len(N2O_rcp), ind_final + 1)),
-            N2O_rcp[: min(len(N2O_rcp), ind_final + 1), 1] - N2O_0,
-            color="0.6",
-            lw=2,
-            ls=":",
-            label="RCP4.5",
-        )
-        plt.plot(
-            1700 + np.arange(min(len(N2O_rcp), ind_final + 1)),
-            N2O_rcp[: min(len(N2O_rcp), ind_final + 1), 2] - N2O_0,
-            color="0.4",
-            lw=2,
-            ls=":",
-            label="RCP6.0",
-        )
-        plt.plot(
-            1700 + np.arange(min(len(N2O_rcp), ind_final + 1)),
-            N2O_rcp[: min(len(N2O_rcp), ind_final + 1), 3] - N2O_0,
-            color="0.2",
-            lw=2,
-            ls=":",
-            label="RCP8.5",
-        )
-    plt.title("$\Delta$N2O (ppb)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-    plt.xticks(rotation=27)
-    ax.set_xlim([1700, 1700 + ind_final])
-
-    # budget fluxes
-    ax = plt.subplot(2, 3, 2)
-    plt.plot([1700, 1700 + ind_final + 1], [0, 0], "k-")
-    plt.plot(1700 + np.arange(ind_final + 1), np.sum(EN2O, 1), color="#666666", lw=2,
-             label="EN2O")
-    plt.plot(1700 + np.arange(ind_final + 1), np.sum(D_EBB_N2O, 1), color="#993300", lw=2,
-             label="D_EBB")
-    plt.plot(1700 + np.arange(ind_final + 1), D_HVSNK_N2O, color="#990066", lw=2,
-             label="D_SNK")
-    plt.plot(
-        1700 + np.arange(ind_final) + 1, alpha_N2O * (D_N2O[1:] - D_N2O[:-1]),
-        color="#FFCC00", lw=2, label="d_N2O"
-    )
-    plt.title("N2O fluxes (MtN/yr)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-    plt.xticks(rotation=27)
-    ax.set_xlim([1700, 1700 + ind_final])
-
-    # lifetime
-    ax = plt.subplot(2, 3, 3)
-    plt.plot(
-        1700 + np.arange(ind_final + 1),
-        alpha_N2O * (N2O_0 + D_N2O) / (alpha_N2O * N2O_0 / tau_N2O_hv - D_HVSNK_N2O),
-        color="k",
-        lw=2,
-        label="OSCAR",
-    )
-    plt.title("N2O lifetime (yr)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-    plt.xticks(rotation=27)
-    ax.set_xlim([1700, 1700 + ind_final])
-
-
-# ========
-# 2.4. O3
-# ========
-
-
-def plot_O3(D_O3t, D_O3s, D_EESC, D_N2O_lag, D_gst):
-    plt.figure()
-
-    # tropospheric O3
-    ax = plt.subplot(2, 3, 1)
-    plt.plot(1700 + np.arange(ind_final + 1), D_O3t, color="k", lw=2, label="OSCAR")
-    plt.title("$\Delta$O3 trop. (DU)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-    plt.xticks(rotation=27)
-    ax.set_xlim([1700, 1700 + ind_final])
-
-    # stratospheric O3
-    ax = plt.subplot(2, 3, 2)
-    plt.plot(1700 + np.arange(ind_final + 1), D_O3s, color="k", lw=2, label="OSCAR")
-    plt.title("$\Delta$O3 strat. (DU)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-    plt.xticks(rotation=27)
-    ax.set_xlim([1700, 1700 + ind_final])
-
-    # EESC
-    ax = plt.subplot(2, 3, 3)
-    plt.plot(1700 + np.arange(ind_final + 1), D_EESC, color="k", lw=2, label="OSCAR")
-    plt.plot(
-        1700 + np.arange(ind_final + 1),
-        (chi_O3s_N2O * D_N2O_lag * (1 - D_EESC / EESC_x) / chi_O3s_EESC),
-        color="k",
-        lw=1,
-        label="N2O effect",
-    )
-    plt.title("$\Delta$EESC (ppt)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-    plt.xticks(rotation=27)
-    ax.set_xlim([1700, 1700 + ind_final])
-
-    # age-of-air
-    ax = plt.subplot(2, 3, 4)
-    plt.plot(1700 + np.arange(ind_final + 1), tau_lag / (1 + gamma_age * D_gst),
-             color="k", lw=2, label="OSCAR")
-    plt.title("mean age-of-air (yr)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-    plt.xticks(rotation=27)
-    ax.set_xlim([1700, 1700 + ind_final])
-
-
-# ==============
-# 2.5. Aerosols
-# ==============
-
-
-def plot_AER(D_SO4, D_POA, D_BC, D_NO3, D_SOA, D_AERh, RF_SO4, RF_POA, RF_BC, RF_NO3,
-             RF_SOA, RF_cloud):
-    plt.figure()
-
-    # atmospheric burden
-    ax = plt.subplot(2, 3, 1)
-    plt.plot(1700 + np.arange(ind_final + 1), D_SO4, color="b", lw=2, label="D_SO4")
-    plt.plot(1700 + np.arange(ind_final + 1), D_POA, color="m", lw=2, label="D_POA")
-    plt.plot(1700 + np.arange(ind_final + 1), D_BC, color="r", lw=2, label="D_BC")
-    plt.plot(1700 + np.arange(ind_final + 1), D_NO3, color="g", lw=2, label="D_NO3")
-    plt.plot(1700 + np.arange(ind_final + 1), D_SOA, color="y", lw=2, label="D_SOA")
-    plt.plot(1700 + np.arange(ind_final + 1), D_AERh, color="c", lw=2, label="D_AERh")
-    plt.title("$\Delta$ burdens (Tg)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-    plt.xticks(rotation=27)
-    ax.set_xlim([1700, 1700 + ind_final])
-
-    # radiative forcing
-    ax = plt.subplot(2, 3, 4)
-    plt.plot([1700, 1700 + ind_final], [0, 0], "k-")
-    plt.plot(1700 + np.arange(ind_final + 1), RF_SO4, color="b", lw=2, label="RF_SO4")
-    plt.errorbar([2010], [-0.40], yerr=[[0.20], [0.20]], marker="o", mfc="b", color="k")
-    plt.plot(1700 + np.arange(ind_final + 1), RF_POA, color="m", lw=2, label="RF_POA")
-    plt.errorbar([2010], [-0.29], yerr=[[-0.29 * 0.63], [-0.29 * 0.72]], marker="o",
-                 mfc="m", color="k")
-    plt.plot(1700 + np.arange(ind_final + 1), RF_BC, color="r", lw=2, label="RF_BC")
-    plt.errorbar([2010], [+0.60], yerr=[[+0.60 * 0.61], [+0.60 * 0.70]], marker="o",
-                 mfc="r", color="k")
-    plt.plot(1700 + np.arange(ind_final + 1), RF_NO3, color="g", lw=2, label="RF_NO3")
-    plt.errorbar([2010], [-0.11], yerr=[[0.19], [0.08]], marker="o", mfc="g", color="k")
-    plt.plot(1700 + np.arange(ind_final + 1), RF_SOA, color="y", lw=2, label="RF_SOA")
-    plt.errorbar([2010], [-0.03], yerr=[[0.24], [0.23]], marker="o", mfc="y", color="k")
-    plt.plot(1700 + np.arange(ind_final + 1), RF_cloud, color="c", lw=2, label="RF_cloud")
-    plt.errorbar([2010], [-0.45], yerr=[[0.75], [0.45]], marker="o", mfc="c", color="k")
-    # plt.errorbar([2010],[-0.10],yerr=[[0.20],[0.20]],marker='o',mfc='0.5',color='k')
-    plt.title("RF (W/m2)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-    plt.xticks(rotation=27)
-    ax.set_xlim([1700, max(1700 + ind_final, 2010 + 10)])
-
-
-# =============
-# 2.6. Climate
-# =============
-
-
-def plot_clim(
-        RF,
-        D_gst,
-        D_gyp,
-        RF_CO2,
-        RF_CH4,
-        RF_H2Os,
-        RF_N2O,
-        RF_halo,
-        RF_O3t,
-        RF_O3s,
-        RF_SO4,
-        RF_POA,
-        RF_BC,
-        RF_NO3,
-        RF_SOA,
-        RF_cloud,
-        RF_BCsnow,
-        RF_LCC,
-        RFcon,
-        RFvolc,
-        RFsolar,
-):
-    plt.figure()
-
-    # radiative forcing
-    ax = plt.subplot(2, 3, 1)
-    plt.plot([1700, 1700 + ind_final], [0, 0], "k-")
-    plt.plot(1700 + np.arange(ind_final + 1), RF, color="k", lw=2, label="OSCAR")
-    plt.plot(1700 + np.arange(len(RF_ipcc)), RF_ipcc, color="r", lw=2, ls="--",
-             label="IPCC")
-    plt.title("RF (W/m2)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-    plt.xticks(rotation=27)
-    ax.set_xlim([1700, 1700 + ind_final])
-
-    # global temperature
-    ax = plt.subplot(2, 3, 2)
-    plt.plot([1700, 1700 + ind_final], [0, 0], "k-")
-    plt.plot(1700 + np.arange(ind_final + 1), D_gst - np.mean(D_gst[200:230]), color="k",
-             lw=2, label="OSCAR")
-    plt.plot(1700 + np.arange(len(gst_giss)), gst_giss - np.mean(gst_giss[200:230]),
-             color="b", ls="--", label="GISS")
-    plt.plot(1700 + np.arange(len(gst_had)), gst_had - np.mean(gst_had[200:230]),
-             color="g", ls="--", label="Hadley")
-    plt.plot(1700 + np.arange(len(gst_ncdc)), gst_ncdc - np.mean(gst_ncdc[200:230]),
-             color="m", ls="--", label="NCDC")
-    plt.title("$\Delta$ temp. (K)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-    plt.xticks(rotation=27)
-    ax.set_xlim([1700, 1700 + ind_final])
-
-    # global precipitations
-    ax = plt.subplot(2, 3, 3)
-    plt.plot(1700 + np.arange(ind_final + 1), D_gyp, color="k", lw=2, label="OSCAR")
-    plt.title("$\Delta$ precip. (mm)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-    plt.xticks(rotation=27)
-    ax.set_xlim([1700, 1700 + ind_final])
-
-    # RF details
-    ax = plt.subplot(2, 3, 4)
-    plt.plot([1700, 1700 + ind_final], [0, 0], "k-")
-    plt.plot(
-        1700 + np.arange(ind_final + 1), RF_CO2 + RF_CH4 + RF_N2O + RF_halo + RF_H2Os,
-        color="r", lw=2, label="WMGHG"
-    )
-    plt.plot(1700 + np.arange(len(RF_WMGHG_ipcc)), RF_WMGHG_ipcc, color="r", ls="--")
-    plt.plot(1700 + np.arange(ind_final + 1), RF_O3t + RF_O3s, color="y", lw=2,
-             label="O3")
-    plt.plot(1700 + np.arange(len(RF_O3_ipcc)), RF_O3_ipcc, color="y", ls="--")
-    plt.plot(
-        1700 + np.arange(ind_final + 1),
-        RF_SO4 + RF_POA + RF_BC + RF_NO3 + RF_SOA + RF_cloud,
-        color="b",
-        lw=2,
-        label="AER",
-    )
-    plt.plot(1700 + np.arange(len(RF_AER_ipcc)), RF_AER_ipcc, color="b", ls="--")
-    plt.plot(1700 + np.arange(ind_final + 1), RF_BCsnow + RF_LCC, color="g", lw=2,
-             label="Alb.")
-    plt.plot(1700 + np.arange(len(RF_Alb_ipcc)), RF_Alb_ipcc, color="g", ls="--")
-    plt.plot(1700 + np.arange(ind_final + 1), RFcon, color="k", ls="--", label="Ant.")
-    plt.plot(1700 + np.arange(ind_final + 1), RFvolc + RFsolar, color="0.5", ls="--",
-             label="Nat.")
-    plt.title("RF (W/m2)", fontsize="medium")
-    plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
-    plt.xticks(rotation=27)
-    ax.set_xlim([1700, 1700 + ind_final])
+# parameters
+ECH4_0 = reduce_param(ECH4_0)
+EN2O_0 = reduce_param(EN2O_0)
+ENOX_0 = reduce_param(ENOX_0)
+ECO_0 = reduce_param(ECO_0)
+EVOC_0 = reduce_param(EVOC_0)
+ESO2_0 = reduce_param(ESO2_0)
+ENH3_0 = reduce_param(ENH3_0)
+EOC_0 = reduce_param(EOC_0)
+EBC_0 = reduce_param(EBC_0)

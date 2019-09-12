@@ -119,7 +119,7 @@ OUT = OSCAR_lite(
     ],
     plot="all",
 )
-plt.show()
+# plt.show()
 writer = csv.writer(open("results/single-drive_test.csv", "w"))
 writer.writerows(drive_list)
 writer = csv.writer(open("results/single-param_test.csv", "w"))
