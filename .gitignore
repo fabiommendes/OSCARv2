@@ -98,3 +98,4 @@ ENV/
 results
 .idea
 .mypy_cache
+pstats.stats

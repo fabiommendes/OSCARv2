@@ -13,21 +13,7 @@ In this respect, the user's attention is drawn to the risks associated with load
 The fact that you are presently reading this means that you have had knowledge of the CeCILL license and that you accept its terms.
 """
 
-
-##################################################
-##################################################
-##################################################
-
-
-import os
-import csv
-
 import numpy as np
-import matplotlib.pyplot as plt
-
-from scipy.optimize import fmin,fsolve
-from scipy.special import gammainc
-from matplotlib.font_manager import FontProperties
 
 
 ##################################################
@@ -200,8 +186,5 @@ if (scen_ALL != ''):
     if (scen_RFnat[:3] == 'RCP'):
         scen_RFnat = 'cst'
 
-execfile('OSCAR-loadD.py')
-execfile('OSCAR-loadP.py')
-execfile('OSCAR-format.py')
-execfile('OSCAR-fct.py')
 
+execfile('OSCAR-load.py')

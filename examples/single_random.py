@@ -254,14 +254,10 @@ param_list.append([mod_OSNKstruct,mod_OSNKchem,mod_OSNKtrans,\
                    mod_ACIDsurf,\
                    mod_SLR])
 
-# RELOAD
-# execfile('OSCAR-loadD.py')
-# execfile('OSCAR-loadP.py')
-# execfile('OSCAR-format.py')
-# execfile('OSCAR-fct.py')
-
 # RUN
-OUT = OSCAR_lite(var_output=['D_CO2','D_CH4','D_N2O','RF_halo','D_O3t','D_O3s','D_SO4','D_POA','D_BC','D_NO3','D_SOA','D_AERh','RF','D_gst'])
+OUT = OSCAR_lite(var_output=['D_CO2','D_CH4','D_N2O','RF_halo','D_O3t','D_O3s','D_SO4',
+                             'D_POA','D_BC','D_NO3','D_SOA','D_AERh','RF','D_gst'],
+                 plot='all')
 
 writer = csv.writer(open('results/single-random-drive_test.csv','wb'))
 writer.writerows(drive_list)
