@@ -1,7 +1,3 @@
-import csv
-import os
-
-import numpy as np
 from scipy.optimize import fmin, fsolve
 from scipy.special import gammainc
 
@@ -11,6 +7,14 @@ from ...config import dty, mod_OSNKstruct, mod_OSNKchem, mod_OSNKtrans, PI_1750,
     data_LULCC, mod_LSNKcover, ind_final, mod_EHWPspeed, mod_EHWPtau, mod_EHWPbb, \
     mod_biomeURB, mod_biomeV3, mod_biomeSHR, mod_ELUCagb, mod_EPFmain, mod_EFIREpreind, \
     mod_LSNKpreind, mod_LSNKnpp, mod_LSNKrho, mod_LSNKtrans, mod_EFIREtrans
+
+
+def load_data(path, slice=None):
+    data = [line for line in csv.reader(open(path, "r"))]
+    if slice is not None:
+        data = data[slice:]
+    return np.array(data, dtype=dty)
+
 
 ##################################################
 #   1. CARBON DIOXIDE
@@ -26,57 +30,34 @@ alpha_CO2 = 0.1765 * np.array([12.0], dtype=dty)
 # historic CO2 from IPCC-AR5 {ppm}
 # from [IPCC WG1, 2013] annexe 2
 CO2_ipcc = np.ones([311 + 1], dtype=dty) * np.nan
-TMP = np.array(
-    [line for line in csv.reader(
-        open("data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1750-2011.CO2.csv", "r"))],
-    dtype=dty,
-)
+path = "data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1750-2011.CO2.csv"
+TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
 CO2_ipcc[50:] = TMP[:, 0]
 CO2_0 = np.array([CO2_ipcc[50]], dtype=dty)
 
 # historic CO2 from CMIP5 {ppm}
 # from [Meinshausen et al., 2011]
 CO2_cmip5 = np.ones([305 + 1], dtype=dty) * np.nan
-TMP = np.array(
-    [line for line in
-     csv.reader(open("data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.CO2.csv", "r"))],
-    dtype=dty
-)
+path = "data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.CO2.csv"
+TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
 CO2_cmip5[65:] = TMP[:, 0]
 
 # historic CO2 from NOAA {ppm}
 # from the website
 CO2_noaa_ml = np.ones([314 + 1], dtype=dty) * np.nan
-TMP = np.array(
-    [
-        line
-        for line in csv.reader(open(
-        "data/HistAtmo_NOAA-ESRL/#DATA.HistAtmo_NOAA-ESRL.1959-2014.CO2_maunaloa.csv",
-        "r"))],
-    dtype=dty,
-)
+path = "data/HistAtmo_NOAA-ESRL/#DATA.HistAtmo_NOAA-ESRL.1959-2014.CO2_maunaloa.csv"
+TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
 CO2_noaa_ml[259:] = TMP[:, 0]
 CO2_noaa_gl = np.ones([314 + 1], dtype=dty) * np.nan
-TMP = np.array(
-    [
-        line
-        for line in csv.reader(
-        open("data/HistAtmo_NOAA-ESRL/#DATA.HistAtmo_NOAA-ESRL.1980-2014.CO2_global.csv",
-             "r"))],
-    dtype=dty,
-)
+
+path = "data/HistAtmo_NOAA-ESRL/#DATA.HistAtmo_NOAA-ESRL.1980-2014.CO2_global.csv"
+TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
 CO2_noaa_gl[280:] = TMP[:, 0]
 
 # historic CO2 from Law Dome ice cores {ppm}
 # from [Etheridge et al., 1996] and [MacFarling Meure et al., 2006]
-CO2_lawdome = np.array(
-    [
-        line
-        for line in csv.reader(open(
-        "data/HistAtmo_NOAA-NCDC/#DATA.HistAtmo_NOAA-NCDC.(IceCores).CO2_lawdome.csv",
-        "r"))][1:],
-    dtype=dty,
-)
+path = "data/HistAtmo_NOAA-NCDC/#DATA.HistAtmo_NOAA-NCDC.(IceCores).CO2_lawdome.csv"
+CO2_lawdome = np.array([line for line in csv.reader(open(path, "r"))][1:], dtype=dty)
 
 # load RCP concentrations {ppm}
 # from [Meinshausen et al., 2011]
@@ -84,28 +65,35 @@ CO2_rcp = np.ones([800 + 1, 6], dtype=dty) * np.nan
 n = -1
 for rcp in ["rcp26", "rcp45", "rcp60", "rcp85", "rcp45to26", "rcp60to45"]:
     n += 1
-    TMP = np.array(
-        [line for line in csv.reader(
-            open("data/Scenario_ECP/#DATA.Scenario_ECP.2000-2500." + rcp + "_CO2.csv",
-                 "r"))],
-        dtype=dty,
-    )
+    path = f"data/Scenario_ECP/#DATA.Scenario_ECP.2000-2500.{rcp}_CO2.csv"
+    TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
     CO2_rcp[300:, n] = TMP[:, 0]
 
 # global CO2 historic flux {GtC/yr}
 # from [Le Quere et al., 2015]
-TMP = np.array(
-    [line for line in csv.reader(
-        open("data/Historic_GCP/#DATA.Historic_GCP.1959-2014_(5flx).budget.csv", "r"))][
-    1:],
-    dtype=dty,
-)
-n = -1
-for VAR in ["EFF", "ELUC", "d_CO2", "OSNK", "LSNK"]:
-    n += 1
-    exec(VAR + "_gcp = np.ones([314+1], dtype=dty) * np.nan")
-    exec(VAR + "_gcp[259:] = TMP[:,n]")
+path = "data/Historic_GCP/#DATA.Historic_GCP.1959-2014_(5flx).budget.csv"
+TMP = np.array([line for line in csv.reader(open(path, "r"))][1:], dtype=dty)
+
+n = 0
+EFF_gcp = np.ones([314 + 1], dtype=dty) * np.nan
+EFF_gcp[259:] = TMP[:, n]
+
+n += 1
+ELUC_gcp = np.ones([314 + 1], dtype=dty) * np.nan
+ELUC_gcp[259:] = TMP[:, n]
+
+n += 1
+d_CO2_gcp = np.ones([314 + 1], dtype=dty) * np.nan
+d_CO2_gcp[259:] = TMP[:, n]
+
+n += 1
+OSNK_gcp = np.ones([314 + 1], dtype=dty) * np.nan
+OSNK_gcp[259:] = TMP[:, n]
 OSNK_gcp *= -1
+
+n += 1
+LSNK_gcp = np.ones([314 + 1], dtype=dty) * np.nan
+LSNK_gcp[259:] = TMP[:, n]
 LSNK_gcp *= -1
 
 # ==========
@@ -366,6 +354,7 @@ elif mod_OSNKchem == "CO2SysPower":
         df_tot = df_1 + df_2
         return [np.nan_to_num(df_1 / df_tot), np.nan_to_num(df_2 / df_tot)]
 
+
 # ------------
 # 1.2.3. CMIP5
 # ------------
@@ -375,132 +364,91 @@ prd = {"ctrl": "451yr", "hist": "1850-2005", "rcp85": "2006-2300"}
 lng = {"ctrl": 451, "hist": 156, "rcp85": 295}
 mld = {"HILDA": "75m", "BD-model": "75m", "2D-model": "50m", "3D-model": "50m9"}
 
+
+def load_cmip5(sim, VAR):
+    if VAR in ["FCO2", "FEXP"]:
+        path = f"data/Ocean_CMIP5/#DATA.Ocean_{mod_OSNKtrans}.{prd[sim]}_18x10lat.{sim}_{VAR}.csv"
+        if os.path.isfile(path):
+            TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+            return np.sum(TMP, 1)
+        else:
+            return np.zeros([lng[sim]], dtype=dty)
+
+    if VAR in ["tos", "dpCO2", "sic", "mld"]:
+        path = f"data/Ocean_CMIP5/#DATA.Ocean_{mod_OSNKtrans}.{prd[sim]}_18x10lat.{sim}_{VAR}.csv"
+        path_surf = f"data/Ocean_CMIP5/#DATA.Ocean_{mod_OSNKtrans}.451yr_18x10lat.SURF.csv"
+        if os.path.isfile(path):
+            TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+            TMP2 = np.array([line for line in csv.reader(open(path_surf, "r"))], dtype=dty)
+            return np.sum(TMP * TMP2[:len(TMP)], 1) / np.sum(TMP2[:len(TMP)], 1)
+        else:
+            return np.zeros([lng[sim]], dtype=dty)
+
+    if VAR in ["amoc"]:
+        path = f"data/Ocean_CMIP5/#DATA.Ocean_{mod_OSNKtrans}.{prd[sim]}.{sim}_{VAR}.csv"
+        if os.path.isfile(path):
+            TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+            return TMP[:, 0]
+        else:
+            return np.zeros([lng[sim]], dtype=dty)
+
+    else:
+        raise ValueError(VAR)
+
+
 # load pre-processed CMIP5 results for specified model
 if mod_OSNKtrans != "":
-    for sim in ["ctrl", "hist", "rcp85"]:
-        for VAR in ["FCO2", "FEXP"]:
-            if os.path.isfile(
-                    "data/Ocean_CMIP5/#DATA.Ocean_"
-                    + mod_OSNKtrans
-                    + "."
-                    + prd[sim]
-                    + "_18x10lat."
-                    + sim
-                    + "_"
-                    + VAR
-                    + ".csv"
-            ):
-                TMP = np.array(
-                    [
-                        line
-                        for line in csv.reader(
-                        open(
-                            "data/Ocean_CMIP5/#DATA.Ocean_"
-                            + mod_OSNKtrans
-                            + "."
-                            + prd[sim]
-                            + "_18x10lat."
-                            + sim
-                            + "_"
-                            + VAR
-                            + ".csv",
-                            "r",
-                        )
-                    )],
-                    dtype=dty,
-                )
-                exec(VAR + "_" + sim + " = np.sum(TMP,1)")
-            else:
-                exec(VAR + "_" + sim + " = np.zeros([lng[sim]], dtype=dty)")
-        for var in ["tos", "dpCO2", "sic", "mld"]:
-            if os.path.isfile(
-                    "data/Ocean_CMIP5/#DATA.Ocean_"
-                    + mod_OSNKtrans
-                    + "."
-                    + prd[sim]
-                    + "_18x10lat."
-                    + sim
-                    + "_"
-                    + var
-                    + ".csv"
-            ):
-                TMP = np.array(
-                    [
-                        line
-                        for line in csv.reader(
-                        open(
-                            "data/Ocean_CMIP5/#DATA.Ocean_"
-                            + mod_OSNKtrans
-                            + "."
-                            + prd[sim]
-                            + "_18x10lat."
-                            + sim
-                            + "_"
-                            + var
-                            + ".csv",
-                            "r",
-                        )
-                    )],
-                    dtype=dty,
-                )
-                TMP2 = np.array(
-                    [
-                        line
-                        for line in csv.reader(
-                        open(
-                            "data/Ocean_CMIP5/#DATA.Ocean_" + mod_OSNKtrans + ".451yr_18x10lat.SURF.csv",
-                            "r")
-                    )],
-                    dtype=dty,
-                )
-                exec(
-                    var + "_" + sim + " = np.sum(TMP*TMP2[:len(TMP)],1)/np.sum(TMP2[:len(TMP)],1)")
-            else:
-                exec(var + "_" + sim + " = np.zeros([lng[sim]], dtype=dty)")
-        for var in ["amoc"]:
-            if os.path.isfile(
-                    "data/Ocean_CMIP5/#DATA.Ocean_" + mod_OSNKtrans + "." + prd[
-                        sim] + "." + sim + "_" + var + ".csv"
-            ):
-                TMP = np.array(
-                    [
-                        line
-                        for line in csv.reader(
-                        open(
-                            "data/Ocean_CMIP5/#DATA.Ocean_"
-                            + mod_OSNKtrans
-                            + "."
-                            + prd[sim]
-                            + "."
-                            + sim
-                            + "_"
-                            + var
-                            + ".csv",
-                            "r",
-                        )
-                    )],
-                    dtype=dty,
-                )
-                exec(var + "_" + sim + " = TMP[:,0]")
-            else:
-                exec(var + "_" + sim + " = np.zeros([lng[sim]], dtype=dty)")
-    # aggregate all experiments
-    if mod_OSNKtrans != "":
-        for VAR in ["FCO2", "FEXP"] + ["tos", "dpCO2", "sic", "mld"] + ["amoc"]:
-            exec(VAR + "_all = np.array(list(" + VAR + "_hist)+list(" + VAR + "_rcp85))")
+    FCO2_ctrl = load_cmip5('ctrl', 'FCO2')
+    FCO2_hist = load_cmip5('hist', 'FCO2')
+    FCO2_rcp85 = load_cmip5('rcp85', 'FCO2')
+    FCO2_all = np.array(list(FCO2_hist) + list(FCO2_rcp85))
+
+    FEXP_ctrl = load_cmip5('ctrl', 'FEXP')
+    FEXP_hist = load_cmip5('hist', 'FEXP')
+    FEXP_rcp85 = load_cmip5('rcp85', 'FEXP')
+    FEXP_all = np.array(list(FEXP_hist) + list(FEXP_rcp85))
+
+    tos_ctrl = load_cmip5('ctrl', 'tos')
+    tos_hist = load_cmip5('hist', 'tos')
+    tos_rcp85 = load_cmip5('rcp85', 'tos')
+    tos_all = np.array(list(tos_hist) + list(tos_rcp85))
+
+    dpCO2_ctrl = load_cmip5('ctrl', 'dpCO2')
+    dpCO2_hist = load_cmip5('hist', 'dpCO2')
+    dpCO2_rcp85 = load_cmip5('rcp85', 'dpCO2')
+    dpCO2_all = np.array(list(dpCO2_hist) + list(dpCO2_rcp85))
+
+    sic_ctrl = load_cmip5('ctrl', 'sic')
+    sic_hist = load_cmip5('hist', 'sic')
+    sic_rcp85 = load_cmip5('rcp85', 'sic')
+    sic_all = np.array(list(sic_hist) + list(sic_rcp85))
+
+    mld_ctrl = load_cmip5('ctrl', 'mld')
+    mld_hist = load_cmip5('hist', 'mld')
+    mld_rcp85 = load_cmip5('rcp85', 'mld')
+    mld_all = np.array(list(mld_hist) + list(mld_rcp85))
+
+    amoc_ctrl = load_cmip5('ctrl', 'amoc')
+    amoc_hist = load_cmip5('hist', 'amoc')
+    amoc_rcp85 = load_cmip5('rcp85', 'amoc')
+    amoc_all = np.array(list(amoc_hist) + list(amoc_rcp85))
 
 # definition of parameters
 # for sea ice concentration reduction {pp}&{./K}
 Alpha_sic = np.array([0], dtype=dty)
 gamma_sic = np.array([0], dtype=dty)
+
 # for sea surface exchange rate {.}&{./K}
 gamma_fg = np.array([0], dtype=dty)
+
 # for mixing layer stratification {.}&{./K}
 alpha_mld = np.array([0], dtype=dty)
 gamma_mld = np.array([0], dtype=dty)
+
 # for overturning circulation slowdown {.}&{./K}
 alpha_amoc = np.array([0], dtype=dty)
 gamma_amoc = np.array([0], dtype=dty)
+
 # for biological pump reduction decrease {GtC/yr}&{./K}
 Alpha_exp = np.array([0], dtype=dty)
 gamma_exp = np.array([0], dtype=dty)
@@ -520,6 +468,7 @@ if mod_OSNKtrans != "":
 
     [gamma_sic[0]] = fmin(err, [0], disp=False)
     Alpha_sic[0] = np.mean(sic_ctrl)
+
 # fg
 if mod_OSNKtrans != "":
     diff = FCO2_all - np.mean(FCO2_ctrl)
@@ -533,6 +482,7 @@ if mod_OSNKtrans != "":
 
 
     [TMP, gamma_fg[0]] = fmin(err, [-1, 0], disp=False)
+
 # mld
 if mod_OSNKtrans != "":
     ratio = mld_all / np.mean(mld_ctrl)
@@ -570,6 +520,7 @@ if mod_OSNKtrans != "":
 
 
     [Alpha_exp[0], gamma_exp[0]] = fmin(err, [-1, 0], disp=False)
+
 
 # =========
 # 1.3. LAND
@@ -738,143 +689,126 @@ elif mod_LSNKrho == "gauss":
 # basic biomes of aggregation
 bio = ["des", "for", "shr", "gra", "cro", "pas", "urb"]
 
+
 # load pre-processed TRENDY results for specified model
 # data related to preindustrial C-cycle
-for VAR in ["AREA", "CSOIL", "CLITTER", "CVEG", "NPP", "RH"]:
-    exec(VAR + "_pi = np.zeros([nb_regionI,len(bio)], dtype=dty)")
-    if os.path.isfile(
-            "data/Land_TRENDYv2/#DATA.Land_" + mod_LSNKpreind + ".1910s_114reg1_7bio." + VAR + ".csv"):
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/Land_TRENDYv2/#DATA.Land_" + mod_LSNKpreind + ".1910s_114reg1_7bio." + VAR + ".csv",
-                    "r")
-            )],
-            dtype=dty,
-        )
+def load_pi(name):
+    arr = np.zeros([nb_regionI, len(bio)], dtype=dty)
+    path = f"data/Land_TRENDYv2/#DATA.Land_{mod_LSNKpreind}.1910s_114reg1_7bio.{name}.csv"
+    if os.path.isfile(path):
+        TMP = load_data(path)
         for i in range(1, 114 + 1):
-            exec(VAR + "_pi[regionI_index[i],:] += TMP[i-1,:]")
+            arr[regionI_index[i], :] += TMP[i - 1, :]
+    return arr
+
+
+AREA_pi = load_pi("AREA")
+CSOIL_pi = load_pi("CSOIL")
+CLITTER_pi = load_pi("CLITTER")
+CVEG_pi = load_pi("CVEG")
+NPP_pi = load_pi("NPP")
+RH_pi = load_pi("RH")
 
 # complete with arbitrary values
 # if no litter given by model
 if np.sum(CLITTER_pi) == 0:
     CLITTER_pi = 0.05 * CSOIL_pi
     CSOIL_pi = 0.95 * CSOIL_pi
+
 # if no shrubs in the model
 if (nb_biome > 1) & (np.sum(AREA_pi[:, bio.index("shr")]) == 0) & (mod_biomeSHR == "SHR"):
     AREA_pi[:, bio.index("shr")] = AREA_pi[:, bio.index("gra")]
-    for VAR in ["CSOIL", "CLITTER", "CVEG", "NPP", "RH"]:
-        exec(
-            VAR
-            + '_pi[:,bio.index("shr")] = 0.85*'
-            + VAR
-            + '_pi[:,bio.index("gra")] + 0.15*'
-            + VAR
-            + '_pi[:,bio.index("for")]*AREA_pi[:,bio.index("gra")]/AREA_pi[:,bio.index("for")]'
-        )
+
+    for arr in [CSOIL_pi, CLITTER_pi, CVEG_pi, NPP_pi, RH_pi]:
+        arr[:, bio.index("shr")] = \
+            0.85 * arr[:, bio.index("gra")] \
+            + (0.15 * arr[:, bio.index("for")] * AREA_pi[:, bio.index("gra")] / AREA_pi[:, bio.index("for")])
     TMP = AREA_pi[:, :, bio.index("for")] == 0
-    exec(
-        VAR + '_pi[:,:,bio.index("shr")][TMP] = ' + VAR + '_pi[:,:,bio.index("gra")][TMP]')
+    arr[:, :, bio.index("shr")][TMP] = arr[:, :, bio.index("gra")][TMP]
+
 # if no crops in the model
 if (nb_biome > 1) & (np.sum(AREA_pi[:, bio.index("cro")]) == 0):
-    for VAR in ["AREA", "CSOIL", "CLITTER", "CVEG", "NPP", "RH"]:
-        exec(VAR + '_pi[:,bio.index("cro")] = ' + VAR + '_pi[:,bio.index("gra")]')
+    for arr in [AREA_pi, CSOIL_pi, CLITTER_pi, CVEG_pi, NPP_pi, RH_pi]:
+        arr[:, bio.index("cro")] = arr[:, bio.index("gra")]
+
 # if no pastures in the model
 if (nb_biome > 1) & (np.sum(AREA_pi[:, bio.index("pas")]) == 0):
     AREA_pi[:, bio.index("pas")] = AREA_pi[:, bio.index("gra")]
-    for VAR in ["CSOIL", "CLITTER", "CVEG", "NPP", "RH"]:
-        exec(
-            VAR
-            + '_pi[:,bio.index("pas")] = 0.60*'
-            + VAR
-            + '_pi[:,bio.index("gra")] + 0.40*'
-            + VAR
-            + '_pi[:,bio.index("des")]*AREA_pi[:,bio.index("gra")]/AREA_pi[:,bio.index("des")]'
-        )
+    for VAR in [CSOIL_pi, CLITTER_pi, CVEG_pi, NPP_pi, RH_pi]:
+        arr[:, bio.index("pas")] = \
+            0.60 * arr[:, bio.index("gra")] \
+            + 0.40 * arr[:, bio.index("des")] * AREA_pi[:, bio.index("gra")] / AREA_pi[:, bio.index("des")]
         TMP = AREA_pi[:, bio.index("des")] == 0
-        exec(
-            VAR + '_pi[:,bio.index("pas")][TMP] = ' + VAR + '_pi[:,bio.index("gra")][TMP]')
+        arr[:, bio.index("pas")][TMP] = arr[:, bio.index("gra")][TMP]
+
 # if no urban in the model
 if (nb_biome > 1) & (np.sum(AREA_pi[:, bio.index("urb")]) == 0) & (
         (mod_biomeURB == "URB") | mod_biomeV3):
-    for VAR in ["AREA", "CSOIL", "CLITTER", "CVEG", "NPP", "RH"]:
-        exec(VAR + '_pi[:,bio.index("urb")] = ' + VAR + '_pi[:,bio.index("des")]')
+    for VAR in [AREA_pi, CSOIL_pi, CLITTER_pi, CVEG_pi, NPP_pi, RH_pi]:
+        arr[:, bio.index("urb")] = arr[:, bio.index("des")]
+
 
 # data related to preindustrial fires
-for VAR in ["EFIRE", "CBURNT"]:
-    exec(VAR + "_pi = np.zeros([nb_regionI,len(bio)], dtype=dty)")
+def load_pi_fires(name):
+    arr = np.zeros([nb_regionI, len(bio)], dtype=dty)
     if mod_EFIREpreind != "":
-        if os.path.isfile(
-                "data/BioBurn_TRENDYv2/#DATA.BioBurn_" + mod_EFIREpreind + ".1910s_114reg1_7bio." + VAR + ".csv"
-        ):
-            TMP = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/BioBurn_TRENDYv2/#DATA.BioBurn_"
-                        + mod_EFIREpreind
-                        + ".1910s_114reg1_7bio."
-                        + VAR
-                        + ".csv",
-                        "r",
-                    )
-                )],
-                dtype=dty,
-            )
+        path = f"data/BioBurn_TRENDYv2/#DATA.BioBurn_{mod_EFIREpreind}.1910s_114reg1_7bio.{name}.csv"
+        if os.path.isfile(path):
+            TMP = load_data(path)
         for i in range(1, 114 + 1):
-            exec(VAR + "_pi[regionI_index[i],:] += TMP[i-1,:]")
+            arr[regionI_index[i], :] += TMP[i - 1, :]
+    return arr
+
+
+EFIRE_pi = load_pi_fires("EFIRE")
+CBURNT_pi = load_pi_fires("CBURNT")
 
 # complete with arbitrary values
 # if no shrubs in the model
-if (nb_biome > 1) & (np.sum(CBURNT_pi[:, bio.index("shr")]) == 0) & (
-        mod_biomeSHR == "SHR"):
+if (nb_biome > 1) & (np.sum(CBURNT_pi[:, bio.index("shr")]) == 0) & (mod_biomeSHR == "SHR"):
     CBURNT_pi[:, bio.index("shr")] = CBURNT_pi[:, bio.index("gra")]
-    for VAR in ["EFIRE"]:
-        exec(
-            VAR
-            + '_pi[:,bio.index("shr")] = 0.85*'
-            + VAR
-            + '_pi[:,bio.index("gra")] + 0.15*'
-            + VAR
-            + '_pi[:,bio.index("for")]*CBURNT_pi[:,bio.index("gra")]/CBURNT_pi[:,bio.index("for")]'
-        )
-        TMP = CBURNT_pi[:, :, bio.index("for")] == 0
-        exec(
-            VAR + '_pi[:,:,bio.index("shr")][TMP] = ' + VAR + '_pi[:,:,bio.index("gra")][TMP]')
+    EFIRE_pi[:, bio.index("shr")] = \
+        0.85 * EFIRE_pi[:, bio.index("gra")] \
+        + 0.15 * EFIRE_pi[:, bio.index("for")] * CBURNT_pi[:, bio.index("gra")] / CBURNT_pi[:, bio.index("for")]
+    TMP = CBURNT_pi[:, :, bio.index("for")] == 0
+    EFIRE_pi[:, :, bio.index("shr")][TMP] = EFIRE_pi[:, :, bio.index("gra")][TMP]
+
 # if no crops in the model
 if (nb_biome > 1) & (np.sum(CBURNT_pi[:, bio.index("cro")]) == 0):
-    for VAR in ["EFIRE", "CBURNT"]:
-        exec(VAR + '_pi[:,bio.index("cro")] = ' + VAR + '_pi[:,bio.index("gra")]')
+    EFIRE_pi[:, bio.index("cro")] = EFIRE_pi[:, bio.index("gra")]
+    CBURNT_pi[:, bio.index("cro")] = CBURNT_pi[:, bio.index("gra")]
+
 # if no pastures in the model
 if (nb_biome > 1) & (np.sum(CBURNT_pi[:, bio.index("pas")]) == 0):
     CBURNT_pi[:, bio.index("pas")] = CBURNT_pi[:, bio.index("gra")]
-    for VAR in ["EFIRE"]:
-        exec(
-            VAR
-            + '_pi[:,bio.index("pas")] = 0.60*'
-            + VAR
-            + '_pi[:,bio.index("gra")] + 0.40*'
-            + VAR
-            + '_pi[:,bio.index("des")]*CBURNT_pi[:,bio.index("gra")]/CBURNT_pi[:,bio.index("des")]'
-        )
-        TMP = CBURNT_pi[:, bio.index("des")] == 0
-        exec(
-            VAR + '_pi[:,bio.index("pas")][TMP] = ' + VAR + '_pi[:,bio.index("gra")][TMP]')
-# if no urban in the model
-if (nb_biome > 1) & (np.sum(CBURNT_pi[:, bio.index("urb")]) == 0) & (
-        (mod_biomeURB == "URB") | mod_biomeV3):
-    for VAR in ["EFIRE", "CBURNT"]:
-        exec(VAR + '_pi[:,bio.index("urb")] = ' + VAR + '_pi[:,bio.index("des")]')
+    EFIRE_pi[:, bio.index("pas")] = \
+        0.60 * EFIRE_pi[:, bio.index("gra")] \
+        + 0.40 * EFIRE_pi[:, bio.index("des")] * CBURNT_pi[:, bio.index("gra")] / CBURNT_pi[:, bio.index("des")]
+    TMP = CBURNT_pi[:, bio.index("des")] == 0
+    EFIRE_pi[:, bio.index("pas")][TMP] = EFIRE_pi[:, bio.index("gra")][TMP]
 
-# aggregate biomes
-for VAR in ["AREA", "CSOIL", "CLITTER", "CVEG", "NPP", "RH"] + ["EFIRE", "CBURNT"]:
-    exec("TMP = " + VAR + "_pi.copy()")
-    exec(VAR + "_pi = np.zeros([nb_regionI,nb_biome], dtype=dty)")
+# if no urban in the model
+if (nb_biome > 1) & (np.sum(CBURNT_pi[:, bio.index("urb")]) == 0) & ((mod_biomeURB == "URB") | mod_biomeV3):
+    EFIRE_pi[:, bio.index("urb")] = EFIRE_pi[:, bio.index("des")]
+    CBURNT_pi[:, bio.index("urb")] = CBURNT_pi[:, bio.index("des")]
+
+
+def aggregate_biomes(arr):
+    TMP = arr.copy()
+    new = np.zeros([nb_regionI, nb_biome], dtype=dty)
     for b in range(len(bio)):
-        exec(VAR + "_pi[:,biome_index[bio[b]]] += TMP[:,b]")
+        new[:, biome_index[bio[b]]] += TMP[:, b]
+    return new
+
+
+AREA_pi = aggregate_biomes(AREA_pi)
+CSOIL_pi = aggregate_biomes(CSOIL_pi)
+CLITTER_pi = aggregate_biomes(CLITTER_pi)
+CVEG_pi = aggregate_biomes(CVEG_pi)
+NPP_pi = aggregate_biomes(NPP_pi)
+RH_pi = aggregate_biomes(RH_pi)
+EFIRE_pi = aggregate_biomes(EFIRE_pi)
+CBURNT_pi = aggregate_biomes(CBURNT_pi)
 
 # ratio for metabolization of litter to soil {.}
 # from [Foley, 1995]
@@ -892,8 +826,12 @@ rho2_0 = k_met / (1 + k_met) * RH_pi / CSOIL_pi
 # rate of fire ignition {./yr}
 igni_0 = EFIRE_pi / CBURNT_pi
 # [NaN]
-for var in ["npp", "mu", "rho", "rho1", "rho2", "igni"]:
-    exec(var + "_0[np.isnan(" + var + "_0)|np.isinf(" + var + "_0)] = 0")
+npp_0[np.isnan(npp_0) | np.isinf(npp_0)] = 0
+mu_0[np.isnan(mu_0) | np.isinf(mu_0)] = 0
+rho_0[np.isnan(rho_0) | np.isinf(rho_0)] = 0
+rho1_0[np.isnan(rho1_0) | np.isinf(rho1_0)] = 0
+rho2_0[np.isnan(rho2_0) | np.isinf(rho2_0)] = 0
+igni_0[np.isnan(igni_0) | np.isinf(igni_0)] = 0
 
 # arbitrary adjustment of parameters
 # lower preindustrial npp
@@ -917,8 +855,10 @@ csoil_0 = mu_0 / rho_0 * cveg_0
 csoil1_0 = 1 / (1 + k_met) * mu_0 / rho1_0 * cveg_0
 csoil2_0 = k_met * (rho1_0 / rho2_0) * csoil1_0
 # [NaN]
-for var in ["cveg", "csoil", "csoil1", "csoil2"]:
-    exec(var + "_0[np.isnan(" + var + "_0)|np.isinf(" + var + "_0)] = 0")
+cveg_0[np.isnan(cveg_0) | np.isinf(cveg_0)] = 0
+csoil_0[np.isnan(csoil_0) | np.isinf(csoil_0)] = 0
+csoil1_0[np.isnan(csoil1_0) | np.isinf(csoil1_0)] = 0
+csoil2_0[np.isnan(csoil2_0) | np.isinf(csoil2_0)] = 0
 
 # -----------------
 # 1.3.3. Land-Cover
@@ -926,23 +866,8 @@ for var in ["cveg", "csoil", "csoil1", "csoil2"]:
 
 # load preindustrial land-cover {Mha}
 AREA_0 = np.zeros([nb_regionI, nb_biome], dtype=dty)
-TMP = np.array(
-    [
-        line
-        for line in csv.reader(
-        open(
-            "data/LandCover_"
-            + data_LULCC
-            + "/#DATA.LandCover_"
-            + data_LULCC
-            + "_"
-            + mod_LSNKcover
-            + ".1700_114reg1_7bio.AREA.csv",
-            "r",
-        )
-    )],
-    dtype=dty,
-)
+path = f"data/LandCover_{data_LULCC}/#DATA.LandCover_{data_LULCC}_{mod_LSNKcover}.1700_114reg1_7bio.AREA.csv"
+TMP = load_data(path)
 for i in range(1, 114 + 1):
     for b in range(len(bio)):
         AREA_0[regionI_index[i], biome_index[bio[b]]] += TMP[i - 1, b]
@@ -955,45 +880,17 @@ if PI_1750:
     if data_LULCC[:3] == "LUH":
         for b1 in range(len(bio)):
             for b2 in range(len(bio)):
-                if os.path.isfile(
-                        "data/LandUse_"
-                        + data_LULCC
-                        + "/#DATA.LandUse_"
-                        + data_LULCC
-                        + "_"
-                        + mod_LSNKcover
-                        + ".1501-2015_114reg1.LUC_"
-                        + bio[b1]
-                        + "2"
-                        + bio[b2]
-                        + ".csv"
-                ):
-                    TMP = np.array(
-                        [
-                            line
-                            for line in csv.reader(
-                            open(
-                                "data/LandUse_LUH1/#DATA.LandUse_"
-                                + data_LULCC
-                                + "_"
-                                + mod_LSNKcover
-                                + ".1501-2015_114reg1.LUC_"
-                                + bio[b1]
-                                + "2"
-                                + bio[b2]
-                                + ".csv",
-                                "r",
-                            )
-                        )],
-                        dtype=dty,
-                    )
+                path = f"data/LandUse_{data_LULCC}/#DATA.LandUse_{data_LULCC}_{mod_LSNKcover}.1501-2015_114reg1.LUC_" \
+                       f"{bio[b1]}2{bio[b2]}.csv"
+                if os.path.isfile(path):
+                    TMP = load_data(path)
                     for i in range(1, 114 + 1):
                         LUC_tmp[1: 50 + 1, regionI_index[i], biome_index[bio[b1]],
-                        biome_index[bio[b2]]] += TMP[
-                                                 200: 200 + 50, i - 1]
+                        biome_index[bio[b2]]] += TMP[200: 200 + 50, i - 1]
     # correct land-cover
     AREA_0 += np.sum(np.sum(LUC_tmp, 2), 0) - np.sum(np.sum(LUC_tmp, 3), 0)
     del LUC_tmp
+
 
 # ------------
 # 1.3.4. CMIP5
@@ -1002,153 +899,131 @@ if PI_1750:
 # basic biomes of aggregation
 bio = ["des", "for", "shr", "gra", "cro", "pas", "urb"]
 
+
 # load pre-processed CMIP5 results for specified model
 # data related to C-cycle
-for sim in ["ctrl", "upct", "fxcl", "fdbk"]:
-    for VAR in ["AREA", "CSOIL0", "NPP", "RH", "FINPUT"]:
-        exec(VAR + "_" + sim + " = np.zeros([140,nb_regionI,len(bio)], dtype=dty)")
+def load_cmip5(sim, name):
+    if name in ["AREA", "CSOIL0", "NPP", "RH", "FINPUT"]:
+        arr = np.zeros([140, nb_regionI, len(bio)], dtype=dty)
         for b in range(len(bio)):
-            if os.path.isfile(
-                    "data/Land_CMIP5/#DATA.Land_"
-                    + mod_LSNKtrans
-                    + ".140yr_114reg1."
-                    + sim
-                    + "_"
-                    + VAR
-                    + "_"
-                    + bio[b]
-                    + ".csv"
-            ):
-                TMP = np.array(
-                    [
-                        line
-                        for line in csv.reader(
-                        open(
-                            "data/Land_CMIP5/#DATA.Land_"
-                            + mod_LSNKtrans
-                            + ".140yr_114reg1."
-                            + sim
-                            + "_"
-                            + VAR
-                            + "_"
-                            + bio[b]
-                            + ".csv",
-                            "r",
-                        )
-                    )],
-                    dtype=dty,
-                )
+            path = f"data/Land_CMIP5/#DATA.Land_{mod_LSNKtrans}.140yr_114reg1.{sim}_{name}_{bio[b]}.csv"
+            if os.path.isfile(path):
+                TMP = load_data(path)
                 for i in range(1, 114 + 1):
-                    exec(VAR + "_" + sim + "[:,regionI_index[i],b] += TMP[:,i-1]")
-    for var in ["tas", "pr"]:
-        exec(var + "_" + sim + " = np.zeros([140,nb_regionI], dtype=dty)")
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/Land_CMIP5/#DATA.Land_" + mod_LSNKtrans + ".140yr_114reg1." + sim + "_" + var + ".csv",
-                    "r",
-                )
-            )],
-            dtype=dty,
-        )
-        TMP2 = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/Land_CMIP5/#DATA.Land_" + mod_LSNKtrans + ".140yr_114reg1.AREA.csv",
-                    "r")
-            )],
-            dtype=dty,
-        )
+                    arr[:, regionI_index[i], b] += TMP[:, i - 1]
+        return arr
+
+    if name in ["tas", "pr"]:
+        arr = np.zeros([140, nb_regionI], dtype=dty)
+        path1 = f"data/Land_CMIP5/#DATA.Land_{mod_LSNKtrans}.140yr_114reg1.{sim}_{name}.csv"
+        path2 = f"data/Land_CMIP5/#DATA.Land_{mod_LSNKtrans}.140yr_114reg1.AREA.csv"
+        TMP = load_data(path1)
+        TMP2 = load_data(path2)
+
         for i in range(1, 114 + 1):
-            exec(var + "_" + sim + "[:,regionI_index[i]] += TMP[:,i-1]*TMP2[:,i-1]")
+            arr[:, regionI_index[i]] += TMP[:, i - 1] * TMP2[:, i - 1]
         TMP = np.zeros([140, nb_regionI], dtype=dty)
         for i in range(1, 114 + 1):
-            exec("TMP[:,regionI_index[i]] += TMP2[:,i-1]")
-        exec(var + "_" + sim + " /= TMP")
-        exec(
-            var + "_" + sim + "[np.isnan(" + var + "_" + sim + ")|np.isinf(" + var + "_" + sim + ")] = 0")
+            TMP[:, regionI_index[i]] += TMP2[:, i - 1]
+        arr /= TMP
+        arr[np.isnan(arr) | np.isinf(arr)] = 0
+        return arr
+    else:
+        raise ValueError
+
+
+AREA_ctrl = load_cmip5('ctrl', 'AREA')
+AREA_upct = load_cmip5('upct', 'AREA')
+AREA_fxcl = load_cmip5('fxcl', 'AREA')
+AREA_fdbk = load_cmip5('fdbk', 'AREA')
+
+CSOIL0_ctrl = load_cmip5('ctrl', 'CSOIL0')
+CSOIL0_upct = load_cmip5('upct', 'CSOIL0')
+CSOIL0_fxcl = load_cmip5('fxcl', 'CSOIL0')
+CSOIL0_fdbk = load_cmip5('fdbk', 'CSOIL0')
+
+NPP_ctrl = load_cmip5('ctrl', 'NPP')
+NPP_upct = load_cmip5('upct', 'NPP')
+NPP_fxcl = load_cmip5('fxcl', 'NPP')
+NPP_fdbk = load_cmip5('fdbk', 'NPP')
+
+RH_ctrl = load_cmip5('ctrl', 'RH')
+RH_upct = load_cmip5('upct', 'RH')
+RH_fxcl = load_cmip5('fxcl', 'RH')
+RH_fdbk = load_cmip5('fdbk', 'RH')
+
+FINPUT_ctrl = load_cmip5('ctrl', 'FINPUT')
+FINPUT_upct = load_cmip5('upct', 'FINPUT')
+FINPUT_fxcl = load_cmip5('fxcl', 'FINPUT')
+FINPUT_fdbk = load_cmip5('fdbk', 'FINPUT')
+
+tas_ctrl = load_cmip5('ctrl', 'tas')
+tas_upct = load_cmip5('upct', 'tas')
+tas_fxcl = load_cmip5('fxcl', 'tas')
+tas_fdbk = load_cmip5('fdbk', 'tas')
+
+pr_ctrl = load_cmip5('ctrl', 'pr')
+pr_upct = load_cmip5('upct', 'pr')
+pr_fxcl = load_cmip5('fxcl', 'pr')
+pr_fdbk = load_cmip5('fdbk', 'pr')
+
+
 
 # complete with arbitrary values
-# if no shrubs in the model
-if (nb_biome > 1) & (np.sum(AREA_ctrl[:, :, bio.index("shr")]) == 0) & (
-        mod_biomeSHR == "SHR"):
-    for sim in ["ctrl", "upct", "fxcl", "fdbk"]:
-        exec(
-            "AREA_" + sim + '[:,:,bio.index("shr")] = AREA_' + sim + '[:,:,bio.index("gra")]')
-        for VAR in ["CSOIL0", "NPP", "RH", "FINPUT"]:
-            exec(
-                VAR
-                + "_"
-                + sim
-                + '[:,:,bio.index("shr")] = 0.85*'
-                + VAR
-                + "_"
-                + sim
-                + '[:,:,bio.index("gra")] + 0.15*'
-                + VAR
-                + "_"
-                + sim
-                + '[:,:,bio.index("for")]*AREA_'
-                + sim
-                + '[:,:,bio.index("gra")]/AREA_'
-                + sim
-                + '[:,:,bio.index("for")]'
-            )
-            exec("TMP = (AREA_" + sim + '[:,:,bio.index("for")] == 0)')
-            exec(
-                VAR + "_" + sim + '[:,:,bio.index("shr")][TMP] = ' + VAR + "_" + sim + '[:,:,bio.index("gra")][TMP]')
-# if no crops in the model
-if (nb_biome > 1) & (np.sum(AREA_ctrl[:, :, bio.index("cro")]) == 0):
-    for sim in ["ctrl", "upct", "fxcl", "fdbk"]:
-        for VAR in ["AREA", "CSOIL0", "NPP", "RH", "FINPUT"]:
-            exec(
-                VAR + "_" + sim + '[:,:,bio.index("cro")] = ' + VAR + "_" + sim + '[:,:,bio.index("gra")]')
-# if no pastures in the model
-if (nb_biome > 1) & (np.sum(AREA_ctrl[:, :, bio.index("pas")]) == 0):
-    for sim in ["ctrl", "upct", "fxcl", "fdbk"]:
-        exec(
-            "AREA_" + sim + '[:,:,bio.index("pas")] = AREA_' + sim + '[:,:,bio.index("gra")]')
-        for VAR in ["CSOIL0", "NPP", "RH", "FINPUT"]:
-            exec(
-                VAR
-                + "_"
-                + sim
-                + '[:,:,bio.index("pas")] = 0.60*'
-                + VAR
-                + "_"
-                + sim
-                + '[:,:,bio.index("gra")] + 0.40*'
-                + VAR
-                + "_"
-                + sim
-                + '[:,:,bio.index("des")]*AREA_'
-                + sim
-                + '[:,:,bio.index("gra")]/AREA_'
-                + sim
-                + '[:,:,bio.index("des")]'
-            )
-            exec("TMP = (AREA_" + sim + '[:,:,bio.index("des")] == 0)')
-            exec(
-                VAR + "_" + sim + '[:,:,bio.index("pas")][TMP] = ' + VAR + "_" + sim + '[:,:,bio.index("gra")][TMP]')
-# if no urban in the model
-if (nb_biome > 1) & (np.sum(AREA_ctrl[:, :, bio.index("urb")]) == 0) & (
-        (mod_biomeURB == "URB") | mod_biomeV3):
-    for sim in ["ctrl", "upct", "fxcl", "fdbk"]:
-        for VAR in ["AREA", "CSOIL0", "NPP", "RH", "FINPUT"]:
-            exec(
-                VAR + "_" + sim + '[:,:,bio.index("urb")] = ' + VAR + "_" + sim + '[:,:,bio.index("des")]')
+for area, other in [
+    (AREA_ctrl, [CSOIL0_ctrl, NPP_ctrl, RH_ctrl, FINPUT_ctrl]),
+    (AREA_upct, [CSOIL0_upct, NPP_upct, RH_upct, FINPUT_upct]),
+    (AREA_fxcl, [CSOIL0_fxcl, NPP_fxcl, RH_fxcl, FINPUT_fxcl]),
+    (AREA_fdbk, [CSOIL0_fdbk, NPP_fdbk, RH_fdbk, FINPUT_fdbk]),
+]:
+
+    # if no shrubs in the model
+    if (nb_biome > 1) & (np.sum(AREA_ctrl[:, :, bio.index("shr")]) == 0) & (mod_biomeSHR == "SHR"):
+        area[:, :, bio.index("shr")] = area[:, :, bio.index("gra")]
+        for arr in other:
+            arr[:, :, bio.index("shr")] = \
+                0.85 * arr[:, :, bio.index("gra")] \
+                + 0.15 * arr[:, :, bio.index("for")] * area[:, :, bio.index("gra")] / area[:, :, bio.index("for")]
+            TMP = (area[:, :, bio.index("for")] == 0)
+            arr[:, :, bio.index("shr")][TMP] = arr[:, :, bio.index("gra")][TMP]
+
+    # if no crops in the model
+    if (nb_biome > 1) & (np.sum(AREA_ctrl[:, :, bio.index("cro")]) == 0):
+        area[:, :, bio.index("cro")] = area[:, :, bio.index("gra")]
+        for arr in other:
+            arr[:, :, bio.index("cro")] = arr[:, :, bio.index("gra")]
+
+    # if no pastures in the model
+    if (nb_biome > 1) & (np.sum(AREA_ctrl[:, :, bio.index("pas")]) == 0):
+        area[:, :, bio.index("pas")] = area[:, :, bio.index("gra")]
+        for arr in other:
+            other[:, :, bio.index("pas")] = \
+                0.60 * arr[:, :, bio.index("gra")] \
+                + 0.40 * arr[:, :, bio.index("des")] * area[:, :, bio.index("gra")] / area[:, :, bio.index("des")]
+            TMP = (area[:, :, bio.index("des")] == 0)
+            arr[:, :, bio.index("pas")][TMP] = arr[:, :, bio.index("gra")][TMP]
+
+    # if no urban in the model
+    if (nb_biome > 1) & (np.sum(AREA_ctrl[:, :, bio.index("urb")]) == 0) & ((mod_biomeURB == "URB") | mod_biomeV3):
+        area[:, :, bio.index("urb")] = area[:, :, bio.index("des")]
+        for arr in other:
+            arr[:, :, bio.index("urb")] = arr[:, :, bio.index("des")]
+
 
 # aggregate biomes
-for sim in ["ctrl", "upct", "fxcl", "fdbk"]:
-    for VAR in ["AREA", "CSOIL0", "NPP", "RH", "FINPUT"]:
-        exec("TMP = " + VAR + "_" + sim + ".copy()")
-        exec(VAR + "_" + sim + " = np.zeros([140,nb_regionI,nb_biome], dtype=dty)")
-        for b in range(len(bio)):
-            exec(VAR + "_" + sim + "[:,:,biome_index[bio[b]]] += TMP[:,:,b]")
+for arr in [
+    AREA_ctrl, CSOIL0_ctrl, NPP_ctrl, RH_ctrl, FINPUT_ctrl,
+    AREA_upct, CSOIL0_upct, NPP_upct, RH_upct, FINPUT_upct,
+    AREA_fxcl, CSOIL0_fxcl, NPP_fxcl, RH_fxcl, FINPUT_fxcl,
+    AREA_fdbk, CSOIL0_fdbk, NPP_fdbk, RH_fdbk, FINPUT_fdbk,
+]:
+    TMP = arr.copy()
+    new = np.zeros([140, nb_regionI, nb_biome], dtype=dty)
+    for b in range(len(bio)):
+        new[:, :, biome_index[bio[b]]] += TMP[:, :, b]
+    arr.resize(new.shape, refcheck=False)
+    arr[:] = new
+
 # aggregate all experiments
 CO2_all = np.array(
     list(CO2_cmip5[150] * 1.01 ** np.arange(140))
@@ -1156,18 +1031,34 @@ CO2_all = np.array(
     + list(CO2_cmip5[150] * np.ones(140)),
     dtype=dty,
 )
-for VAR in ["AREA", "CSOIL0", "NPP", "RH", "FINPUT"] + ["tas", "pr"]:
-    exec(
-        VAR + "_all = np.array(list(" + VAR + "_upct)+list(" + VAR + "_fxcl)+list(" + VAR + "_fdbk), dtype=dty)")
+AREA_all = np.array(list(AREA_upct) + list(AREA_fxcl) + list(AREA_fdbk), dtype=dty)
+CSOIL0_all = np.array(list(CSOIL0_upct) + list(CSOIL0_fxcl) + list(CSOIL0_fdbk), dtype=dty)
+NPP_all = np.array(list(NPP_upct) + list(NPP_fxcl) + list(NPP_fdbk), dtype=dty)
+RH_all = np.array(list(RH_upct) + list(RH_fxcl) + list(RH_fdbk), dtype=dty)
+FINPUT_all = np.array(list(FINPUT_upct) + list(FINPUT_fxcl) + list(FINPUT_fdbk), dtype=dty)
+tas_all = np.array(list(tas_upct) + list(tas_fxcl) + list(tas_fdbk), dtype=dty)
+pr_all = np.array(list(pr_upct) + list(pr_fxcl) + list(pr_fdbk), dtype=dty)
+
+
 # decadal means
-for VAR in ["AREA", "CSOIL0", "NPP", "RH", "FINPUT"] + ["tas", "pr"] + ["CO2"]:
-    exec(
-        VAR + "_dec= np.zeros([3*(140-10)]+list(np.shape(" + VAR + "_all)[1:]), dtype=dty)")
+def decadal_means(var_all):
+    dec = np.zeros([3 * (140 - 10)] + list(np.shape(var_all)[1:]), dtype=dty)
     for t in range(130):
-        exec(VAR + "_dec[t,...] = np.mean(" + VAR + "_all[t:t+10,...],0)")
-        exec(VAR + "_dec[t+140-10,...] = np.mean(" + VAR + "_all[140+t:140+t+10,...],0)")
-        exec(
-            VAR + "_dec[t+2*140-2*10,...] = np.mean(" + VAR + "_all[2*140+t:2*140+t+10,...],0)")
+        dec[t, ...] = np.mean(var_all[t:t + 10, ...], 0)
+        dec[t + 140 - 10, ...] = np.mean(var_all[140 + t:140 + t + 10, ...], 0)
+        dec[t + 2 * 140 - 2 * 10, ...] = np.mean(var_all[2 * 140 + t:2 * 140 + t + 10, ...], 0)
+    return dec
+
+
+AREA_dec = decadal_means(AREA_all)
+CSOIL0_dec = decadal_means(CSOIL0_all)
+NPP_dec = decadal_means(NPP_all)
+RH_dec = decadal_means(RH_all)
+FINPUT_dec = decadal_means(FINPUT_all)
+tas_dec = decadal_means(tas_all)
+pr_dec = decadal_means(pr_all)
+CO2_dec = decadal_means(CO2_all)
+
 
 # definition of parameters
 # sensitivity of NPP to CO2 {.} or {.}&{ppm}
@@ -1354,161 +1245,115 @@ if (nb_biome > 1) & ((mod_biomeURB == "URB") | mod_biomeV3):
         gamma_rhoT2[:, biome_index["urb"]] = 0
         gamma_rhoP[:, biome_index["urb"]] = 0
 
+
+
 # load pre-processed CMIP5 results for specified model
 # data related to wildfires
-for sim in ["ctrl", "upct", "fxcl", "fdbk"]:
-    for VAR in ["EFIRE", "CBURNT"]:
-        exec(VAR + "_" + sim + " = np.zeros([140,nb_regionI,len(bio)], dtype=dty)")
+def load_pre_cmip5(sim, VAR):
+    if VAR in ["EFIRE", "CBURNT"]:
+        arr = np.zeros([140, nb_regionI, len(bio)], dtype=dty)
         if mod_EFIREtrans != "":
             for b in range(len(bio)):
-                if os.path.isfile(
-                        "data/BioBurn_CMIP5/#DATA.BioBurn_"
-                        + mod_EFIREtrans
-                        + ".140yr_114reg1."
-                        + sim
-                        + "_"
-                        + VAR
-                        + "_"
-                        + bio[b]
-                        + ".csv"
-                ):
-                    TMP = np.array(
-                        [
-                            line
-                            for line in csv.reader(
-                            open(
-                                "data/BioBurn_CMIP5/#DATA.BioBurn_"
-                                + mod_EFIREtrans
-                                + ".140yr_114reg1."
-                                + sim
-                                + "_"
-                                + VAR
-                                + "_"
-                                + bio[b]
-                                + ".csv",
-                                "r",
-                            )
-                        )],
-                        dtype=dty,
-                    )
+                path = f"data/BioBurn_CMIP5/#DATA.BioBurn_{mod_EFIREtrans}.140yr_114reg1.{sim}_{VAR}_{bio[b]}.csv"
+                if os.path.isfile(path):
+                    TMP = load_data(path)
                     for i in range(1, 114 + 1):
-                        exec(VAR + "_" + sim + "[:,regionI_index[i],b] += TMP[:,i-1]")
-    for var in ["tas2", "pr2"]:
-        exec(var + "_" + sim + " = np.zeros([140,nb_regionI], dtype=dty)")
+                        arr[:, regionI_index[i], b] += TMP[:, i - 1]
+        return arr
+    if VAR in ["tas2", "pr2"]:
+        arr = np.zeros([140, nb_regionI], dtype=dty)
         if mod_EFIREtrans != "":
-            TMP = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/BioBurn_CMIP5/#DATA.BioBurn_"
-                        + mod_EFIREtrans
-                        + ".140yr_114reg1."
-                        + sim
-                        + "_"
-                        + var
-                        + ".csv",
-                        "r",
-                    )
-                )],
-                dtype=dty,
-            )
-            TMP2 = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/BioBurn_CMIP5/#DATA.BioBurn_" + mod_EFIREtrans + ".140yr_114reg1.AREA2.csv",
-                        "r")
-                )],
-                dtype=dty,
-            )
+            path = f"data/BioBurn_CMIP5/#DATA.BioBurn_{mod_EFIREtrans}.140yr_114reg1.{sim}_{VAR}.csv"
+            path2 = f"data/BioBurn_CMIP5/#DATA.BioBurn_{mod_EFIREtrans}.140yr_114reg1.AREA2.csv"
+            TMP = load_data(path)
+            TMP2 = load_data(path2)
             for i in range(1, 114 + 1):
-                exec(var + "_" + sim + "[:,regionI_index[i]] += TMP[:,i-1]*TMP2[:,i-1]")
+                arr[:, regionI_index[i]] += TMP[:, i - 1] * TMP2[:, i - 1]
             TMP = np.zeros([140, nb_regionI], dtype=dty)
             for i in range(1, 114 + 1):
-                exec("TMP[:,regionI_index[i]] += TMP2[:,i-1]")
-            exec(var + "_" + sim + " /= TMP")
-            exec(
-                var + "_" + sim + "[np.isnan(" + var + "_" + sim + ")|np.isinf(" + var + "_" + sim + ")] = 0")
+                TMP[:, regionI_index[i]] += TMP2[:, i - 1]
+            arr /= TMP
+            arr[np.isnan(arr) | np.isinf(arr)] = 0
+        return arr
+    else:
+        raise ValueError(VAR)
+
+
+EFIRE_ctrl = load_pre_cmip5("ctrl", "EFIRE")
+EFIRE_upct = load_pre_cmip5("upct", "EFIRE")
+EFIRE_fxcl = load_pre_cmip5("fxcl", "EFIRE")
+EFIRE_fdbk = load_pre_cmip5("fdbk", "EFIRE")
+
+CBURNT_ctrl = load_pre_cmip5("ctrl", "CBURNT")
+CBURNT_upct = load_pre_cmip5("upct", "CBURNT")
+CBURNT_fxcl = load_pre_cmip5("fxcl", "CBURNT")
+CBURNT_fdbk = load_pre_cmip5("fdbk", "CBURNT")
+
+tas2_ctrl = load_pre_cmip5("ctrl", "tas2")
+tas2_upct = load_pre_cmip5("upct", "tas2")
+tas2_fxcl = load_pre_cmip5("fxcl", "tas2")
+tas2_fdbk = load_pre_cmip5("fdbk", "tas2")
+
+pr2_ctrl = load_pre_cmip5("ctrl", "pr2")
+pr2_upct = load_pre_cmip5("upct", "pr2")
+pr2_fxcl = load_pre_cmip5("fxcl", "pr2")
+pr2_fdbk = load_pre_cmip5("fdbk", "pr2")
+
 
 # complete with arbitrary values
+pairs = [
+    (CBURNT_ctrl, EFIRE_ctrl),
+    (CBURNT_upct, EFIRE_upct),
+    (CBURNT_fxcl, EFIRE_fxcl),
+    (CBURNT_fdbk, EFIRE_fdbk),
+]
+
 # if no shrubs in the model
-if (nb_biome > 1) & (np.sum(CBURNT_ctrl[:, :, bio.index("shr")]) == 0) & (
-        mod_biomeSHR == "SHR"):
-    for sim in ["ctrl", "upct", "fxcl", "fdbk"]:
-        exec(
-            "CBURNT_" + sim + '[:,:,bio.index("shr")] = CBURNT_' + sim + '[:,:,bio.index("gra")]')
-        for VAR in ["EFIRE"]:
-            exec(
-                VAR
-                + "_"
-                + sim
-                + '[:,:,bio.index("shr")] = 0.85*'
-                + VAR
-                + "_"
-                + sim
-                + '[:,:,bio.index("gra")] + 0.15*'
-                + VAR
-                + "_"
-                + sim
-                + '[:,:,bio.index("for")]*CBURNT_'
-                + sim
-                + '[:,:,bio.index("gra")]/CBURNT_'
-                + sim
-                + '[:,:,bio.index("for")]'
-            )
-            exec("TMP = (CBURNT_" + sim + '[:,:,bio.index("for")] == 0)')
-            exec(
-                VAR + "_" + sim + '[:,:,bio.index("shr")][TMP] = ' + VAR + "_" + sim + '[:,:,bio.index("gra")][TMP]')
+if (nb_biome > 1) & (np.sum(CBURNT_ctrl[:, :, bio.index("shr")]) == 0) & (mod_biomeSHR == "SHR"):
+    for cburnt, efire in pairs:
+        cburnt[:,:,bio.index("shr")] = cburnt[:,:,bio.index("gra")]
+        efire[:,:,bio.index("shr")] = \
+            0.85*efire[:,:,bio.index("gra")] \
+            + 0.15*efire[:,:,bio.index("for")]*cburnt[:,:,bio.index("gra")]/cburnt[:,:,bio.index("for")]
+        TMP = (cburnt[:,:,bio.index("for")] == 0)
+        efire[:,:,bio.index("shr")][TMP] = efire[:,:,bio.index("gra")][TMP]
+
 # if no crops in the model
 if (nb_biome > 1) & (np.sum(CBURNT_ctrl[:, :, bio.index("cro")]) == 0):
-    for sim in ["ctrl", "upct", "fxcl", "fdbk"]:
-        for VAR in ["CBURNT", "EFIRE"]:
-            exec(
-                VAR + "_" + sim + '[:,:,bio.index("cro")] = ' + VAR + "_" + sim + '[:,:,bio.index("gra")]')
+    for cburnt, efire in pairs:
+        for arr in [cburnt, efire]:
+            arr[:,:,bio.index("cro")] = arr[:,:,bio.index("gra")]
+
 # if no pastures in the model
 if (nb_biome > 1) & (np.sum(CBURNT_ctrl[:, :, bio.index("pas")]) == 0):
-    for sim in ["ctrl", "upct", "fxcl", "fdbk"]:
-        exec(
-            "CBURNT_" + sim + '[:,:,bio.index("pas")] = CBURNT_' + sim + '[:,:,bio.index("gra")]')
-        for VAR in ["EFIRE"]:
-            exec(
-                VAR
-                + "_"
-                + sim
-                + '[:,:,bio.index("pas")] = 0.60*'
-                + VAR
-                + "_"
-                + sim
-                + '[:,:,bio.index("gra")] + 0.40*'
-                + VAR
-                + "_"
-                + sim
-                + '[:,:,bio.index("des")]*CBURNT_'
-                + sim
-                + '[:,:,bio.index("gra")]/CBURNT_'
-                + sim
-                + '[:,:,bio.index("des")]'
-            )
-            exec("TMP = (CBURNT_" + sim + '[:,:,bio.index("des")] == 0)')
-            exec(
-                VAR + "_" + sim + '[:,:,bio.index("pas")][TMP] = ' + VAR + "_" + sim + '[:,:,bio.index("gra")][TMP]')
+    for cburnt, efire in pairs:
+        cburnt[:,:,bio.index("pas")] = cburnt[:,:,bio.index("gra")]
+        efire[:,:,bio.index("pas")] = \
+            0.60*efire[:,:,bio.index("gra")] \
+            + 0.40*efire[:,:,bio.index("des")]*cburnt[:,:,bio.index("gra")]/cburnt[:,:,bio.index("des")]
+        TMP = (cburnt[:,:,bio.index("des")] == 0)
+        efire[:,:,bio.index("pas")][TMP] = efire[:,:,bio.index("gra")][TMP]
+
 # if no urban in the model
-if (nb_biome > 1) & (np.sum(CBURNT_ctrl[:, :, bio.index("urb")]) == 0) & (
-        (mod_biomeURB == "URB") | mod_biomeV3):
-    for sim in ["ctrl", "upct", "fxcl", "fdbk"]:
-        for VAR in ["CBURNT", "EFIRE"]:
-            exec(
-                VAR + "_" + sim + '[:,:,bio.index("urb")] = ' + VAR + "_" + sim + '[:,:,bio.index("des")]')
+if (nb_biome > 1) & (np.sum(CBURNT_ctrl[:, :, bio.index("urb")]) == 0) & ((mod_biomeURB == "URB") | mod_biomeV3):
+    for cburnt, efire in pairs:
+        for arr in [cburnt, efire]:
+            arr[:,:,bio.index("urb")] = arr[:,:,bio.index("des")]
 
 # aggregate biomes
-for sim in ["ctrl", "upct", "fxcl", "fdbk"]:
-    for VAR in ["EFIRE", "CBURNT"]:
-        exec("TMP = " + VAR + "_" + sim + ".copy()")
-        exec(VAR + "_" + sim + " = np.zeros([140,nb_regionI,nb_biome], dtype=dty)")
-        for b in range(len(bio)):
-            exec(VAR + "_" + sim + "[:,:,biome_index[bio[b]]] += TMP[:,:,b]")
+for arr in [
+    CBURNT_ctrl, EFIRE_ctrl,
+    CBURNT_upct, EFIRE_upct,
+    CBURNT_fxcl, EFIRE_fxcl,
+    CBURNT_fdbk, EFIRE_fdbk,
+]:
+    TMP = arr.copy()
+    new = np.zeros([140, nb_regionI, nb_biome], dtype=dty)
+    for b in range(len(bio)):
+        new[:, :, biome_index[bio[b]]] += TMP[:, :, b]
+    arr.resize(new.shape, refcheck=False)
+    arr[:] = new
+
 # aggregate all experiments
 CO2_all = np.array(
     list(CO2_cmip5[150] * 1.01 ** np.arange(140))
@@ -1516,18 +1361,27 @@ CO2_all = np.array(
     + list(CO2_cmip5[150] * np.ones(140)),
     dtype=dty,
 )
-for VAR in ["EFIRE", "CBURNT"] + ["tas2", "pr2"]:
-    exec(
-        VAR + "_all = np.array(list(" + VAR + "_upct)+list(" + VAR + "_fxcl)+list(" + VAR + "_fdbk), dtype=dty)")
+
+EFIRE_all = np.array(list(EFIRE_upct) + list(EFIRE_fxcl) + list(EFIRE_fdbk), dtype=dty)
+CBURNT_all = np.array(list(CBURNT_upct) + list(CBURNT_fxcl) + list(CBURNT_fdbk), dtype=dty)
+tas2_all = np.array(list(tas2_upct) + list(tas2_fxcl) + list(tas2_fdbk), dtype=dty)
+pr2_all = np.array(list(pr2_upct) + list(pr2_fxcl) + list(pr2_fdbk), dtype=dty)
+
+
 # decadal means
-for VAR in ["EFIRE", "CBURNT"] + ["tas2", "pr2"]:
-    exec(
-        VAR + "_dec= np.zeros([3*(140-10)]+list(np.shape(" + VAR + "_all)[1:]), dtype=dty)")
+def decadal_mean(arr):
+    new = np.zeros([3 * (140 - 10)] + list(np.shape(arr)[1:]), dtype=dty)
     for t in range(130):
-        exec(VAR + "_dec[t,...] = np.mean(" + VAR + "_all[t:t+10,...],0)")
-        exec(VAR + "_dec[t+140-10,...] = np.mean(" + VAR + "_all[140+t:140+t+10,...],0)")
-        exec(
-            VAR + "_dec[t+2*140-2*10,...] = np.mean(" + VAR + "_all[2*140+t:2*140+t+10,...],0)")
+        new[t, ...] = np.mean(arr[t:t + 10, ...], 0)
+        new[t + 140 - 10, ...] = np.mean(arr[140 + t:140 + t + 10, ...], 0)
+        new[t + 2 * 140 - 2 * 10, ...] = np.mean(arr[2 * 140 + t:2 * 140 + t + 10, ...], 0)
+    return new
+
+
+EFIRE_dec = decadal_mean(EFIRE_all)
+CBURNT_dec = decadal_mean(CBURNT_all)
+tas2_dec = decadal_mean(tas2_all)
+pr2_dec = decadal_mean(pr2_all)
 
 # definition of parameters
 # sensitivity of ignition rate to climate {/ppm}&{/K}&{/mm}
@@ -1559,10 +1413,8 @@ for i in range(1, nb_regionI):
 
 
             first_guess = (ratio_dec[-131] - 1) / (CO2_dec[-131] - CO2_cmip5[150])
-            [gamma_igniC[i, b], gamma_igniT[i, b], gamma_igniP[i, b]] = fmin(err,
-                                                                             [first_guess,
-                                                                              0, 0],
-                                                                             disp=False)
+            [gamma_igniC[i, b], gamma_igniT[i, b], gamma_igniP[i, b]] = \
+                fmin(err, [first_guess, 0, 0], disp=False)
             gamma_igniT[i, b] = np.abs(gamma_igniT[i, b])
             gamma_igniP[i, b] = -np.abs(gamma_igniP[i, b])
 
@@ -1758,61 +1610,48 @@ bio = ["des", "for", "shr", "gra", "cro", "pas", "urb"]
 
 # load pre-processed TRENDY results for specified model
 # data related to preindustrial C-cycle
-for VAR in ["AGB", "BGB"]:
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open(
-                "data/WoodUse_TRENDYv2/#DATA.WoodUse_" + mod_ELUCagb + ".1910s_114reg1_7bio." + VAR + ".csv",
-                "r")
-        )],
-        dtype=dty,
-    )
-    exec(VAR + "_pi = np.zeros([nb_regionI,len(bio)], dtype=dty)")
+AGB_pi = np.zeros([nb_regionI, len(bio)], dtype=dty)
+BGB_pi = np.zeros([nb_regionI, len(bio)], dtype=dty)
+
+for arr, name in [(AGB_pi, "AGB"), (BGB_pi, "BGB")]:
+    path = f"data/WoodUse_TRENDYv2/#DATA.WoodUse_{mod_ELUCagb}.1910s_114reg1_7bio.{name}.csv"
+    TMP = load_data(path)
     for i in range(1, 114 + 1):
-        exec(VAR + "_pi[regionI_index[i],:] += TMP[i-1,:]")
+        arr[regionI_index[i], :] += TMP[i - 1, :]
 
 # complete with arbitrary values
 # if no shrubs in the model
-if (nb_biome > 1) & (np.sum((AGB_pi + BGB_pi)[:, bio.index("shr")]) == 0) & (
-        mod_biomeSHR == "SHR"):
-    for VAR in ["AGB", "BGB"]:
-        exec(
-            VAR
-            + '_pi[:,bio.index("shr")] = 0.85*'
-            + VAR
-            + '_pi[:,bio.index("gra")] + 0.15*'
-            + VAR
-            + '_pi[:,bio.index("for")]'
-        )
+if (nb_biome > 1) & (np.sum((AGB_pi + BGB_pi)[:, bio.index("shr")]) == 0) & (mod_biomeSHR == "SHR"):
+    for arr in [AGB_pi, BGB_pi]:
+        arr[:, bio.index("shr")] = 0.85 * arr[:, bio.index("gra")] + 0.15 * arr[:, bio.index("for")]
+
 # if no crops in the model
 if (nb_biome > 1) & (np.sum((AGB_pi + BGB_pi)[:, bio.index("cro")]) == 0):
-    for VAR in ["AGB", "BGB"]:
-        exec(VAR + '_pi[:,bio.index("cro")] = ' + VAR + '_pi[:,bio.index("gra")]')
+    for arr in [AGB_pi, BGB_pi]:
+        arr[:, bio.index("cro")] = arr[:, bio.index("gra")]
+
 # if no pastures in the model
 if (nb_biome > 1) & (np.sum((AGB_pi + BGB_pi)[:, bio.index("pas")]) == 0):
-    for VAR in ["AGB", "BGB"]:
-        exec(
-            VAR
-            + '_pi[:,bio.index("pas")] = 0.60*'
-            + VAR
-            + '_pi[:,bio.index("gra")] + 0.40*'
-            + VAR
-            + '_pi[:,bio.index("des")]'
-        )
+    for arr in [AGB_pi, BGB_pi]:
+        arr[:, bio.index("pas")] = 0.60 * arr[:, bio.index("gra")] + 0.40 * arr[:, bio.index("des")]
+
 # if no urban in the model
-if (nb_biome > 1) & (np.sum((AGB_pi + BGB_pi)[:, bio.index("urb")]) == 0) & (
-        (mod_biomeURB == "URB") | mod_biomeV3):
-    for VAR in ["AGB", "BGB"]:
-        exec(VAR + '_pi[:,bio.index("urb")] = ' + VAR + '_pi[:,bio.index("des")]')
+if (nb_biome > 1) & (np.sum((AGB_pi + BGB_pi)[:, bio.index("urb")]) == 0) & ((mod_biomeURB == "URB") | mod_biomeV3):
+    for arr in [AGB_pi, BGB_pi]:
+        arr[:, bio.index("urb")] = arr[:, bio.index("des")]
 
 # aggregate biomes
-for VAR in ["AGB", "BGB"]:
-    exec("TMP = " + VAR + "_pi.copy()")
-    exec(VAR + "_pi = np.zeros([nb_regionI,nb_biome], dtype=dty)")
-    for b in range(len(bio)):
-        exec(VAR + "_pi[:,biome_index[bio[b]]] += TMP[:,b]")
+TMP = AGB_pi.copy()
+new = np.zeros([nb_regionI, nb_biome], dtype=dty)
+for b in range(len(bio)):
+    new[:, biome_index[bio[b]]] += TMP[:, b]
+AGB_pi = new
+
+TMP = BGB_pi.copy()
+new = np.zeros([nb_regionI, nb_biome], dtype=dty)
+for b in range(len(bio)):
+    new[:, biome_index[bio[b]]] += TMP[:, b]
+BGB_pi = new
 
 # calculate preindustrial flux parameters
 p_AGB = AGB_pi / (AGB_pi + BGB_pi)
@@ -1829,18 +1668,19 @@ tau_shift = np.array([15], dtype=dty)
 # aggregation of fractions for wood-use {.}
 # (n=0) for slash; (n=1) for burnt; (n=2,3) for wood decay
 # base data from [Earles et al., 2012]
-for n in range(4):
-    exec("p_HWP" + str(n) + " = np.zeros([nb_regionI,nb_biome], dtype=dty)")
-TMP = np.array(
-    [line for line in csv.reader(
-        open("data/WoodUse_Earles/#DATA.WoodUse_Earles.2000s_114reg1_(4use).HWP.csv",
-             "r"))][
-    1:],
-    dtype=dty,
-)
+p_HWP0 = np.zeros([nb_regionI, nb_biome], dtype=dty)
+p_HWP1 = np.zeros([nb_regionI, nb_biome], dtype=dty)
+p_HWP2 = np.zeros([nb_regionI, nb_biome], dtype=dty)
+p_HWP3 = np.zeros([nb_regionI, nb_biome], dtype=dty)
+
+path = "data/WoodUse_Earles/#DATA.WoodUse_Earles.2000s_114reg1_(4use).HWP.csv"
+TMP = load_data(path, slice=1)
 for i in range(1, 114 + 1):
-    for n in range(4):
-        exec("p_HWP" + str(n) + "[regionI_index[i],:] += TMP[i-1,n]")
+    p_HWP0[regionI_index[i], :] += TMP[i - 1, 0]
+    p_HWP1[regionI_index[i], :] += TMP[i - 1, 1]
+    p_HWP2[regionI_index[i], :] += TMP[i - 1, 2]
+    p_HWP3[regionI_index[i], :] += TMP[i - 1, 3]
+
 # biomass-burning of non-merchantable AGB
 if mod_EHWPbb == "high":
     p_HWP1 += 0.5 * p_HWP0
@@ -1848,23 +1688,31 @@ if mod_EHWPbb == "high":
 elif mod_EHWPbb == "low":
     p_HWP1 += 0.0 * p_HWP0
     p_HWP0 -= 0.0 * p_HWP0
+
 # remove some products for some biomes
 if nb_biome > 1:
     for bio in ["des", "shr", "gra"]:
         p_HWP2[:, biome_index[bio]] = p_HWP3[:, biome_index[bio]] = 0
     for bio in ["cro", "pas"]:
-        p_HWP1[:, biome_index[bio]] = p_HWP2[:, biome_index[bio]] = p_HWP3[:,
-                                                                    biome_index[bio]] = 0
+        p_HWP1[:, biome_index[bio]] = p_HWP2[:, biome_index[bio]] = p_HWP3[:, biome_index[bio]] = 0
     if (mod_biomeURB == "URB") | mod_biomeV3:
-        p_HWP1[:, biome_index["urb"]] = p_HWP2[:, biome_index["urb"]] = p_HWP3[:,
-                                                                        biome_index[
-                                                                            "urb"]] = 0
+        p_HWP1[:, biome_index["urb"]] = p_HWP2[:, biome_index["urb"]] = p_HWP3[:biome_index["urb"]] = 0
+
 # normalize
 TMP = p_HWP0 + p_HWP1 + p_HWP2 + p_HWP3
 for n in range(4):
-    exec("p_HWP" + str(n) + " /= TMP")
-    exec("p_HWP" + str(n) + "[np.isinf(p_HWP" + str(n) + ")|np.isnan(p_HWP" + str(
-        n) + ")] = 0")
+    p_HWP0 /= TMP
+    p_HWP0[np.isinf(p_HWP0) | np.isnan(p_HWP0)] = 0
+
+    p_HWP1 /= TMP
+    p_HWP1[np.isinf(p_HWP1) | np.isnan(p_HWP1)] = 0
+
+    p_HWP2 /= TMP
+    p_HWP2[np.isinf(p_HWP2) | np.isnan(p_HWP2)] = 0
+
+    p_HWP3 /= TMP
+    p_HWP3[np.isinf(p_HWP3) | np.isnan(p_HWP3)] = 0
+
 p_HWP0 = 1 - p_HWP1 - p_HWP2 - p_HWP3
 
 # fraction of actually burnt HWP1 {}
@@ -1921,25 +1769,19 @@ elif mod_EHWPfct == "exp":
         HWP = np.exp(-np.arange(ind_final + 1) / tau)
         return np.array(HWP, dtype=dty)
 
+
 # IRF for wood product fluxes ratio {/yr}
-for N in ["1", "2", "3"]:
-    exec("r_HWP" + N + " = np.zeros([ind_final+1], dtype=dty)")
-    exec(
-        "r_HWP"
-        + N
-        + "[1:] = -(f_HWP(tau_HWP"
-        + N
-        + ")[1:]-f_HWP(tau_HWP"
-        + N
-        + ")[:-1])/(f_HWP(tau_HWP"
-        + N
-        + ")[1:]+f_HWP(tau_HWP"
-        + N
-        + ")[:-1])/0.5"
-    )
-    exec("r_HWP" + N + "[np.isnan(r_HWP" + N + ")|np.isinf(r_HWP" + N + ")] = 1")
-    # exec('r_HWP'+N+'[r_HWP'+N+'>1] = 1')
-    exec("r_HWP" + N + "[0] = 0")
+def make_rHWP(tau):
+    arr = np.zeros([ind_final + 1], dtype=dty)
+    arr[1:] = -(f_HWP(tau)[1:] - f_HWP(tau)[:-1]) / (f_HWP(tau)[1:] + f_HWP(tau)[:-1]) / 0.5
+    arr[np.isnan(arr) | np.isinf(arr)] = 1
+    arr[0] = 0
+    return arr
+
+
+r_HWP1 = make_rHWP(tau_HWP1)
+r_HWP2 = make_rHWP(tau_HWP3)
+r_HWP3 = make_rHWP(tau_HWP3)
 
 # -----------
 # 1.4.3. GFED
@@ -1949,50 +1791,40 @@ for N in ["1", "2", "3"]:
 bio = ["def", "for", "woo", "sav", "agr", "pea"]
 BIO = {"def": "for", "for": "for", "woo": "shr", "sav": "gra", "agr": "cro", "pea": "pea"}
 
+
 # load GFED v3.1 BB emissions {TgX/GtC}&{Tg/GtC}
 # from [Randerson et al., 2013]
-for VAR in ["CO2"] + ["CH4", "NOX", "CO", "VOC", "N2O", "SO2", "NH3", "BC", "OC"]:
-    exec("alpha_BB_" + VAR + " = np.zeros([nb_regionI,nb_biome], dtype=dty)")
+def load_alpha_BB(VAR):
+    arr = np.zeros([nb_regionI, nb_biome], dtype=dty)
     for b in range(len(bio) - 1):
-        if os.path.isfile(
-                "data/BioBurn_GFED/#DATA.BioBurn_GFED.1997-2011_114reg1.E" + VAR + "_" +
-                bio[b] + ".csv"):
-            TMP = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/BioBurn_GFED/#DATA.BioBurn_GFED.1997-2011_114reg1.E" + VAR + "_" +
-                        bio[b] + ".csv",
-                        "r",
-                    )
-                )],
-                dtype=dty,
-            )
+        path = f"data/BioBurn_GFED/#DATA.BioBurn_GFED.1997-2011_114reg1.E{VAR}_{bio[b]}.csv"
+        if os.path.isfile(path):
+            TMP = load_data(path)
             for i in range(1, 114 + 1):
-                exec(
-                    "alpha_BB_" + VAR + "[regionI_index[i],biome_index[BIO[bio[b]]]] += np.sum(TMP[:,i-1])")
+                arr[regionI_index[i], biome_index[BIO[bio[b]]]] += np.sum(TMP[:, i - 1])
+
                 # set pastures and baresoil as grasslands
                 if bio[b] == "sav":
-                    exec(
-                        "alpha_BB_" + VAR + '[regionI_index[i],biome_index["des"]] += np.sum(TMP[:,i-1])')
-                    exec(
-                        "alpha_BB_" + VAR + '[regionI_index[i],biome_index["pas"]] += np.sum(TMP[:,i-1])')
-for VAR in ["CH4", "NOX", "CO", "VOC", "N2O", "SO2", "NH3", "BC", "OC"] + ["CO2"]:
-    exec("alpha_BB_" + VAR + " /= alpha_BB_CO2")
-    exec(
-        "alpha_BB_" + VAR + "[np.isnan(alpha_BB_" + VAR + ")|np.isinf(alpha_BB_" + VAR + ")] = 0")
+                    arr[regionI_index[i], biome_index["des"]] += np.sum(TMP[:, i - 1])
+                    arr[regionI_index[i], biome_index["pas"]] += np.sum(TMP[:, i - 1])
+    return arr
+
+
+alpha_BB_CO2 = load_alpha_BB("CO2")
+alpha_BB_CH4 = load_alpha_BB("CH4")
+alpha_BB_NOX = load_alpha_BB("NOX")
+alpha_BB_CO = load_alpha_BB("CO")
+alpha_BB_VOC = load_alpha_BB("VOC")
+alpha_BB_N2O = load_alpha_BB("N2O")
+alpha_BB_SO2 = load_alpha_BB("SO2")
+alpha_BB_NH3 = load_alpha_BB("NH3")
+alpha_BB_BC = load_alpha_BB("BC")
+alpha_BB_OC = load_alpha_BB("OC")
+
+for arr in [alpha_BB_CH4, alpha_BB_NOX, alpha_BB_CO, alpha_BB_VOC, alpha_BB_N2O, alpha_BB_SO2, alpha_BB_NH3,
+            alpha_BB_BC, alpha_BB_OC, alpha_BB_CO2]:
+    arr /= alpha_BB_CO2
+    arr[np.isnan(arr) | np.isinf(arr)] = 0
     for b in range(nb_biome):
-        exec(
-            "alpha_BB_"
-            + VAR
-            + "[:,b][alpha_BB_"
-            + VAR
-            + "[:,b]==0] = np.sum(alpha_BB_"
-            + VAR
-            + "[:,b])/np.sum(alpha_BB_"
-            + VAR
-            + "[:,b]!=0)"
-        )
-    exec(
-        "alpha_BB_" + VAR + "[np.isnan(alpha_BB_" + VAR + ")|np.isinf(alpha_BB_" + VAR + ")] = 0")
+        arr[:, b][arr[:, b] == 0] = np.sum(arr[:, b]) / np.sum(arr[:, b] != 0)
+    arr[np.isnan(arr) | np.isinf(arr)] = 0
