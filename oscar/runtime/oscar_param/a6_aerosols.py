@@ -1,8 +1,13 @@
-import csv
-
-import numpy as np
 from scipy.optimize import fmin
 
+from .a1_carbon import load_data
+from ..oscar_data import *
+from ...config import dty, mod_POAconv, mod_SO4regsat, mod_POAregsat, mod_BCregsat, \
+    mod_POAload, mod_BCload, mod_NO3load, mod_SOAload, mod_DUSTload, mod_SALTload, \
+    mod_SO4load
+from scipy.optimize import fmin
+
+from .a1_carbon import load_data
 from ..oscar_data import *
 from ...config import dty, mod_POAconv, mod_SO4regsat, mod_POAregsat, mod_BCregsat, \
     mod_POAload, mod_BCload, mod_NO3load, mod_SOAload, mod_DUSTload, mod_SALTload, \
@@ -112,323 +117,244 @@ prd = {
     "rcp85": "2006-2100",
 }
 
+
 # load pre-processed ACCMIP/CMIP5 results for specified model
 # sulfate
-for sim in ["hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
-    for VAR in ["ESO2", "EDMS", "SO4"] + ["tas"]:
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/AeroChem_ACCMIP/#DATA.AeroChem_"
-                    + mod_SO4load
-                    + "."
-                    + prd[sim]
-                    + "."
-                    + sim
-                    + "_"
-                    + VAR
-                    + ".csv",
-                    "r",
-                )
-            )],
-            dtype=dty,
-        )
-        exec(VAR + "_" + sim + "S = TMP[:,0].copy()")
-for VAR in ["ESO2", "EDMS", "SO4"] + ["tas"]:
-    exec(
-        VAR
-        + "_allS = np.array(list("
-        + VAR
-        + "_histS)+list("
-        + VAR
-        + "_histS)+list("
-        + VAR
-        + "_histS)+list("
-        + VAR
-        + "_histS)+list("
-        + VAR
-        + "_rcp26S)+list("
-        + VAR
-        + "_rcp45S)+list("
-        + VAR
-        + "_rcp60S)+list("
-        + VAR
-        + "_rcp85S), dtype=dty)"
-    )
+def load_accmip(var, sim):
+    path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{mod_SO4load}.{prd[sim]}.{sim}_{var}.csv"
+    return load_data(path).copy()
+
+ESO2_histS = load_accmip('ESO2', 'hist')
+EDMS_histS = load_accmip('EDMS', 'hist')
+SO4_histS = load_accmip('SO4', 'hist')
+tas_histS = load_accmip('tas', 'hist')
+ESO2_rcp26S = load_accmip('ESO2', 'rcp26')
+EDMS_rcp26S = load_accmip('EDMS', 'rcp26')
+SO4_rcp26S = load_accmip('SO4', 'rcp26')
+tas_rcp26S = load_accmip('tas', 'rcp26')
+ESO2_rcp45S = load_accmip('ESO2', 'rcp45')
+EDMS_rcp45S = load_accmip('EDMS', 'rcp45')
+SO4_rcp45S = load_accmip('SO4', 'rcp45')
+tas_rcp45S = load_accmip('tas', 'rcp45')
+ESO2_rcp60S = load_accmip('ESO2', 'rcp60')
+EDMS_rcp60S = load_accmip('EDMS', 'rcp60')
+SO4_rcp60S = load_accmip('SO4', 'rcp60')
+tas_rcp60S = load_accmip('tas', 'rcp60')
+ESO2_rcp85S = load_accmip('ESO2', 'rcp85')
+EDMS_rcp85S = load_accmip('EDMS', 'rcp85')
+SO4_rcp85S = load_accmip('SO4', 'rcp85')
+tas_rcp85S = load_accmip('tas', 'rcp85')
+
+ESO2_allS = np.array(list(ESO2_histS)+list(ESO2_histS)+list(ESO2_histS)+list(ESO2_histS)+list(ESO2_rcp26S)+list(ESO2_rcp45S)+list(ESO2_rcp60S)+list(ESO2_rcp85S), dtype=dty)
+EDMS_allS = np.array(list(EDMS_histS)+list(EDMS_histS)+list(EDMS_histS)+list(EDMS_histS)+list(EDMS_rcp26S)+list(EDMS_rcp45S)+list(EDMS_rcp60S)+list(EDMS_rcp85S), dtype=dty)
+SO4_allS = np.array(list(SO4_histS)+list(SO4_histS)+list(SO4_histS)+list(SO4_histS)+list(SO4_rcp26S)+list(SO4_rcp45S)+list(SO4_rcp60S)+list(SO4_rcp85S), dtype=dty)
+tas_allS = np.array(list(tas_histS)+list(tas_histS)+list(tas_histS)+list(tas_histS)+list(tas_rcp26S)+list(tas_rcp45S)+list(tas_rcp60S)+list(tas_rcp85S), dtype=dty)
 
 # primary organic aerosols
-for sim in ["hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
-    for VAR in ["EOM", "EOMBB", "POA"] + ["tas"]:
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/AeroChem_ACCMIP/#DATA.AeroChem_"
-                    + mod_POAload
-                    + "."
-                    + prd[sim]
-                    + "."
-                    + sim
-                    + "_"
-                    + VAR
-                    + ".csv",
-                    "r",
-                )
-            )],
-            dtype=dty,
-        )
-        exec(VAR + "_" + sim + "P = TMP[:,0].copy()")
-for VAR in ["EOM", "EOMBB", "POA"] + ["tas"]:
-    exec(
-        VAR
-        + "_allP = np.array(list("
-        + VAR
-        + "_histP)+list("
-        + VAR
-        + "_histP)+list("
-        + VAR
-        + "_histP)+list("
-        + VAR
-        + "_histP)+list("
-        + VAR
-        + "_rcp26P)+list("
-        + VAR
-        + "_rcp45P)+list("
-        + VAR
-        + "_rcp60P)+list("
-        + VAR
-        + "_rcp85P), dtype=dty)"
-    )
+def load_organic_aero_chem(sim, VAR):
+    path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{mod_POAload}.{prd[sim]}.{sim}_{VAR}.csv"
+    TMP = load_data(path)
+    return TMP[:,0].copy()
+
+
+EOM_histP = load_organic_aero_chem('hist', 'EOM')
+EOMBB_histP = load_organic_aero_chem('hist', 'EOMBB')
+POA_histP = load_organic_aero_chem('hist', 'POA')
+tas_histP = load_organic_aero_chem('hist', 'tas')
+EOM_rcp26P = load_organic_aero_chem('rcp26', 'EOM')
+EOMBB_rcp26P = load_organic_aero_chem('rcp26', 'EOMBB')
+POA_rcp26P = load_organic_aero_chem('rcp26', 'POA')
+tas_rcp26P = load_organic_aero_chem('rcp26', 'tas')
+EOM_rcp45P = load_organic_aero_chem('rcp45', 'EOM')
+EOMBB_rcp45P = load_organic_aero_chem('rcp45', 'EOMBB')
+POA_rcp45P = load_organic_aero_chem('rcp45', 'POA')
+tas_rcp45P = load_organic_aero_chem('rcp45', 'tas')
+EOM_rcp60P = load_organic_aero_chem('rcp60', 'EOM')
+EOMBB_rcp60P = load_organic_aero_chem('rcp60', 'EOMBB')
+POA_rcp60P = load_organic_aero_chem('rcp60', 'POA')
+tas_rcp60P = load_organic_aero_chem('rcp60', 'tas')
+EOM_rcp85P = load_organic_aero_chem('rcp85', 'EOM')
+EOMBB_rcp85P = load_organic_aero_chem('rcp85', 'EOMBB')
+POA_rcp85P = load_organic_aero_chem('rcp85', 'POA')
+tas_rcp85P = load_organic_aero_chem('rcp85', 'tas')
+
+
+EOM_allP = np.array(list(EOM_histP)+list(EOM_histP)+list(EOM_histP)+list(EOM_histP)+list(EOM_rcp26P)+list(EOM_rcp45P)+list(EOM_rcp60P)+list(EOM_rcp85P), dtype=dty)
+EOMBB_allP = np.array(list(EOMBB_histP)+list(EOMBB_histP)+list(EOMBB_histP)+list(EOMBB_histP)+list(EOMBB_rcp26P)+list(EOMBB_rcp45P)+list(EOMBB_rcp60P)+list(EOMBB_rcp85P), dtype=dty)
+POA_allP = np.array(list(POA_histP)+list(POA_histP)+list(POA_histP)+list(POA_histP)+list(POA_rcp26P)+list(POA_rcp45P)+list(POA_rcp60P)+list(POA_rcp85P), dtype=dty)
+tas_allP = np.array(list(tas_histP)+list(tas_histP)+list(tas_histP)+list(tas_histP)+list(tas_rcp26P)+list(tas_rcp45P)+list(tas_rcp60P)+list(tas_rcp85P), dtype=dty)
 
 # black carbon
-for sim in ["hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
-    for VAR in ["EBC", "EBCBB", "BC"] + ["tas"]:
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/AeroChem_ACCMIP/#DATA.AeroChem_"
-                    + mod_BCload
-                    + "."
-                    + prd[sim]
-                    + "."
-                    + sim
-                    + "_"
-                    + VAR
-                    + ".csv",
-                    "r",
-                )
-            )],
-            dtype=dty,
-        )
-        exec(VAR + "_" + sim + "B = TMP[:,0].copy()")
-for VAR in ["EBC", "EBCBB", "BC"] + ["tas"]:
-    exec(
-        VAR
-        + "_allB = np.array(list("
-        + VAR
-        + "_histB)+list("
-        + VAR
-        + "_histB)+list("
-        + VAR
-        + "_histB)+list("
-        + VAR
-        + "_histB)+list("
-        + VAR
-        + "_rcp26B)+list("
-        + VAR
-        + "_rcp45B)+list("
-        + VAR
-        + "_rcp60B)+list("
-        + VAR
-        + "_rcp85B), dtype=dty)"
-    )
+# for sim in ["hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
+#     for VAR in ["EBC", "EBCBB", "BC"] + ["tas"]:
+#         print(f'{VAR}_{sim}B = load_black_carbon({sim!r}, {VAR!r})')
+
+
+def load_black_carbon(sim, VAR):
+    path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{mod_BCload}.{prd[sim]}.{sim}_{VAR}.csv"
+    TMP = load_data(path)
+    return TMP[:,0].copy()
+
+EBC_histB = load_black_carbon('hist', 'EBC')
+EBCBB_histB = load_black_carbon('hist', 'EBCBB')
+BC_histB = load_black_carbon('hist', 'BC')
+tas_histB = load_black_carbon('hist', 'tas')
+EBC_rcp26B = load_black_carbon('rcp26', 'EBC')
+EBCBB_rcp26B = load_black_carbon('rcp26', 'EBCBB')
+BC_rcp26B = load_black_carbon('rcp26', 'BC')
+tas_rcp26B = load_black_carbon('rcp26', 'tas')
+EBC_rcp45B = load_black_carbon('rcp45', 'EBC')
+EBCBB_rcp45B = load_black_carbon('rcp45', 'EBCBB')
+BC_rcp45B = load_black_carbon('rcp45', 'BC')
+tas_rcp45B = load_black_carbon('rcp45', 'tas')
+EBC_rcp60B = load_black_carbon('rcp60', 'EBC')
+EBCBB_rcp60B = load_black_carbon('rcp60', 'EBCBB')
+BC_rcp60B = load_black_carbon('rcp60', 'BC')
+tas_rcp60B = load_black_carbon('rcp60', 'tas')
+EBC_rcp85B = load_black_carbon('rcp85', 'EBC')
+EBCBB_rcp85B = load_black_carbon('rcp85', 'EBCBB')
+BC_rcp85B = load_black_carbon('rcp85', 'BC')
+tas_rcp85B = load_black_carbon('rcp85', 'tas')
+
+EBC_allB = np.array(list(EBC_histB)+list(EBC_histB)+list(EBC_histB)+list(EBC_histB)+list(EBC_rcp26B)+list(EBC_rcp45B)+list(EBC_rcp60B)+list(EBC_rcp85B), dtype=dty)
+EBCBB_allB = np.array(list(EBCBB_histB)+list(EBCBB_histB)+list(EBCBB_histB)+list(EBCBB_histB)+list(EBCBB_rcp26B)+list(EBCBB_rcp45B)+list(EBCBB_rcp60B)+list(EBCBB_rcp85B), dtype=dty)
+BC_allB = np.array(list(BC_histB)+list(BC_histB)+list(BC_histB)+list(BC_histB)+list(BC_rcp26B)+list(BC_rcp45B)+list(BC_rcp60B)+list(BC_rcp85B), dtype=dty)
+tas_allB = np.array(list(tas_histB)+list(tas_histB)+list(tas_histB)+list(tas_histB)+list(tas_rcp26B)+list(tas_rcp45B)+list(tas_rcp60B)+list(tas_rcp85B), dtype=dty)
 
 # nitrate
 if not mod_NO3load in ["Bellouin2011", "Hauglustaine2014"]:
-    for sim in ["hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
-        for VAR in ["ENOX", "ENH3", "NO3"] + ["tas2"]:
-            TMP = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/AeroChem_ACCMIP/#DATA.AeroChem_"
-                        + mod_NO3load
-                        + "."
-                        + prd[sim]
-                        + "."
-                        + sim
-                        + "_"
-                        + VAR
-                        + ".csv",
-                        "r",
-                    )
-                )],
-                dtype=dty,
-            )
-            exec(VAR + "_" + sim + "N = TMP[:,0].copy()")
-    for VAR in ["ENOX", "ENH3", "NO3"] + ["tas2"]:
-        exec(
-            VAR
-            + "_allN = np.array(list("
-            + VAR
-            + "_histN)+list("
-            + VAR
-            + "_histN)+list("
-            + VAR
-            + "_histN)+list("
-            + VAR
-            + "_histN)+list("
-            + VAR
-            + "_rcp26N)+list("
-            + VAR
-            + "_rcp45N)+list("
-            + VAR
-            + "_rcp60N)+list("
-            + VAR
-            + "_rcp85N), dtype=dty)"
-        )
+    # for sim in ["hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
+    #     for VAR in ["ENOX", "ENH3", "NO3"] + ["tas2"]:
+    #         print(f'{VAR}_{sim}N = load_nitrate({sim!r}, {VAR!r})')
+
+
+    def load_nitrate(sim, VAR):
+        path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{mod_NO3load}.{prd[sim]}.{sim}_{VAR}.csv"
+        TMP = load_data(path)
+        return TMP[:,0].copy()
+
+    ENOX_histN = load_nitrate('hist', 'ENOX')
+    ENH3_histN = load_nitrate('hist', 'ENH3')
+    NO3_histN = load_nitrate('hist', 'NO3')
+    tas2_histN = load_nitrate('hist', 'tas2')
+    ENOX_rcp26N = load_nitrate('rcp26', 'ENOX')
+    ENH3_rcp26N = load_nitrate('rcp26', 'ENH3')
+    NO3_rcp26N = load_nitrate('rcp26', 'NO3')
+    tas2_rcp26N = load_nitrate('rcp26', 'tas2')
+    ENOX_rcp45N = load_nitrate('rcp45', 'ENOX')
+    ENH3_rcp45N = load_nitrate('rcp45', 'ENH3')
+    NO3_rcp45N = load_nitrate('rcp45', 'NO3')
+    tas2_rcp45N = load_nitrate('rcp45', 'tas2')
+    ENOX_rcp60N = load_nitrate('rcp60', 'ENOX')
+    ENH3_rcp60N = load_nitrate('rcp60', 'ENH3')
+    NO3_rcp60N = load_nitrate('rcp60', 'NO3')
+    tas2_rcp60N = load_nitrate('rcp60', 'tas2')
+    ENOX_rcp85N = load_nitrate('rcp85', 'ENOX')
+    ENH3_rcp85N = load_nitrate('rcp85', 'ENH3')
+    NO3_rcp85N = load_nitrate('rcp85', 'NO3')
+    tas2_rcp85N = load_nitrate('rcp85', 'tas2')
+
+    ENOX_allN = np.array(list(ENOX_histN)+list(ENOX_histN)+list(ENOX_histN)+list(ENOX_histN)+list(ENOX_rcp26N)+list(ENOX_rcp45N)+list(ENOX_rcp60N)+list(ENOX_rcp85N), dtype=dty)
+    ENH3_allN = np.array(list(ENH3_histN)+list(ENH3_histN)+list(ENH3_histN)+list(ENH3_histN)+list(ENH3_rcp26N)+list(ENH3_rcp45N)+list(ENH3_rcp60N)+list(ENH3_rcp85N), dtype=dty)
+    NO3_allN = np.array(list(NO3_histN)+list(NO3_histN)+list(NO3_histN)+list(NO3_histN)+list(NO3_rcp26N)+list(NO3_rcp45N)+list(NO3_rcp60N)+list(NO3_rcp85N), dtype=dty)
+    tas2_allN = np.array(list(tas2_histN)+list(tas2_histN)+list(tas2_histN)+list(tas2_histN)+list(tas2_rcp26N)+list(tas2_rcp45N)+list(tas2_rcp60N)+list(tas2_rcp85N), dtype=dty)
 
 # secondary organic aerosols
 if mod_SOAload != "":
-    for sim in ["hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
-        for VAR in ["EVOC", "EBVOC", "SOA"] + ["tas2"]:
-            TMP = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/AeroChem_ACCMIP/#DATA.AeroChem_"
-                        + mod_SOAload
-                        + "."
-                        + prd[sim]
-                        + "."
-                        + sim
-                        + "_"
-                        + VAR
-                        + ".csv",
-                        "r",
-                    )
-                )],
-                dtype=dty,
-            )
-            exec(VAR + "_" + sim + "Q = TMP[:,0].copy()")
-    for VAR in ["EVOC", "EBVOC", "SOA"] + ["tas2"]:
-        exec(
-            VAR
-            + "_allQ = np.array(list("
-            + VAR
-            + "_histQ)+list("
-            + VAR
-            + "_histQ)+list("
-            + VAR
-            + "_histQ)+list("
-            + VAR
-            + "_histQ)+list("
-            + VAR
-            + "_rcp26Q)+list("
-            + VAR
-            + "_rcp45Q)+list("
-            + VAR
-            + "_rcp60Q)+list("
-            + VAR
-            + "_rcp85Q), dtype=dty)"
-        )
+    # for sim in ["hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
+    #     for VAR in ["EVOC", "EBVOC", "SOA"] + ["tas2"]:
+    #         print(f'{VAR}_{sim}Q = load_secondary_aerosols({sim!r}, {VAR!r})')
+
+    def load_secondary_aerosols(sim, VAR):
+        path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{mod_SOAload}.{prd[sim]}.{sim}_{VAR}.csv"
+        TMP = load_data(path)
+        return TMP[:,0].copy()
+
+    EVOC_histQ = load_secondary_aerosols('hist', 'EVOC')
+    EBVOC_histQ = load_secondary_aerosols('hist', 'EBVOC')
+    SOA_histQ = load_secondary_aerosols('hist', 'SOA')
+    tas2_histQ = load_secondary_aerosols('hist', 'tas2')
+    EVOC_rcp26Q = load_secondary_aerosols('rcp26', 'EVOC')
+    EBVOC_rcp26Q = load_secondary_aerosols('rcp26', 'EBVOC')
+    SOA_rcp26Q = load_secondary_aerosols('rcp26', 'SOA')
+    tas2_rcp26Q = load_secondary_aerosols('rcp26', 'tas2')
+    EVOC_rcp45Q = load_secondary_aerosols('rcp45', 'EVOC')
+    EBVOC_rcp45Q = load_secondary_aerosols('rcp45', 'EBVOC')
+    SOA_rcp45Q = load_secondary_aerosols('rcp45', 'SOA')
+    tas2_rcp45Q = load_secondary_aerosols('rcp45', 'tas2')
+    EVOC_rcp60Q = load_secondary_aerosols('rcp60', 'EVOC')
+    EBVOC_rcp60Q = load_secondary_aerosols('rcp60', 'EBVOC')
+    SOA_rcp60Q = load_secondary_aerosols('rcp60', 'SOA')
+    tas2_rcp60Q = load_secondary_aerosols('rcp60', 'tas2')
+    EVOC_rcp85Q = load_secondary_aerosols('rcp85', 'EVOC')
+    EBVOC_rcp85Q = load_secondary_aerosols('rcp85', 'EBVOC')
+    SOA_rcp85Q = load_secondary_aerosols('rcp85', 'SOA')
+    tas2_rcp85Q = load_secondary_aerosols('rcp85', 'tas2')
+
+    EVOC_allQ = np.array(list(EVOC_histQ)+list(EVOC_histQ)+list(EVOC_histQ)+list(EVOC_histQ)+list(EVOC_rcp26Q)+list(EVOC_rcp45Q)+list(EVOC_rcp60Q)+list(EVOC_rcp85Q), dtype=dty)
+    EBVOC_allQ = np.array(list(EBVOC_histQ)+list(EBVOC_histQ)+list(EBVOC_histQ)+list(EBVOC_histQ)+list(EBVOC_rcp26Q)+list(EBVOC_rcp45Q)+list(EBVOC_rcp60Q)+list(EBVOC_rcp85Q), dtype=dty)
+    SOA_allQ = np.array(list(SOA_histQ)+list(SOA_histQ)+list(SOA_histQ)+list(SOA_histQ)+list(SOA_rcp26Q)+list(SOA_rcp45Q)+list(SOA_rcp60Q)+list(SOA_rcp85Q), dtype=dty)
+    tas2_allQ = np.array(list(tas2_histQ)+list(tas2_histQ)+list(tas2_histQ)+list(tas2_histQ)+list(tas2_rcp26Q)+list(tas2_rcp45Q)+list(tas2_rcp60Q)+list(tas2_rcp85Q), dtype=dty)
 
 # mineral dusts
-for sim in ["hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
-    for VAR in ["EDUST", "DUST"] + ["tas"]:
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/AeroChem_ACCMIP/#DATA.AeroChem_"
-                    + mod_DUSTload
-                    + "."
-                    + prd[sim]
-                    + "."
-                    + sim
-                    + "_"
-                    + VAR
-                    + ".csv",
-                    "r",
-                )
-            )],
-            dtype=dty,
-        )
-        exec(VAR + "_" + sim + "D = TMP[:,0].copy()")
-for VAR in ["EDUST", "DUST"] + ["tas"]:
-    exec(
-        VAR
-        + "_allD = np.array(list("
-        + VAR
-        + "_histD)+list("
-        + VAR
-        + "_histD)+list("
-        + VAR
-        + "_histD)+list("
-        + VAR
-        + "_histD)+list("
-        + VAR
-        + "_rcp26D)+list("
-        + VAR
-        + "_rcp45D)+list("
-        + VAR
-        + "_rcp60D)+list("
-        + VAR
-        + "_rcp85D), dtype=dty)"
-    )
+# for sim in ["hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
+#     for VAR in ["EDUST", "DUST"] + ["tas"]:
+#         print(f'{VAR}_{sim}D = load_mineral_dusts({sim!r}, {VAR!r})')
+
+
+def load_mineral_dusts(sim, VAR):
+    path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{mod_DUSTload}.{prd[sim]}.{sim}_{VAR}.csv"
+    return load_data(path)[:, 0].copy()
+
+EDUST_histD = load_mineral_dusts('hist', 'EDUST')
+DUST_histD = load_mineral_dusts('hist', 'DUST')
+tas_histD = load_mineral_dusts('hist', 'tas')
+EDUST_rcp26D = load_mineral_dusts('rcp26', 'EDUST')
+DUST_rcp26D = load_mineral_dusts('rcp26', 'DUST')
+tas_rcp26D = load_mineral_dusts('rcp26', 'tas')
+EDUST_rcp45D = load_mineral_dusts('rcp45', 'EDUST')
+DUST_rcp45D = load_mineral_dusts('rcp45', 'DUST')
+tas_rcp45D = load_mineral_dusts('rcp45', 'tas')
+EDUST_rcp60D = load_mineral_dusts('rcp60', 'EDUST')
+DUST_rcp60D = load_mineral_dusts('rcp60', 'DUST')
+tas_rcp60D = load_mineral_dusts('rcp60', 'tas')
+EDUST_rcp85D = load_mineral_dusts('rcp85', 'EDUST')
+DUST_rcp85D = load_mineral_dusts('rcp85', 'DUST')
+tas_rcp85D = load_mineral_dusts('rcp85', 'tas')
+
+EDUST_allD = np.array(list(EDUST_histD)+list(EDUST_histD)+list(EDUST_histD)+list(EDUST_histD)+list(EDUST_rcp26D)+list(EDUST_rcp45D)+list(EDUST_rcp60D)+list(EDUST_rcp85D), dtype=dty)
+DUST_allD = np.array(list(DUST_histD)+list(DUST_histD)+list(DUST_histD)+list(DUST_histD)+list(DUST_rcp26D)+list(DUST_rcp45D)+list(DUST_rcp60D)+list(DUST_rcp85D), dtype=dty)
+tas_allD = np.array(list(tas_histD)+list(tas_histD)+list(tas_histD)+list(tas_histD)+list(tas_rcp26D)+list(tas_rcp45D)+list(tas_rcp60D)+list(tas_rcp85D), dtype=dty)
 
 # sea salts
-for sim in ["hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
-    for VAR in ["ESALT", "SALT"] + ["tas3"]:
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/AeroChem_ACCMIP/#DATA.AeroChem_"
-                    + mod_SALTload
-                    + "."
-                    + prd[sim]
-                    + "."
-                    + sim
-                    + "_"
-                    + VAR
-                    + ".csv",
-                    "r",
-                )
-            )],
-            dtype=dty,
-        )
-        exec(VAR + "_" + sim + "T = TMP[:,0].copy()")
-for VAR in ["ESALT", "SALT"] + ["tas3"]:
-    exec(
-        VAR
-        + "_allT = np.array(list("
-        + VAR
-        + "_histT)+list("
-        + VAR
-        + "_histT)+list("
-        + VAR
-        + "_histT)+list("
-        + VAR
-        + "_histT)+list("
-        + VAR
-        + "_rcp26T)+list("
-        + VAR
-        + "_rcp45T)+list("
-        + VAR
-        + "_rcp60T)+list("
-        + VAR
-        + "_rcp85T), dtype=dty)"
-    )
+# for sim in ["hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
+#     for VAR in ["ESALT", "SALT"] + ["tas3"]:
+#         print(f'{VAR}_{sim}T = load_sea_salts({sim!r}, {VAR!r})')
+
+
+def load_sea_salts(sim, VAR):
+    path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{mod_SALTload}.{prd[sim]}.{sim}_{VAR}.csv"
+    return load_data(path)[:, 0].copy()
+
+ESALT_histT = load_sea_salts('hist', 'ESALT')
+SALT_histT = load_sea_salts('hist', 'SALT')
+tas3_histT = load_sea_salts('hist', 'tas3')
+ESALT_rcp26T = load_sea_salts('rcp26', 'ESALT')
+SALT_rcp26T = load_sea_salts('rcp26', 'SALT')
+tas3_rcp26T = load_sea_salts('rcp26', 'tas3')
+ESALT_rcp45T = load_sea_salts('rcp45', 'ESALT')
+SALT_rcp45T = load_sea_salts('rcp45', 'SALT')
+tas3_rcp45T = load_sea_salts('rcp45', 'tas3')
+ESALT_rcp60T = load_sea_salts('rcp60', 'ESALT')
+SALT_rcp60T = load_sea_salts('rcp60', 'SALT')
+tas3_rcp60T = load_sea_salts('rcp60', 'tas3')
+ESALT_rcp85T = load_sea_salts('rcp85', 'ESALT')
+SALT_rcp85T = load_sea_salts('rcp85', 'SALT')
+tas3_rcp85T = load_sea_salts('rcp85', 'tas3')
+
+ESALT_allT = np.array(list(ESALT_histT)+list(ESALT_histT)+list(ESALT_histT)+list(ESALT_histT)+list(ESALT_rcp26T)+list(ESALT_rcp45T)+list(ESALT_rcp60T)+list(ESALT_rcp85T), dtype=dty)
+SALT_allT = np.array(list(SALT_histT)+list(SALT_histT)+list(SALT_histT)+list(SALT_histT)+list(SALT_rcp26T)+list(SALT_rcp45T)+list(SALT_rcp60T)+list(SALT_rcp85T), dtype=dty)
+tas3_allT = np.array(list(tas3_histT)+list(tas3_histT)+list(tas3_histT)+list(tas3_histT)+list(tas3_rcp26T)+list(tas3_rcp45T)+list(tas3_rcp60T)+list(tas3_rcp85T), dtype=dty)
 
 # definition of parameters
 # lifetimes of sulfate precursors {yr}

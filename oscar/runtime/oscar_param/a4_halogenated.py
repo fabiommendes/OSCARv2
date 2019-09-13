@@ -4,6 +4,7 @@ import os
 import numpy as np
 
 from ..oscar_data import *
+from .a1_carbon import load_data
 from .a2_methane import scale_OH
 from ..oscar_data import HFC, PFC, ODS, nb_HFC, nb_PFC, nb_ODS
 from ...config import dty
@@ -29,27 +30,15 @@ alpha_ODS = 0.1765 * np.array(
 
 # historic HaloC from IPCC-AR5 {ppt}
 # from [IPCC WG1, 2013] (annexe 2)
-nb = {
-    "HFC": nb_HFC,
-    "PFC": nb_PFC,
-    "ODS": nb_ODS,
-}
 for VAR in ["HFC", "PFC", "ODS"]:
-    exec(VAR + "_ipcc = np.ones([311+1,nb_" + VAR + "], dtype=dty) * np.nan")
+    HFC_ipcc = np.ones([311+1,nb_HFC], dtype=dty) * np.nan
+    PFC_ipcc = np.ones([311+1,nb_PFC], dtype=dty) * np.nan
+    ODS_ipcc = np.ones([311+1,nb_ODS], dtype=dty) * np.nan
 
 for VAR in HFC:
-    if os.path.isfile(
-            "data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1940-2011." + VAR + ".csv"):
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1940-2011." + VAR + ".csv",
-                    "r")
-            )],
-            dtype=dty,
-        )
+    path = f"data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1940-2011.{VAR}.csv"
+    if os.path.isfile(path):
+        TMP = load_data(path)
         HFC_ipcc[240:, HFC.index(VAR)] = TMP[:, 0]
 
 for VAR in PFC:
@@ -84,8 +73,9 @@ for VAR in ODS:
 
 # historic HaloC from CMIP5 {ppt}
 # from [Meinshausen et al., 2011]
-for VAR in ["HFC", "PFC", "ODS"]:
-    exec(VAR + "_cmip5 = np.ones([305+1,nb_" + VAR + "], dtype=dty) * np.nan")
+HFC_cmip5 = np.ones([305+1,nb_HFC], dtype=dty) * np.nan
+PFC_cmip5 = np.ones([305+1,nb_PFC], dtype=dty) * np.nan
+ODS_cmip5 = np.ones([305+1,nb_ODS], dtype=dty) * np.nan
 
 for VAR in HFC:
     if os.path.isfile(
@@ -128,8 +118,9 @@ for VAR in ODS:
 
 # preindustrial HaloC concentrations {ppt}
 # from [IPCC WG1, 2013] (annexe 2) and [Meinshausen et al., 2011]
-for VAR in ["HFC", "PFC", "ODS"]:
-    exec(VAR + "_0 = np.zeros([nb_" + VAR + "], dtype=dty)")
+HFC_0 = np.zeros([nb_HFC], dtype=dty)
+PFC_0 = np.zeros([nb_PFC], dtype=dty)
+ODS_0 = np.zeros([nb_ODS], dtype=dty)
 PFC_0[PFC.index("CF4")] = 35.0
 ODS_0[ODS.index("CH3Br")] = 5.8
 ODS_0[ODS.index("CH3Cl")] = 480.0

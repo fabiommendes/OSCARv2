@@ -232,7 +232,7 @@ w_reg_VOC /= w_reg_VOC[0]
 # load pre-processed ACCMIP results for specified model
 # for sensitivity to emissions
 if mod_O3Temis != "mean-OxComp":
-    for var in ["O3t", "CH4", "ECO", "EVOC", "ENOX"]:
+    def load_ozoe(var):
         TMP = np.array(
             [
                 line
@@ -250,7 +250,13 @@ if mod_O3Temis != "mean-OxComp":
                     "data/OzoChem_ACCMIP/#DATA.OzoChem_" + mod_O3Temis + ".2000s_(6exp)." + var + ".csv",
                     "r")
             )][0]
-        exec(var + "_ozoe = TMP[0,:]")
+        return TMP[0,:]
+
+    O3t_ozoe = load_ozoe("O3t")
+    CH4_ozoe = load_ozoe("CH4")
+    ECO_ozoe = load_ozoe("ECO")
+    EVOC_ozoe = load_ozoe("EVOC")
+    ENOX_ozoe = load_ozoe("ENOX")
 
 # setting of parameters
 # based on ACCMIP
@@ -290,18 +296,11 @@ elif mod_O3Temis == "mean-OxComp":
 # load pre-processed ACCMIP results for specified model
 # for sensitivity to climate
 if mod_O3Tclim != "":
-    for var in ["O3t", "tas"]:
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/OzoChem_ACCMIP/#DATA.OzoChem_" + mod_O3Tclim + ".2000s_(4exp)." + var + ".csv",
-                    "r")
-            )][1:],
-            dtype=dty,
-        )
-        exec(var + "_ozoc = TMP[0,:]")
+    TMP = load_data(f"data/OzoChem_ACCMIP/#DATA.OzoChem_{mod_O3Tclim}.2000s_(4exp).O3t.csv", slice=1)
+    O3t_ozoc = TMP[0,:]
+
+    TMP = load_data(f"data/OzoChem_ACCMIP/#DATA.OzoChem_{mod_O3Tclim}.2000s_(4exp).tas.csv", slice=1)
+    tas_ozoc = TMP[0, :]
 
 # definition of parameter
 # sensitivity of tropospheric O3 to climate change {DU/K}
@@ -568,7 +567,7 @@ EESC_0 = np.sum(f_fracrel(tau_lag) * (n_Cl + alpha_Br * n_Br) * ODS_0)
 # surface temperature trend from CCMVal2
 # load pre-processed CCMVal2 results for specified model
 for var in ["ta2"]:
-    exec(var + "_atm = np.zeros([2099-1961+1], dtype=dty)")
+    ta2_atm = np.zeros([2099-1961+1], dtype=dty)
     TMP = np.array(
         [
             line
@@ -580,7 +579,8 @@ for var in ["ta2"]:
         )][1:],
         dtype=dty,
     )
-    exec(var + "_atm[:] = TMP[:,0]")
+    ta2_atm[:] = TMP[:,0]
+
 # fit of linear yearly trend
 ta_trend = np.array([0], dtype=dty)
 diff = ta2_atm[:] - np.mean(ta2_atm[:10])

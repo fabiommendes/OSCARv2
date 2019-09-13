@@ -1,11 +1,9 @@
-import csv
-
-import numpy as np
 from scipy.optimize import fmin
 
 from ..oscar_data import *
 from ..oscar_data import nb_ODS, ODS
 from ...config import dty, mod_HVSNKtau, mod_HVSNKtrans, mod_HVSNKcirc
+from .a1_carbon import load_data
 
 ##################################################
 #   3. NITROUS OXIDE
@@ -130,15 +128,16 @@ for VAR in ODS:
     EESC_hv[ODS.index(VAR)] = TMP[45, :]
 EESC_hv0[ODS.index("CH3Br")] = 5.8
 EESC_hv0[ODS.index("CH3Cl")] = 480.0
+
 #  fractional releases from [Newman et al., 2007]
-for VAR in ["EESC_hv", "EESC_hv0"]:
-    exec(
-        VAR
-        + " *= np.array([0.47,0.23,0.29,0.12,0.05,0.56,0.67,0.13,0.08,0.01,0.62,0.62,0.28,0.65,0.60,0.44], dtype=dty)"
-    )
-    exec(
-        VAR + " *= np.array([3,2,3,2,1,4,3,1,2,1,1+60*1,0+60*2,0+60*1,0+60*2,0+60*1,1], dtype=dty)")
-    exec(VAR + " = np.sum(" + VAR + ")")
+for arr in [EESC_hv, EESC_hv0]:
+    arr *= np.array([0.47, 0.23, 0.29, 0.12, 0.05, 0.56, 0.67, 0.13, 0.08, 0.01, 0.62, 0.62, 0.28, 0.65, 0.60, 0.44],
+                    dtype=dty)
+    arr *= np.array([3, 2, 3, 2, 1, 4, 3, 1, 2, 1, 1 + 60 * 1, 0 + 60 * 2, 0 + 60 * 1, 0 + 60 * 2, 0 + 60 * 1, 1],
+                    dtype=dty)
+
+EESC_hv = np.sum(EESC_hv)
+EESC_hv0 = np.sum(EESC_hv0)
 
 # sensitivity of strato sink to N2O, ODSs and age-of-air
 # from [Prather et al., 2015] (table 3)
@@ -238,20 +237,12 @@ def df_hv(D_N2O, D_EESC, D_gst):
 # --------------
 
 # load pre-processed CCMVal2 results for specified model
-for var in ["age", "ta"]:
-    exec(var + "_atm = np.zeros([2099-1961+1], dtype=dty)")
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open(
-                "data/Atmosphere_CCMVal2/#DATA.Atmosphere_" + mod_HVSNKcirc + ".1961-2099_(1lvl)." + var + ".csv",
-                "r",
-            )
-        )][1:],
-        dtype=dty,
-    )
-    exec(var + "_atm[:] = TMP[:,0]")
+age_atm = np.zeros([2099 - 1961 + 1], dtype=dty)
+ta_atm = np.zeros([2099 - 1961 + 1], dtype=dty)
+for VAR, arr in [('age', age_atm), ('ta', ta_atm)]:
+    path = f"data/Atmosphere_CCMVal2/#DATA.Atmosphere_{mod_HVSNKcirc}.1961-2099_(1lvl).{VAR}.csv"
+    TMP = load_data(path, slice=1)
+    arr[:] = TMP[:, 0]
 
 # definition of parameter
 # sensitivity of stratospheric lag to temperature {./K}

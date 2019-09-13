@@ -1,9 +1,5 @@
-import csv
-
-import numpy as np
-
+from .a1_carbon import CO2_0, CO2_cmip5, load_data
 from ..oscar_data import *
-from .a1_carbon import CO2_0, CO2_cmip5
 from ..oscar_data import nb_regionI, regionI_index, nb_biome, biome_index
 from ...config import dty, mod_LSNKcover, mod_OHSNKtau, mod_OHSNKtrans, mod_OHSNKfct, \
     mod_EWETpreind, mod_AWETtrans, mod_EPFmethane
@@ -22,44 +18,25 @@ alpha_CH4 = 0.1765 * np.array([12.0], dtype=dty)
 # historic CH4 from IPCC-AR5 {ppb}
 # from [IPCC WG1, 2013] annexe 2
 CH4_ipcc = np.ones([311 + 1], dtype=dty) * np.nan
-TMP = np.array(
-    [line for line in csv.reader(
-        open("data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1750-2011.CH4.csv", "r"))],
-    dtype=dty,
-)
+TMP = load_data("data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1750-2011.CH4.csv")
 CH4_ipcc[50:] = TMP[:, 0]
 CH4_0 = np.array([CH4_ipcc[50]], dtype=dty)
 
 # historic CH4 from CMIP5 {ppb}
 # from [Meinshausen et al., 2011]
 CH4_cmip5 = np.ones([305 + 1], dtype=dty) * np.nan
-TMP = np.array(
-    [line for line in
-     csv.reader(open("data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.CH4.csv", "r"))],
-    dtype=dty
-)
+TMP = load_data("data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.CH4.csv")
 CH4_cmip5[65:] = TMP[:, 0]
 
 # historic CH4 from AGAGE {ppb}
 # from [Prinn et al., 2013] updated from the website
 CH4_agage = np.ones([313 + 1], dtype=dty) * np.nan
-TMP = np.array(
-    [line for line in csv.reader(
-        open("data/HistAtmo_AGAGE/#DATA.HistAtmo_AGAGE.1987-2013.CH4_global.csv", "r"))],
-    dtype=dty,
-)
+TMP = load_data("data/HistAtmo_AGAGE/#DATA.HistAtmo_AGAGE.1987-2013.CH4_global.csv")
 CH4_agage[287:] = TMP[:, 0]
 
 # historic CH4 from Law Dome ice cores {ppm}
 # from [Etheridge et al., 1998] and [MacFarling Meure et al., 2006]
-CH4_lawdome = np.array(
-    [
-        line
-        for line in csv.reader(open(
-        "data/HistAtmo_NOAA-NCDC/#DATA.HistAtmo_NOAA-NCDC.(IceCores).CH4_lawdome.csv",
-        "r"))][1:],
-    dtype=dty,
-)
+CH4_lawdome = load_data("data/HistAtmo_NOAA-NCDC/#DATA.HistAtmo_NOAA-NCDC.(IceCores).CH4_lawdome.csv", slice=1)
 
 # load RCP concentrations {ppb}
 # from [Meinshausen et al., 2011]
@@ -67,12 +44,7 @@ CH4_rcp = np.ones([800 + 1, 6], dtype=dty) * np.nan
 n = -1
 for rcp in ["rcp26", "rcp45", "rcp60", "rcp85", "rcp45to26", "rcp60to45"]:
     n += 1
-    TMP = np.array(
-        [line for line in csv.reader(
-            open("data/Scenario_ECP/#DATA.Scenario_ECP.2000-2500." + rcp + "_CH4.csv",
-                 "r"))],
-        dtype=dty,
-    )
+    TMP = load_data(f"data/Scenario_ECP/#DATA.Scenario_ECP.2000-2500.{rcp}_CH4.csv")
     CH4_rcp[300:, n] = TMP[:, 0]
 
 # ==============
@@ -527,69 +499,43 @@ bio = ["des", "for", "shr", "gra", "cro", "pas"]
 # load pre-processed WETCHIMP results for specified model
 # preindustrial partition of wetlands
 mod_LSNKcover_save = mod_LSNKcover
-for VAR in ["AREA"]:
-    globals()[VAR + "_wet"] = np.zeros([nb_regionI, nb_biome], dtype=dty)
-    if mod_EWETpreind != "":
-        for mod_LSNKcover in [
-            "ESA-CCI",
-            "MODIS",
-            "Ramankutty1999",
-            "Levavasseur2012",
-            "mean-TRENDYv2",
-            "CLM-45",
-            "JSBACH",
-            "JULES",
-            "LPJ",
-            "LPJ-GUESS",
-            "LPX-Bern",
-            "OCN",
-            "ORCHIDEE",
-            "VISIT", ]:
-            TMP = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/Wetlands_WETCHIMP/#DATA.Wetlands_"
-                        + mod_EWETpreind
-                        + "_"
-                        + mod_LSNKcover
-                        + ".1910s_114reg1_4bio."
-                        + VAR
-                        + ".csv",
-                        "r",
-                    )
-                )],
-                dtype=dty,
-            )
-            for i in range(1, 114 + 1):
-                for b in range(len(bio) - 2):
-                    globals()[VAR + "_wet"][regionI_index[i], biome_index[bio[b]]] += \
-                        TMP[i - 1, b]
+cover_options = [
+    "ESA-CCI",
+    "MODIS",
+    "Ramankutty1999",
+    "Levavasseur2012",
+    "mean-TRENDYv2",
+    "CLM-45",
+    "JSBACH",
+    "JULES",
+    "LPJ",
+    "LPJ-GUESS",
+    "LPX-Bern",
+    "OCN",
+    "ORCHIDEE",
+    "VISIT",
+]
+AREA_wet = np.zeros([nb_regionI, nb_biome], dtype=dty)
+if mod_EWETpreind != "":
+    for mod_LSNKcover in cover_options:
+        path = f"data/Wetlands_WETCHIMP/#DATA.Wetlands_{mod_EWETpreind}_{mod_LSNKcover}.1910s_114reg1_4bio.AREA.csv"
+        TMP = load_data(path)
+        for i in range(1, 114 + 1):
+            for b in range(len(bio) - 2):
+                AREA_wet[regionI_index[i], biome_index[bio[b]]] += TMP[i - 1, b]
+
 mod_LSNKcover = mod_LSNKcover_save
 del mod_LSNKcover_save
 
 # preindustrial area and emissions
-for VAR in ["AREA", "ECH4"]:
-    exec(VAR + "_wet0 = np.zeros([nb_regionI], dtype=dty)")
+AREA_wet0 = np.zeros([nb_regionI], dtype=dty)
+ECH4_wet0 = np.zeros([nb_regionI], dtype=dty)
+for VAR, arr in [("AREA", AREA_wet0), ("ECH4", ECH4_wet0)]:
     if mod_EWETpreind != "":
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/Wetlands_WETCHIMP/#DATA.Wetlands_"
-                    + mod_EWETpreind
-                    + ".1910s_114reg1_(1exp)."
-                    + VAR
-                    + ".csv",
-                    "r",
-                )
-            )][1:],
-            dtype=dty,
-        )
+        TMP = load_data(f"data/Wetlands_WETCHIMP/#DATA.Wetlands_{mod_EWETpreind}.1910s_114reg1_(1exp).{VAR}.csv",
+                        slice=1)
         for i in range(1, 114 + 1):
-            exec(VAR + "_wet0[regionI_index[i]] += TMP[i-1,0]")
+            arr[regionI_index[i]] += TMP[i - 1, 0]
 
 # calculate preindustrial parameters {TgC/Mha}&{Mha}&{.}
 # with arbitrary adjustment of areal emissions
@@ -597,47 +543,31 @@ ewet_0 = ECH4_wet0 / AREA_wet0 * CO2_0 / np.mean(CO2_cmip5[201:231])
 ewet_0[np.isnan(ewet_0) | np.isinf(ewet_0)] = 0
 AWET_0 = AREA_wet0.copy()
 p_wet = AREA_wet / np.sum(AREA_wet, 1)[:, np.newaxis]
+
 # ensure NaN and zeros removed
-for var in ["ewet_0", "p_wet"]:
-    exec(var + "[np.isnan(" + var + ")|np.isinf(" + var + ")] = 0")
+ewet_0[np.isnan(ewet_0) | np.isinf(ewet_0)] = 0
+p_wet[np.isnan(p_wet) | np.isinf(p_wet)] = 0
 p_wet[p_wet == 0] = 1e-18
 p_wet /= np.sum(p_wet, 1)[:, np.newaxis]
 
+
 # load pre-processed WETCHIMP results for specified model
 # response to perturbation experiments
-for sim in ["exp0", "expC", "expT", "expP"]:
-    for VAR in ["AREA"]:
-        exec(VAR + "_" + sim + " = np.zeros([nb_regionI], dtype=dty)")
-        if mod_AWETtrans != "":
-            TMP = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/Wetlands_WETCHIMP/#DATA.Wetlands_"
-                        + mod_AWETtrans
-                        + ".1910s_114reg1_(4exp)."
-                        + VAR
-                        + ".csv",
-                        "r",
-                    )
-                )][1:],
-                dtype=dty,
-            )
-            lgd = [
-                line
-                for line in csv.reader(
-                    open(
-                        "data/Wetlands_WETCHIMP/#DATA.Wetlands_"
-                        + mod_AWETtrans
-                        + ".1910s_114reg1_(4exp)."
-                        + VAR
-                        + ".csv",
-                        "r",
-                    )
-                )][0]
-            for i in range(1, 114 + 1):
-                exec(VAR + "_" + sim + "[regionI_index[i]] += TMP[i-1,lgd.index(sim)]")
+def wetchimp(sim):
+    arr = np.zeros([nb_regionI], dtype=dty)
+    if mod_AWETtrans != "":
+        TMP = load_data(f"data/Wetlands_WETCHIMP/#DATA.Wetlands_{mod_AWETtrans}.1910s_114reg1_(4exp).AREA.csv", slice=1)
+        path = f"data/Wetlands_WETCHIMP/#DATA.Wetlands_{mod_AWETtrans}.1910s_114reg1_(4exp).AREA.csv"
+        lgd = [line for line in csv.reader(open(path, "r"))][0]
+        for i in range(1, 114 + 1):
+            arr[regionI_index[i]] += TMP[i - 1, lgd.index(sim)]
+    return arr
+
+
+AREA_exp0 = wetchimp("exp0")
+AREA_expC = wetchimp("expC")
+AREA_expT = wetchimp("expT")
+AREA_expP = wetchimp("expP")
 
 # value of perturbations
 # see [Melton et al., 2013]
@@ -645,16 +575,8 @@ CO2_expC = 857.0 - 303.0
 T_expT = 3.4
 P_expP = np.zeros([nb_regionI], dtype=dty)
 S_tmp = np.zeros([nb_regionI], dtype=dty)
-TMP = np.array(
-    [line for line in csv.reader(
-        open("data/HistLand_CRU/#DATA.HistLand_CRU.1901-2014_114reg1.lyp.csv", "r"))],
-    dtype=dty,
-)
-TMP2 = np.array(
-    [line for line in csv.reader(
-        open("data/HistLand_CRU/#DATA.HistLand_CRU.1901-2014_114reg1.AREA.csv", "r"))],
-    dtype=dty,
-)
+TMP = load_data("data/HistLand_CRU/#DATA.HistLand_CRU.1901-2014_114reg1.lyp.csv")
+TMP2 = load_data("data/HistLand_CRU/#DATA.HistLand_CRU.1901-2014_114reg1.AREA.csv")
 for i in range(1, 114 + 1):
     P_expP[regionI_index[i]] += np.mean(TMP[:30, i - 1] * TMP2[:30, i - 1], 0)
     S_tmp[regionI_index[i]] += np.mean(TMP2[:30, i - 1], 0)
@@ -670,8 +592,9 @@ gamma_wetT = (AREA_expT / AREA_exp0 - 1) / T_expT
 # sensitivity of wetland extent to precipitation {./mm}
 gamma_wetP = (AREA_expP / AREA_exp0 - 1) / P_expP
 # [NaN]
-for var in ["wetT", "wetP", "wetC"]:
-    exec("gamma_" + var + "[np.isnan(gamma_" + var + ")|np.isinf(gamma_" + var + ")] = 0")
+gamma_wetT[np.isnan(gamma_wetT) | np.isinf(gamma_wetT)] = 0
+gamma_wetP[np.isnan(gamma_wetP) | np.isinf(gamma_wetP)] = 0
+gamma_wetC[np.isnan(gamma_wetC) | np.isinf(gamma_wetC)] = 0
 
 # -----------------
 # 2.3.2. Permafrost
