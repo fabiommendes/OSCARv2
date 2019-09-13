@@ -313,21 +313,26 @@ if (scen_LULCC[:3] == "RCP") & (ind_final > ind_cdiac):
 # ==================
 
 # datasets mixed following various criteria
-for VAR in ["LUC", "HARV", "SHIFT"]:
+for arr, arrproj in [
+    (LUC, LUCproj),
+    (HARV, HARVproj),
+    (SHIFT, SHIFTproj),
+]:
 
     # stop emissions
     if (scen_LULCC == "stop") & (ind_final > ind_cdiac):
-        exec(VAR + "[ind_cdiac+1:,...] = 0")
+        arr[ind_cdiac+1:,...] = 0
 
     # constant emissions
     elif (scen_LULCC == "cst") & (ind_final > ind_cdiac):
-        exec(VAR + "[ind_cdiac+1:,...] = " + VAR + "[ind_cdiac,...][np.newaxis,...]")
+        arr[ind_cdiac+1:,...] = arr[ind_cdiac,...][np.newaxis,...]
 
         # RCP scenarios
     # always raw discontinuity
     elif (scen_LULCC[:3] == "RCP") & (ind_final > ind_cdiac):
-        exec(VAR + "[ind_cdiac+1:,...] = " + VAR + "proj[ind_cdiac+1:,...]")
+        arr[ind_cdiac+1:,...] = arrproj[ind_cdiac+1:,...]
 
-# delete individual datasets
-for VAR in ["LUC", "HARV", "SHIFT"]:
-    exec("del " + VAR + "proj")
+# Delete individual datasets
+del LUCproj
+del HARVproj
+del SHIFTproj

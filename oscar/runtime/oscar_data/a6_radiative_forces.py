@@ -1,6 +1,6 @@
-from ...config import dty, data_RFant, scen_RFant, data_RFnat, scen_RFnat
 from .a1_regions import ind_final, nb_regionJ, nb_kind, nb_sector, kindRF_index
 from .a2_greenhouse import ind_cdiac
+from ...config import dty, data_RFant, scen_RFant, data_RFnat, scen_RFnat
 
 print("LOADING: DRIVERS")
 
@@ -11,9 +11,6 @@ print("LOADING: DRIVERS")
 import csv
 
 import numpy as np
-
-
-
 
 ##################################################
 #   5. RADIATIVE FORCING

@@ -165,9 +165,12 @@ for x in range(len(lgd)):
 # ========
 
 # initialization of projected drivers
-for VAR in ["HFC", "PFC", "ODS"]:
-    exec(
-        "E" + VAR + "proj = np.zeros([ind_final+1,nb_regionJ,nb_sector,nb_kind,nb_regionI,nb_" + VAR + "], dtype=dty)")
+EHFCproj = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_HFC],
+                    dtype=dty)
+EPFCproj = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_PFC],
+                    dtype=dty)
+EODSproj = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_ODS],
+                    dtype=dty)
 
 # projection of emissions under RCP scenarios
 # from [Meinshausen et al., 2011]
@@ -290,290 +293,135 @@ if (scen_Ehalo[:3] == "RCP") & (ind_final > ind_cdiac):
 # =================
 
 # datasets mixed following trends
-for VAR in ["HFC", "PFC", "ODS"]:
 
-    if VAR in ["HFC"]:
+# with EDGAR as reference
+if data_Ehalo == "EDGAR":
+    EHFCpast = EHFCedgar.copy()
+    # follow EDGAR-FT variations after 2008
+    for t in range(ind_edgar + 1, ind_cdiac + 1):
+        EHFCpast[t,...] = EHFCpast[t-1,...] * EHFCeft[t,...]/EHFCeft[t-1,...]
+        EHFCpast[np.isnan(EHFCpast)|np.isinf(EHFCpast)] = 0
+        EHFCpast[t,...] *= np.sum(EHFCpast[t-1,...])/np.sum(EHFCpast[t,...]) * np.sum(EHFCeft[t,...])/np.sum(EHFCeft[t-1,...])
+    EHFCpast[np.isnan(EHFCpast)|np.isinf(EHFCpast)] = 0
+    # quadratic extrapolation before 1970
+    # starting year of emission based on [Meinshausen et al., 2011]
+    for x in range(nb_HFC):
+        if HFC[x] == "HFC23":
+            for t in range(230, 270):
+                EHFCpast[t,...,x] = EHFCpast[270,...,x] * ((t-230)/(270-230.))**2
 
-        # with EDGAR as reference
-        if data_Ehalo == "EDGAR":
-            exec("E" + VAR + "past = E" + VAR + "edgar.copy()")
-            # follow EDGAR-FT variations after 2008
-            for t in range(ind_edgar + 1, ind_cdiac + 1):
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] = E"
-                    + VAR
-                    + "past[t-1,...] * E"
-                    + VAR
-                    + "eft[t,...]/E"
-                    + VAR
-                    + "eft[t-1,...]"
-                )
-                exec(
-                    "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] *= np.sum(E"
-                    + VAR
-                    + "past[t-1,...])/np.sum(E"
-                    + VAR
-                    + "past[t,...]) * np.sum(E"
-                    + VAR
-                    + "eft[t,...])/np.sum(E"
-                    + VAR
-                    + "eft[t-1,...])"
-                )
-            exec(
-                "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-            # quadratic extrapolation before 1970
-            # starting year of emission based on [Meinshausen et al., 2011]
-            for x in range(nb_HFC):
-                if HFC[x] == "HFC23":
-                    for t in range(230, 270):
-                        exec(
-                            "E" + VAR + "past[t,...,x] = E" + VAR + "past[270,...,x] * ((t-230)/(270-230.))**2")
+VAR = "PFC"
+# with EDGAR as reference
+if data_Ehalo == "EDGAR":
+    EPFCpast = EPFCedgar.copy()
+    # follow EDGAR-FT variations after 2008
+    for t in range(ind_edgar + 1, ind_cdiac + 1):
+        EPFCpast[t,...] = EPFCpast[t-1,...] * EPFCeft[t,...]/EPFCeft[t-1,...]
+        EPFCpast[np.isnan(EPFCpast)|np.isinf(EPFCpast)] = 0
+        EPFCpast[t,...] *= np.sum(EPFCpast[t-1,...])/np.sum(EPFCpast[t,...]) * np.sum(EPFCeft[t,...])/np.sum(EPFCeft[t-1,...])
+    EPFCpast[np.isnan(EPFCpast)|np.isinf(EPFCpast)] = 0
+    # quadratic extrapolation before 1970
+    # starting year of emission based on [Meinshausen et al., 2011]
+    for x in range(nb_PFC):
+        if PFC[x] == "SF6":
+            for t in range(250, 270):
+                EPFCpast[t,...,x] = EPFCpast[270,...,x] * ((t-250.)/(270-250.))**2
+        elif PFC[x] == "CF4":
+            for t in range(222, 270):
+                EPFCpast[t,...,x] = EPFCpast[270,...,x] * ((t-222.)/(270-222.))**2
+        elif PFC[x] == "C2F6":
+            for t in range(189, 270):
+                EPFCpast[t,...,x] = EPFCpast[270,...,x] * ((t-189)/(270-189.))**2
 
-    elif VAR in ["PFC"]:
+# with CMIP5 as reference
+if data_Ehalo == data_Ehalo:  # FIXME: is this so?
+    EODSpast = EODScmip5.copy()
+    # linear extrapolation before 1765
+    for t in range(50, 65):
+        EODSpast[t, ...] = EODSpast[65, ...] * (t - 50) / float(65 - 50)
 
-        # with EDGAR as reference
-        if data_Ehalo == "EDGAR":
-            exec("E" + VAR + "past = E" + VAR + "edgar.copy()")
-            # follow EDGAR-FT variations after 2008
-            for t in range(ind_edgar + 1, ind_cdiac + 1):
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] = E"
-                    + VAR
-                    + "past[t-1,...] * E"
-                    + VAR
-                    + "eft[t,...]/E"
-                    + VAR
-                    + "eft[t-1,...]"
-                )
-                exec(
-                    "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] *= np.sum(E"
-                    + VAR
-                    + "past[t-1,...])/np.sum(E"
-                    + VAR
-                    + "past[t,...]) * np.sum(E"
-                    + VAR
-                    + "eft[t,...])/np.sum(E"
-                    + VAR
-                    + "eft[t-1,...])"
-                )
-            exec(
-                "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-            # quadratic extrapolation before 1970
-            # starting year of emission based on [Meinshausen et al., 2011]
-            for x in range(nb_PFC):
-                if PFC[x] == "SF6":
-                    for t in range(250, 270):
-                        exec(
-                            "E" + VAR + "past[t,...,x] = E" + VAR + "past[270,...,x] * ((t-250.)/(270-250.))**2")
-                elif PFC[x] == "CF4":
-                    for t in range(222, 270):
-                        exec(
-                            "E" + VAR + "past[t,...,x] = E" + VAR + "past[270,...,x] * ((t-222.)/(270-222.))**2")
-                elif PFC[x] == "C2F6":
-                    for t in range(189, 270):
-                        exec(
-                            "E" + VAR + "past[t,...,x] = E" + VAR + "past[270,...,x] * ((t-189)/(270-189.))**2")
-
-    elif VAR in ["ODS"]:
-
-        # with CMIP5 as reference
-        if data_Ehalo == data_Ehalo:  # FIXME: is this so?
-            exec("E" + VAR + "past = E" + VAR + "cmip5.copy()")
-            # linear extrapolation before 1765
-            for t in range(50, 65):
-                exec(
-                    "E" + VAR + "past[t,...] = E" + VAR + "past[65,...] * (t-50)/float(65-50)")
-
-    # cut past dataset to right length
-    exec("E" + VAR + "[:min(ind_cdiac,ind_final)+1,...] = E" + VAR + "past[:min(ind_cdiac,ind_final)+1,...]")
+# cut past dataset to right length
+EHFC[:min(ind_cdiac, ind_final) + 1, ...] = EHFCpast[:min(ind_cdiac, ind_final) + 1, ...]
+EPFC[:min(ind_cdiac, ind_final) + 1, ...] = EPFCpast[:min(ind_cdiac, ind_final) + 1, ...]
+EODS[:min(ind_cdiac, ind_final) + 1, ...] = EODSpast[:min(ind_cdiac, ind_final) + 1, ...]
 
 # ==================
 # 3.B. FINAL DATASET
 # ==================
 
 # datasets mixed following various criteria
-for VAR in ["HFC", "PFC", "ODS"]:
+for arr, arrproj in [
+    (EHFC, EHFCproj),
+    (EPFC, EPFCproj),
+    (EODS, EODSproj),
+]:
 
     # stop emissions
     if (scen_Ehalo == "stop") & (ind_final > ind_cdiac):
-        exec("E" + VAR + "[ind_cdiac+1:,...] = 0")
+        arr[ind_cdiac+1:,...] = 0
 
     # constant emissions
     elif (scen_Ehalo == "cst") & (ind_final > ind_cdiac):
-        exec(
-            "E" + VAR + "[ind_cdiac+1:,...] = E" + VAR + "[ind_cdiac,...][np.newaxis,...]")
+        arr[ind_cdiac+1:,...] = arr[ind_cdiac,...][np.newaxis,...]
 
         # RCP scenarios
     elif (scen_Ehalo[:3] == "RCP") & (ind_final > ind_cdiac):
 
         # raw discontinuity
         if mod_DATAscen == "raw":
-            exec("E" + VAR + "[ind_cdiac+1:,...] = E" + VAR + "proj[ind_cdiac+1:,...]")
+            arr[ind_cdiac+1:,...] = arrproj[ind_cdiac+1:,...]
 
         # offset at transition point
         elif mod_DATAscen == "offset":
-            exec(
-                "E"
-                + VAR
-                + "[ind_cdiac+1:,...] = E"
-                + VAR
-                + "proj[ind_cdiac+1:,...] - E"
-                + VAR
-                + "proj[ind_cdiac,...] + E"
-                + VAR
-                + "[ind_cdiac,...]"
-            )
+            arr[ind_cdiac+1:,...] = arrproj[ind_cdiac+1:,...] - arrproj[ind_cdiac,...] + arr[ind_cdiac,...]
             for t in range(ind_cdiac + 1, ind_final + 1):
-                exec("def_regI = bool(np.sum(E" + VAR + "proj[t,:,...,1:]))")
-                exec("def_regJ = bool(np.sum(E" + VAR + "proj[t,1:,...,:]))")
+                def_regI = bool(np.sum(arrproj[t,:,...,1:]))
+                def_regJ = bool(np.sum(arrproj[t,1:,...,:]))
                 if not def_regI:
-                    exec("E" + VAR + "[t,:,...,0] += np.sum(E" + VAR + "[t,:,...,1:],-1)")
-                    exec("E" + VAR + "[t,:,...,1:] = 0")
+                    arr[t,:,...,0] += np.sum(arr[t,:,...,1:],-1)
+                    arr[t,:,...,1:] = 0
                 if not def_regJ:
-                    exec("E" + VAR + "[t,0,...,:] += np.sum(E" + VAR + "[t,1:,...,:],0)")
-                    exec("E" + VAR + "[t,1:,...,:] = 0")
+                    arr[t,0,...,:] += np.sum(arr[t,1:,...,:],0)
+                    arr[t,1:,...,:] = 0
 
                     # linear transition over N years
         elif mod_DATAscen[:6] == "smooth":
             N = int(mod_DATAscen[6:])
             if ind_final >= ind_cdiac + N:
                 for t in range(ind_cdiac + 1, ind_cdiac + N):
-                    exec(
-                        "E"
-                        + VAR
-                        + "[t,...] = (1-(t-ind_cdiac)/float(N)) * E"
-                        + VAR
-                        + "[ind_cdiac,...] + (t-ind_cdiac)/float(N) * E"
-                        + VAR
-                        + "proj[ind_cdiac+N,...]"
-                    )
-                    exec("def_regI = bool(np.sum(E" + VAR + "proj[t,:,...,1:]))")
-                    exec("def_regJ = bool(np.sum(E" + VAR + "proj[t,1:,...,:]))")
+                    arr[t,...] = (1-(t-ind_cdiac)/float(N)) * arr[ind_cdiac,...] + (t-ind_cdiac)/float(N) * arrproj[ind_cdiac+N,...]
+                    def_regI = bool(np.sum(arrproj[t,:,...,1:]))
+                    def_regJ = bool(np.sum(arrproj[t,1:,...,:]))
                     if not def_regI:
-                        exec(
-                            "E" + VAR + "[t,:,...,0] += np.sum(E" + VAR + "[t,:,...,1:],-1)")
-                        exec("E" + VAR + "[t,:,...,1:] = 0")
+                        arr[t,:,...,0] += np.sum(arr[t,:,...,1:],-1)
+                        arr[t,:,...,1:] = 0
                     if not def_regJ:
-                        exec(
-                            "E" + VAR + "[t,0,...,:] += np.sum(E" + VAR + "[t,1:,...,:],0)")
-                        exec("E" + VAR + "[t,1:,...,:] = 0")
-                exec(
-                    "E" + VAR + "[ind_cdiac+N:,...] = E" + VAR + "proj[ind_cdiac+N:,...]")
+                        arr[t,0,...,:] += np.sum(arr[t,1:,...,:],0)
+                        arr[t,1:,...,:] = 0
+                arr[ind_cdiac+N:,...] = arrproj[ind_cdiac+N:,...]
 
         # follow trends of projection
         elif mod_DATAscen == "trends":
             for t in range(ind_cdiac + 1, ind_final + 1):
-                exec("def_regI = bool(np.sum(E" + VAR + "proj[t,:,...,1:]))")
-                exec("def_regJ = bool(np.sum(E" + VAR + "proj[t,1:,...,:]))")
+                def_regI = bool(np.sum(arrproj[t,:,...,1:]))
+                def_regJ = bool(np.sum(arrproj[t,1:,...,:]))
                 if def_regI and def_regJ:
-                    exec(
-                        "E"
-                        + VAR
-                        + "[t,...] = E"
-                        + VAR
-                        + "[t-1,...] * E"
-                        + VAR
-                        + "proj[t,...]/E"
-                        + VAR
-                        + "proj[t-1,...]"
-                    )
-                    exec(
-                        "E" + VAR + "[np.isnan(E" + VAR + ")|np.isinf(E" + VAR + ")] = 0")
-                    exec(
-                        "E"
-                        + VAR
-                        + "[t,...] *= np.sum(E"
-                        + VAR
-                        + "[t-1,...])/np.sum(E"
-                        + VAR
-                        + "[t,...]) * np.sum(E"
-                        + VAR
-                        + "proj[t,...])/np.sum(E"
-                        + VAR
-                        + "proj[t-1,...])"
-                    )
+                    arr[t,...] = arr[t-1,...] * arrproj[t,...]/arrproj[t-1,...]
+                    arr[np.isnan(arr)|np.isinf(arr)] = 0
+                    arr[t,...] *= np.sum(arr[t-1,...])/np.sum(arr[t,...]) * np.sum(arrproj[t,...])/np.sum(arrproj[t-1,...])
                 elif not def_regI and def_regJ:
-                    exec(
-                        "E"
-                        + VAR
-                        + "[t,:,...,0] = np.sum(E"
-                        + VAR
-                        + "[t-1,:,...,:],0) * np.sum(E"
-                        + VAR
-                        + "proj[t,:,...,:],-1)/np.sum(E"
-                        + VAR
-                        + "proj[t-1,:,...,:],-1)"
-                    )
-                    exec(
-                        "E" + VAR + "[np.isnan(E" + VAR + ")|np.isinf(E" + VAR + ")] = 0")
-                    exec(
-                        "E"
-                        + VAR
-                        + "[t,...] *= np.sum(E"
-                        + VAR
-                        + "[t-1,...])/np.sum(E"
-                        + VAR
-                        + "[t,...]) * np.sum(E"
-                        + VAR
-                        + "proj[t,...])/np.sum(E"
-                        + VAR
-                        + "proj[t-1,...])"
-                    )
+                    arr[t,:,...,0] = np.sum(arr[t-1,:,...,:],0) * np.sum(arrproj[t,:,...,:],-1)/np.sum(arrproj[t-1,:,...,:],-1)
+                    arr[np.isnan(arr)|np.isinf(arr)] = 0
+                    arr[t,...] *= np.sum(arr[t-1,...])/np.sum(arr[t,...]) * np.sum(arrproj[t,...])/np.sum(arrproj[t-1,...])
                 elif def_regI and not def_regJ:
-                    exec(
-                        "E"
-                        + VAR
-                        + "[t,0,...,:] = np.sum(E"
-                        + VAR
-                        + "[t-1,:,...,:],0) * np.sum(E"
-                        + VAR
-                        + "proj[t,:,...,:],0)/np.sum(E"
-                        + VAR
-                        + "proj[t-1,:,...,:],0)"
-                    )
-                    exec(
-                        "E" + VAR + "[np.isnan(E" + VAR + ")|np.isinf(E" + VAR + ")] = 0")
-                    exec(
-                        "E"
-                        + VAR
-                        + "[t,...] *= np.sum(E"
-                        + VAR
-                        + "[t-1,...])/np.sum(E"
-                        + VAR
-                        + "[t,...]) * np.sum(E"
-                        + VAR
-                        + "proj[t,...])/np.sum(E"
-                        + VAR
-                        + "proj[t-1,...])"
-                    )
+                    arr[t,0,...,:] = np.sum(arr[t-1,:,...,:],0) * np.sum(arrproj[t,:,...,:],0)/np.sum(arrproj[t-1,:,...,:],0)
+                    arr[np.isnan(arr)|np.isinf(arr)] = 0
+                    arr[t,...] *= np.sum(arr[t-1,...])/np.sum(arr[t,...]) * np.sum(arrproj[t,...])/np.sum(arrproj[t-1,...])
                 elif not def_regI and not def_regJ:
-                    exec(
-                        "E"
-                        + VAR
-                        + "[t,0,...,0] = np.sum(np.sum(E"
-                        + VAR
-                        + "[t-1,:,...,:],-1),0) * np.sum(np.sum(E"
-                        + VAR
-                        + "proj[t,:,...,:],-1),0)/np.sum(np.sum(E"
-                        + VAR
-                        + "proj[t-1,:,...,:],-1),0)"
-                    )
-            exec("E" + VAR + "[np.isnan(E" + VAR + ")|np.isinf(E" + VAR + ")] = 0")
+                    arr[t,0,...,0] = np.sum(np.sum(arr[t-1,:,...,:],-1),0) * np.sum(np.sum(arrproj[t,:,...,:],-1),0)/np.sum(np.sum(arrproj[t-1,:,...,:],-1),0)
+            arr[np.isnan(arr)|np.isinf(arr)] = 0
 
 # delete individual datasets
-for VAR in ["HFC", "PFC"]:
-    exec("del E" + VAR + "edgar,E" + VAR + "eft,E" + VAR + "past,E" + VAR + "proj")
-for VAR in ["ODS"]:
-    exec("del E" + VAR + "cmip5,E" + VAR + "past,E" + VAR + "proj")
+del EHFCedgar, EHFCeft, EHFCpast, EHFCproj
+del EPFCedgar, EPFCeft, EPFCpast, EPFCproj
+del EODScmip5, EODSpast, EODSproj

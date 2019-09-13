@@ -8,25 +8,14 @@ from .a1_regions import nb_regionJ, nb_kind, nb_regionI, \
 from ...config import dty, scen_EFF, mod_regionI, scen_EN2O, scen_ECH4, data_ECH4, \
     data_EN2O, mod_DATAscen, mod_regionJ, data_EFF
 
-# _exec = exec
-# _glob = globals()
-#
-#
-# def exec(x: int):
-#     print(x)
-#     _exec(x, _glob, _glob)
-
-
 ##################################################
 #   1. GREENHOUSE GASES
 ##################################################
 
-EFF = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI],
-               dtype=dty)  # {GtC/yr}
-ECH4 = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI],
-                dtype=dty)  # {TgC/yr}
-EN2O = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI],
-                dtype=dty)  # {TgN/yr}
+init = lambda: np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+EFF = init()  # {GtC/yr}
+ECH4 = init()  # {TgC/yr}
+EN2O = init()  # {TgN/yr}
 
 # ==========
 # 1.1. CDIAC
@@ -40,6 +29,7 @@ kin = ["sol", "liq", "gas", "cem", "fla"]
 # total emissions
 EFFcdiac = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI],
                     dtype=dty)
+
 for k in range(len(kin)):
     TMP = np.array(
         [
@@ -698,677 +688,261 @@ if (scen_EN2O[:3] == "RCP") & (ind_final > ind_cdiac):
 # =================
 
 # datasets mixed following trends
-for VAR in ["FF", "CH4", "N2O"]:
 
-    if VAR in ["FF"]:
 
-        # with CDIAC as reference
-        if data_EFF == "CDIAC":
-            exec("E" + VAR + "past = E" + VAR + "cdiac.copy()")
+# with CDIAC as reference
+if data_EFF == "CDIAC":
+    EFFpast = EFFcdiac.copy()
 
-        # with EDGAR as reference
-        elif data_EFF == "EDGAR":
-            exec("E" + VAR + "past = E" + VAR + "edgar.copy()")
-            # follow EDGAR-FT variations after 2008
-            for t in range(ind_edgar + 1, ind_cdiac + 1):
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] = E"
-                    + VAR
-                    + "past[t-1,...] * E"
-                    + VAR
-                    + "eft[t,...]/E"
-                    + VAR
-                    + "eft[t-1,...]"
-                )
-                exec(
-                    "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] *= np.sum(E"
-                    + VAR
-                    + "past[t-1,...])/np.sum(E"
-                    + VAR
-                    + "past[t,...]) * np.sum(E"
-                    + VAR
-                    + "eft[t,...])/np.sum(E"
-                    + VAR
-                    + "eft[t-1,...])"
-                )
-            exec(
-                "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-            # follow CDIAC variations before 1970
-            for t in range(50, 270)[::-1]:
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] = E"
-                    + VAR
-                    + "past[t+1,...] * E"
-                    + VAR
-                    + "cdiac[t,...]/E"
-                    + VAR
-                    + "cdiac[t+1,...]"
-                )
-                exec(
-                    "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] *= np.sum(E"
-                    + VAR
-                    + "past[t+1,...])/np.sum(E"
-                    + VAR
-                    + "past[t,...]) * np.sum(E"
-                    + VAR
-                    + "cdiac[t,...])/np.sum(E"
-                    + VAR
-                    + "cdiac[t+1,...])"
-                )
-            exec(
-                "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
+# with EDGAR as reference
+elif data_EFF == "EDGAR":
+    EFFpast = EFFedgar.copy()
 
-    elif VAR in ["CH4"]:
+    # follow EDGAR-FT variations after 2008
+    for t in range(ind_edgar + 1, ind_cdiac + 1):
+        EFFpast[t, ...] = EFFpast[t - 1, ...] * EFFeft[t, ...] / EFFeft[t - 1, ...]
+        EFFpast[np.isnan(EFFpast) | np.isinf(EFFpast)] = 0
+        EFFpast[t, ...] *= np.sum(EFFpast[t - 1, ...]) / np.sum(EFFpast[t, ...]) \
+                           * np.sum(EFFeft[t, ...]) / np.sum(EFFeft[t - 1, ...])
 
-        # with EDGAR as reference
-        if data_ECH4 == "EDGAR":
-            exec("E" + VAR + "past = E" + VAR + "edgar.copy()")
-            # follow EDGAR-FT variations after 2008
-            for t in range(ind_edgar + 1, ind_cdiac + 1):
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] = E"
-                    + VAR
-                    + "past[t-1,...] * E"
-                    + VAR
-                    + "eft[t,...]/E"
-                    + VAR
-                    + "eft[t-1,...]"
-                )
-                exec(
-                    "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] *= np.sum(E"
-                    + VAR
-                    + "past[t-1,...])/np.sum(E"
-                    + VAR
-                    + "past[t,...]) * np.sum(E"
-                    + VAR
-                    + "eft[t,...])/np.sum(E"
-                    + VAR
-                    + "eft[t-1,...])"
-                )
-            exec(
-                "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-            # follow ACCMIP variations before 1970
-            for t in range(150, 270)[::-1]:
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] = E"
-                    + VAR
-                    + "past[t+1,...] * E"
-                    + VAR
-                    + "accmip[t,...]/E"
-                    + VAR
-                    + "accmip[t+1,...]"
-                )
-                exec(
-                    "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] *= np.sum(E"
-                    + VAR
-                    + "past[t+1,...])/np.sum(E"
-                    + VAR
-                    + "past[t,...]) * np.sum(E"
-                    + VAR
-                    + "accmip[t,...])/np.sum(E"
-                    + VAR
-                    + "accmip[t+1,...])"
-                )
-            exec(
-                "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-            # linear extrapolation before 1850
-            for t in range(50, 150):
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] = (1-p_E"
-                    + VAR
-                    + "_bio) * E"
-                    + VAR
-                    + "past[150,...] * (t-50)/float(150-50)"
-                )
-            for t in range(0, 150):
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] += p_E"
-                    + VAR
-                    + "_bio * E"
-                    + VAR
-                    + "past[150,...] * (t--200)/float(150--200)"
-                )
-            exec("E" + VAR + "_0 = E" + VAR + "past[50,...]")
+    EFFpast[np.isnan(EFFpast) | np.isinf(EFFpast)] = 0
 
-        # with ACCMIP as reference
-        elif data_ECH4 == "ACCMIP":
-            exec("E" + VAR + "past = E" + VAR + "accmip.copy()")
-            # follow EDGAR variations after 2000
-            for t in range(300 + 1, ind_edgar + 1):
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] = E"
-                    + VAR
-                    + "past[t-1,...] * E"
-                    + VAR
-                    + "edgar[t,...]/E"
-                    + VAR
-                    + "edgar[t-1,...]"
-                )
-                exec(
-                    "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] *= np.sum(E"
-                    + VAR
-                    + "past[t-1,...])/np.sum(E"
-                    + VAR
-                    + "past[t,...]) * np.sum(E"
-                    + VAR
-                    + "edgar[t,...])/np.sum(E"
-                    + VAR
-                    + "edgar[t-1,...])"
-                )
-            exec(
-                "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-            # follow EDGAR-FT variations after 2008
-            for t in range(ind_edgar + 1, ind_cdiac + 1):
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] = E"
-                    + VAR
-                    + "past[t-1,...] * E"
-                    + VAR
-                    + "eft[t,...]/E"
-                    + VAR
-                    + "eft[t-1,...]"
-                )
-                exec(
-                    "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] *= np.sum(E"
-                    + VAR
-                    + "past[t-1,...])/np.sum(E"
-                    + VAR
-                    + "past[t,...]) * np.sum(E"
-                    + VAR
-                    + "eft[t,...])/np.sum(E"
-                    + VAR
-                    + "eft[t-1,...])"
-                )
-            exec(
-                "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-            # linear extrapolation before 1850
-            for t in range(50, 150):
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] = (1-p_E"
-                    + VAR
-                    + "_bio) * E"
-                    + VAR
-                    + "past[150,...] * (t-50)/float(150-50)"
-                )
-            for t in range(0, 150):
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] += p_E"
-                    + VAR
-                    + "_bio * E"
-                    + VAR
-                    + "past[150,...] * (t--200)/float(150--200)"
-                )
-            exec("E" + VAR + "_0 = E" + VAR + "past[50,...]")
+    # follow CDIAC variations before 1970
+    for t in range(50, 270)[::-1]:
+        EFFpast[t, ...] = EFFpast[t + 1, ...] * EFFcdiac[t, ...] / EFFcdiac[t + 1, ...]
+        EFFpast[np.isnan(EFFpast) | np.isinf(EFFpast)] = 0
+        EFFpast[t, ...] *= np.sum(EFFpast[t + 1, ...]) / np.sum(EFFpast[t, ...]) \
+                           * np.sum(EFFcdiac[t, ...]) / np.sum(EFFcdiac[t + 1, ...])
+    EFFpast[np.isnan(EFFpast) | np.isinf(EFFpast)] = 0
 
-        # with EPA as reference
-        elif data_ECH4 == "EPA":
-            exec("E" + VAR + "past = E" + VAR + "epa.copy()")
-            # follow ACCMIP variations before 1990
-            for t in range(150, 290)[::-1]:
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] = E"
-                    + VAR
-                    + "past[t+1,...] * E"
-                    + VAR
-                    + "accmip[t,...]/E"
-                    + VAR
-                    + "accmip[t+1,...]"
-                )
-                exec(
-                    "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] *= np.sum(E"
-                    + VAR
-                    + "past[t+1,...])/np.sum(E"
-                    + VAR
-                    + "past[t,...]) * np.sum(E"
-                    + VAR
-                    + "accmip[t,...])/np.sum(E"
-                    + VAR
-                    + "accmip[t+1,...])"
-                )
-            exec(
-                "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-            # linear extrapolation before 1850
-            for t in range(50, 150):
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] = (1-p_E"
-                    + VAR
-                    + "_bio) * E"
-                    + VAR
-                    + "past[150,...] * (t-50)/float(150-50)"
-                )
-            for t in range(0, 150):
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] += p_E"
-                    + VAR
-                    + "_bio * E"
-                    + VAR
-                    + "past[150,...] * (t--200)/float(150--200)"
-                )
-            exec("E" + VAR + "_0 = E" + VAR + "past[50,...]")
+# with EDGAR as reference
+if data_ECH4 == "EDGAR":
+    ECH4past = ECH4edgar.copy()
+    # follow EDGAR-FT variations after 2008
+    for t in range(ind_edgar + 1, ind_cdiac + 1):
+        ECH4past[t, ...] = ECH4past[t - 1, ...] * ECH4eft[t, ...] / ECH4eft[t - 1, ...]
+        ECH4past[np.isnan(ECH4past) | np.isinf(ECH4past)] = 0
+        ECH4past[t, ...] *= np.sum(ECH4past[t - 1, ...]) / np.sum(
+            ECH4past[t, ...]) * np.sum(ECH4eft[t, ...]) / np.sum(ECH4eft[t - 1, ...])
+    ECH4past[np.isnan(ECH4past) | np.isinf(ECH4past)] = 0
 
-    elif VAR in ["N2O"]:
+    # follow ACCMIP variations before 1970
+    for t in range(150, 270)[::-1]:
+        ECH4past[t, ...] = ECH4past[t + 1, ...] * ECH4accmip[t, ...] / ECH4accmip[
+            t + 1, ...]
+        ECH4past[np.isnan(ECH4past) | np.isinf(ECH4past)] = 0
+        ECH4past[t, ...] *= np.sum(ECH4past[t + 1, ...]) / np.sum(
+            ECH4past[t, ...]) * np.sum(ECH4accmip[t, ...]) / np.sum(
+            ECH4accmip[t + 1, ...])
+    ECH4past[np.isnan(ECH4past) | np.isinf(ECH4past)] = 0
+    # linear extrapolation before 1850
+    for t in range(50, 150):
+        ECH4past[t, ...] = (1 - p_ECH4_bio) * ECH4past[150, ...] * (t - 50) / float(
+            150 - 50)
+    for t in range(0, 150):
+        ECH4past[t, ...] += p_ECH4_bio * ECH4past[150, ...] * (t - -200) / float(
+            150 - -200)
+    ECH4_0 = ECH4past[50, ...]
 
-        # with EDGAR as reference
-        if data_EN2O == "EDGAR":
-            exec("E" + VAR + "past = E" + VAR + "edgar.copy()")
-            # follow EDGAR-FT variations after 2008
-            for t in range(ind_edgar + 1, ind_cdiac + 1):
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] = E"
-                    + VAR
-                    + "past[t-1,...] * E"
-                    + VAR
-                    + "eft[t,...]/E"
-                    + VAR
-                    + "eft[t-1,...]"
-                )
-                exec(
-                    "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] *= np.sum(E"
-                    + VAR
-                    + "past[t-1,...])/np.sum(E"
-                    + VAR
-                    + "past[t,...]) * np.sum(E"
-                    + VAR
-                    + "eft[t,...])/np.sum(E"
-                    + VAR
-                    + "eft[t-1,...])"
-                )
-            exec(
-                "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-            # follow EDGAR-HYDE variations before 1970
-            for t in range(190, 270)[::-1]:
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] = E"
-                    + VAR
-                    + "past[t+1,...] * E"
-                    + VAR
-                    + "ehydeR[t,...]/E"
-                    + VAR
-                    + "ehydeR[t+1,...]"
-                )
-                exec(
-                    "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] *= np.sum(E"
-                    + VAR
-                    + "past[t+1,...])/np.sum(E"
-                    + VAR
-                    + "past[t,...]) * np.sum(E"
-                    + VAR
-                    + "ehydeR[t,...])/np.sum(E"
-                    + VAR
-                    + "ehydeR[t+1,...])"
-                )
-            exec(
-                "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-            # linear extrapolation before 1890
-            for t in range(50, 190):
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] = (1-p_E"
-                    + VAR
-                    + "_bio) * E"
-                    + VAR
-                    + "past[190,...] * (t-50)/float(190-50)"
-                )
-            for t in range(0, 190):
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] += p_E"
-                    + VAR
-                    + "_bio * E"
-                    + VAR
-                    + "past[190,...] * (t--200)/float(190--200)"
-                )
-            exec("E" + VAR + "_0 = E" + VAR + "past[50,...]")
+# with ACCMIP as reference
+elif data_ECH4 == "ACCMIP":
+    ECH4past = ECH4accmip.copy()
+    # follow EDGAR variations after 2000
+    for t in range(300 + 1, ind_edgar + 1):
+        ECH4past[t, ...] = ECH4past[t - 1, ...] * ECH4edgar[t, ...] / ECH4edgar[
+            t - 1, ...]
+        ECH4past[np.isnan(ECH4past) | np.isinf(ECH4past)] = 0
+        ECH4past[t, ...] *= np.sum(ECH4past[t - 1, ...]) / np.sum(
+            ECH4past[t, ...]) * np.sum(ECH4edgar[t, ...]) / np.sum(ECH4edgar[t - 1, ...])
+    ECH4past[np.isnan(ECH4past) | np.isinf(ECH4past)] = 0
 
-        # with EPA as reference
-        elif data_EN2O == "EPA":
-            exec("E" + VAR + "past = E" + VAR + "epa.copy()")
-            # follow EDGAR-HYDE variations before 1990
-            for t in range(190, 290)[::-1]:
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] = E"
-                    + VAR
-                    + "past[t+1,...] * E"
-                    + VAR
-                    + "ehydeR[t,...]/E"
-                    + VAR
-                    + "ehydeR[t+1,...]"
-                )
-                exec(
-                    "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] *= np.sum(E"
-                    + VAR
-                    + "past[t+1,...])/np.sum(E"
-                    + VAR
-                    + "past[t,...]) * np.sum(E"
-                    + VAR
-                    + "ehydeR[t,...])/np.sum(E"
-                    + VAR
-                    + "ehydeR[t+1,...])"
-                )
-            exec(
-                "E" + VAR + "past[np.isnan(E" + VAR + "past)|np.isinf(E" + VAR + "past)] = 0")
-            # linear extrapolation before 1850
-            for t in range(50, 190):
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] = (1-p_E"
-                    + VAR
-                    + "_bio) * E"
-                    + VAR
-                    + "past[190,...] * (t-50)/float(190-50)"
-                )
-            for t in range(0, 190):
-                exec(
-                    "E"
-                    + VAR
-                    + "past[t,...] += p_E"
-                    + VAR
-                    + "_bio * E"
-                    + VAR
-                    + "past[190,...] * (t--200)/float(190--200)"
-                )
-            exec("E" + VAR + "_0 = E" + VAR + "past[50,...]")
+    # follow EDGAR-FT variations after 2008
+    for t in range(ind_edgar + 1, ind_cdiac + 1):
+        ECH4past[t, ...] = ECH4past[t - 1, ...] * ECH4eft[t, ...] / ECH4eft[t - 1, ...]
+        ECH4past[np.isnan(ECH4past) | np.isinf(ECH4past)] = 0
+        ECH4past[t, ...] *= np.sum(ECH4past[t - 1, ...]) / np.sum(
+            ECH4past[t, ...]) * np.sum(ECH4eft[t, ...]) / np.sum(ECH4eft[t - 1, ...])
+    ECH4past[np.isnan(ECH4past) | np.isinf(ECH4past)] = 0
 
-    # cut past dataset to right length
-    exec(
-        "E" + VAR + "[:min(ind_cdiac,ind_final)+1,...] = E" + VAR + "past[:min(ind_cdiac,ind_final)+1,...]")
+    # linear extrapolation before 1850
+    for t in range(50, 150):
+        ECH4past[t, ...] = (1 - p_ECH4_bio) * ECH4past[150, ...] * (t - 50) / float(
+            150 - 50)
+    for t in range(0, 150):
+        ECH4past[t, ...] += p_ECH4_bio * ECH4past[150, ...] * (t - -200) / float(
+            150 + 200)
+    ECH4_0 = ECH4past[50, ...]
+
+# with EPA as reference
+elif data_ECH4 == "EPA":
+    ECH4past = ECH4epa.copy()
+    # follow ACCMIP variations before 1990
+    for t in range(150, 290)[::-1]:
+        ECH4past[t, ...] = ECH4past[t + 1, ...] * ECH4accmip[t, ...] / ECH4accmip[
+            t + 1, ...]
+        ECH4past[np.isnan(ECH4past) | np.isinf(ECH4past)] = 0
+        ECH4past[t, ...] *= np.sum(ECH4past[t + 1, ...]) / np.sum(
+            ECH4past[t, ...]) * np.sum(ECH4accmip[t, ...]) / np.sum(
+            ECH4accmip[t + 1, ...])
+    ECH4past[np.isnan(ECH4past) | np.isinf(ECH4past)] = 0
+
+    # linear extrapolation before 1850
+    for t in range(50, 150):
+        ECH4past[t, ...] = (1 - p_ECH4_bio) * ECH4past[150, ...] * (t - 50) / float(
+            150 - 50)
+    for t in range(0, 150):
+        ECH4past[t, ...] += p_ECH4_bio * ECH4past[150, ...] * (t - -200) / float(
+            150 - -200)
+    ECH4_0 = ECH4past[50, ...]
+
+# with EDGAR as reference
+if data_EN2O == "EDGAR":
+    EN2Opast = EN2Oedgar.copy()
+    # follow EDGAR-FT variations after 2008
+    for t in range(ind_edgar + 1, ind_cdiac + 1):
+        EN2Opast[t, ...] = EN2Opast[t - 1, ...] * EN2Oeft[t, ...] / EN2Oeft[t - 1, ...]
+        EN2Opast[np.isnan(EN2Opast) | np.isinf(EN2Opast)] = 0
+        EN2Opast[t, ...] *= np.sum(EN2Opast[t - 1, ...]) / np.sum(
+            EN2Opast[t, ...]) * np.sum(EN2Oeft[t, ...]) / np.sum(EN2Oeft[t - 1, ...])
+    EN2Opast[np.isnan(EN2Opast) | np.isinf(EN2Opast)] = 0
+
+    # follow EDGAR-HYDE variations before 1970
+    for t in range(190, 270)[::-1]:
+        EN2Opast[t, ...] = EN2Opast[t + 1, ...] * EN2OehydeR[t, ...] \
+                           / EN2OehydeR[t + 1, ...]
+        EN2Opast[np.isnan(EN2Opast) | np.isinf(EN2Opast)] = 0
+        EN2Opast[t, ...] *= np.sum(EN2Opast[t + 1, ...]) / np.sum(
+            EN2Opast[t, ...]) * np.sum(EN2OehydeR[t, ...]) / np.sum(
+            EN2OehydeR[t + 1, ...])
+    EN2Opast[np.isnan(EN2Opast) | np.isinf(EN2Opast)] = 0
+
+    # linear extrapolation before 1890
+    for t in range(50, 190):
+        EN2Opast[t, ...] = (1 - p_EN2O_bio) * EN2Opast[190, ...] * (t - 50) / float(
+            190 - 50)
+    for t in range(0, 190):
+        EN2Opast[t, ...] += p_EN2O_bio * EN2Opast[190, ...] * (t - -200) / float(
+            190 - -200)
+    EN2O_0 = EN2Opast[50, ...]
+
+# with EPA as reference
+elif data_EN2O == "EPA":
+    EN2Opast = EN2Oepa.copy()
+    # follow EDGAR-HYDE variations before 1990
+    for t in range(190, 290)[::-1]:
+        EN2Opast[t, ...] = EN2Opast[t + 1, ...] * EN2OehydeR[t, ...] / EN2OehydeR[
+            t + 1, ...]
+        EN2Opast[np.isnan(EN2Opast) | np.isinf(EN2Opast)] = 0
+        EN2Opast[t, ...] *= np.sum(EN2Opast[t + 1, ...]) / np.sum(
+            EN2Opast[t, ...]) * np.sum(EN2OehydeR[t, ...]) / np.sum(
+            EN2OehydeR[t + 1, ...])
+    EN2Opast[np.isnan(EN2Opast) | np.isinf(EN2Opast)] = 0
+    # linear extrapolation before 1850
+    for t in range(50, 190):
+        EN2Opast[t, ...] = (1 - p_EN2O_bio) * EN2Opast[190, ...] * (t - 50) / float(
+            190 - 50)
+    for t in range(0, 190):
+        EN2Opast[t, ...] += p_EN2O_bio * EN2Opast[190, ...] * (t - -200) / float(
+            190 - -200)
+    EN2O_0 = EN2Opast[50, ...]
+
+# Cut past dataset to right length
+for arr, past in [(EFF, EFFpast), (ECH4, ECH4past), (EN2O, EN2Opast)]:
+    arr[:min(ind_cdiac, ind_final) + 1, ...] = past[:min(ind_cdiac, ind_final) + 1, ...]
 
 # ==================
 # 1.B. FINAL DATASET
 # ==================
 
 # datasets mixed following various criteria
-for VAR in ["FF", "CH4", "N2O"]:
-    exec("scen = scen_E" + VAR)
-
+for VAR, scen, arr, arr_0, arrproj in [
+    ("FF", scen_EFF, EFF, None, EFFproj),
+    ("CH4", scen_ECH4, ECH4, ECH4_0, ECH4proj),
+    ("N2O", scen_EN2O, EN2O, EN2O_0, EN2Oproj),
+]:
     # stop emissions
     if (scen == "stop") & (ind_final > ind_cdiac):
         if VAR in ["FF"]:
-            exec("E" + VAR + "[ind_cdiac+1:,...] = 0")
+            EFF[ind_cdiac + 1:, ...] = 0
         else:
-            exec("E" + VAR + "[ind_cdiac+1:,...] = E" + VAR + "_0[np.newaxis,...]")
+            arr[ind_cdiac + 1:, ...] = arr_0[np.newaxis, ...]
 
     # constant emissions
     elif (scen == "cst") & (ind_final > ind_cdiac):
-        exec(
-            "E" + VAR + "[ind_cdiac+1:,...] = E" + VAR + "[ind_cdiac,...][np.newaxis,...]")
+        arr[ind_cdiac + 1:, ...] = arr[ind_cdiac, ...][np.newaxis, ...]
 
         # RCP or SRES scenarios
     elif ((scen[:4] == "SRES") | (scen[:3] == "RCP")) & (ind_final > ind_cdiac):
 
         # raw discontinuity
         if mod_DATAscen == "raw":
-            exec("E" + VAR + "[ind_cdiac+1:,...] = E" + VAR + "proj[ind_cdiac+1:,...]")
+            arr[ind_cdiac + 1:, ...] = arrproj[ind_cdiac + 1:, ...]
 
         # offset at transition point
         elif mod_DATAscen == "offset":
-            exec(
-                "E"
-                + VAR
-                + "[ind_cdiac+1:,...] = E"
-                + VAR
-                + "proj[ind_cdiac+1:,...] - E"
-                + VAR
-                + "proj[ind_cdiac,...] + E"
-                + VAR
-                + "[ind_cdiac,...]"
-            )
+            arr[ind_cdiac + 1:, ...] = arrproj[ind_cdiac + 1:, ...] - arrproj[
+                ind_cdiac, ...] + arr[ind_cdiac, ...]
             for t in range(ind_cdiac + 1, ind_final + 1):
-                def_regI = eval("bool(np.sum(E" + VAR + "proj[t,:,...,1:]))")
-                def_regJ = eval("bool(np.sum(E" + VAR + "proj[t,1:,...,:]))")
+                def_regI = bool(np.sum(arrproj[t, :, ..., 1:]))
+                def_regJ = bool(np.sum(arrproj[t, 1:, ..., :]))
                 if not def_regI:
-                    exec("E" + VAR + "[t,:,...,0] += np.sum(E" + VAR + "[t,:,...,1:],-1)")
-                    exec("E" + VAR + "[t,:,...,1:] = 0")
+                    arr[t, :, ..., 0] += np.sum(arr[t, :, ..., 1:], -1)
+                    arr[t, :, ..., 1:] = 0
                 if not def_regJ:
-                    exec("E" + VAR + "[t,0,...,:] += np.sum(E" + VAR + "[t,1:,...,:],0)")
-                    exec("E" + VAR + "[t,1:,...,:] = 0")
+                    arr[t, 0, ..., :] += np.sum(arr[t, 1:, ..., :], 0)
+                    arr[t, 1:, ..., :] = 0
 
                     # linear transition over N years
         elif mod_DATAscen[:6] == "smooth":
             N = int(mod_DATAscen[6:])
             if ind_final >= ind_cdiac + N:
                 for t in range(ind_cdiac + 1, ind_cdiac + N):
-                    exec(
-                        "E"
-                        + VAR
-                        + "[t,...] = (1-(t-ind_cdiac)/float(N)) * E"
-                        + VAR
-                        + "[ind_cdiac,...] + (t-ind_cdiac)/float(N) * E"
-                        + VAR
-                        + "proj[ind_cdiac+N,...]"
-                    )
-                    def_regI = exec("bool(np.sum(E" + VAR + "proj[t,:,...,1:]))")
-                    def_regJ = exec("bool(np.sum(E" + VAR + "proj[t,1:,...,:]))")
+                    arr[t, ...] = (1 - (t - ind_cdiac) / float(N)) * arr[
+                        ind_cdiac, ...] + (t - ind_cdiac) / float(N) * arrproj[
+                                      ind_cdiac + N, ...]
+                    def_regI = bool(np.sum(arrproj[t, :, ..., 1:]))
+                    def_regJ = bool(np.sum(arrproj[t, 1:, ..., :]))
                     if not def_regI:
-                        exec(
-                            "E" + VAR + "[t,:,...,0] += np.sum(E" + VAR + "[t,:,...,1:],-1)")
-                        exec("E" + VAR + "[t,:,...,1:] = 0")
+                        arr[t, :, ..., 0] += np.sum(arr[t, :, ..., 1:], -1)
+                        arr[t, :, ..., 1:] = 0
                     if not def_regJ:
-                        exec(
-                            "E" + VAR + "[t,0,...,:] += np.sum(E" + VAR + "[t,1:,...,:],0)")
-                        exec("E" + VAR + "[t,1:,...,:] = 0")
-                exec(
-                    "E" + VAR + "[ind_cdiac+N:,...] = E" + VAR + "proj[ind_cdiac+N:,...]")
+                        arr[t, 0, ..., :] += np.sum(arr[t, 1:, ..., :], 0)
+                        arr[t, 1:, ..., :] = 0
+                arr[ind_cdiac + N:, ...] = arrproj[ind_cdiac + N:, ...]
 
         # follow trends of projection
         elif mod_DATAscen == "trends":
             for t in range(ind_cdiac + 1, ind_final + 1):
-                exec("def_regI = bool(np.sum(E" + VAR + "proj[t,:,...,1:]))")
-                exec("def_regJ = bool(np.sum(E" + VAR + "proj[t,1:,...,:]))")
+                def_regI = bool(np.sum(arrproj[t, :, ..., 1:]))
+                def_regJ = bool(np.sum(arrproj[t, 1:, ..., :]))
                 if def_regI and def_regJ:
-                    exec(
-                        "E"
-                        + VAR
-                        + "[t,...] = E"
-                        + VAR
-                        + "[t-1,...] * E"
-                        + VAR
-                        + "proj[t,...]/E"
-                        + VAR
-                        + "proj[t-1,...]"
-                    )
-                    exec(
-                        "E" + VAR + "[np.isnan(E" + VAR + ")|np.isinf(E" + VAR + ")] = 0")
-                    exec(
-                        "E"
-                        + VAR
-                        + "[t,...] *= np.sum(E"
-                        + VAR
-                        + "[t-1,...])/np.sum(E"
-                        + VAR
-                        + "[t,...]) * np.sum(E"
-                        + VAR
-                        + "proj[t,...])/np.sum(E"
-                        + VAR
-                        + "proj[t-1,...])"
-                    )
+                    arr[t, ...] = arr[t - 1, ...] * arrproj[t, ...] / arrproj[t - 1, ...]
+                    arr[np.isnan(arr) | np.isinf(arr)] = 0
+                    arr[t, ...] *= np.sum(arr[t - 1, ...]) / np.sum(arr[t, ...]) * np.sum(
+                        arrproj[t, ...]) / np.sum(arrproj[t - 1, ...])
                 elif not def_regI and def_regJ:
-                    exec(
-                        "E"
-                        + VAR
-                        + "[t,:,...,0] = np.sum(E"
-                        + VAR
-                        + "[t-1,:,...,:],-1) * np.sum(E"
-                        + VAR
-                        + "proj[t,:,...,:],-1)/np.sum(E"
-                        + VAR
-                        + "proj[t-1,:,...,:],-1)"
-                    )
-                    exec(
-                        "E" + VAR + "[np.isnan(E" + VAR + ")|np.isinf(E" + VAR + ")] = 0")
-                    exec(
-                        "E"
-                        + VAR
-                        + "[t,...] *= np.sum(E"
-                        + VAR
-                        + "[t-1,...])/np.sum(E"
-                        + VAR
-                        + "[t,...]) * np.sum(E"
-                        + VAR
-                        + "proj[t,...])/np.sum(E"
-                        + VAR
-                        + "proj[t-1,...])"
-                    )
+                    arr[t, :, ..., 0] = np.sum(arr[t - 1, :, ..., :], -1) * np.sum(
+                        arrproj[t, :, ..., :], -1) / np.sum(arrproj[t - 1, :, ..., :], -1)
+                    arr[np.isnan(arr) | np.isinf(arr)] = 0
+                    arr[t, ...] *= np.sum(arr[t - 1, ...]) / np.sum(arr[t, ...]) * np.sum(
+                        arrproj[t, ...]) / np.sum(arrproj[t - 1, ...])
                 elif def_regI and not def_regJ:
-                    exec(
-                        "E"
-                        + VAR
-                        + "[t,0,...,:] = np.sum(E"
-                        + VAR
-                        + "[t-1,:,...,:],0) * np.sum(E"
-                        + VAR
-                        + "proj[t,:,...,:],0)/np.sum(E"
-                        + VAR
-                        + "proj[t-1,:,...,:],0)"
-                    )
-                    exec(
-                        "E" + VAR + "[np.isnan(E" + VAR + ")|np.isinf(E" + VAR + ")] = 0")
-                    exec(
-                        "E"
-                        + VAR
-                        + "[t,...] *= np.sum(E"
-                        + VAR
-                        + "[t-1,...])/np.sum(E"
-                        + VAR
-                        + "[t,...]) * np.sum(E"
-                        + VAR
-                        + "proj[t,...])/np.sum(E"
-                        + VAR
-                        + "proj[t-1,...])"
-                    )
+                    arr[t, 0, ..., :] = np.sum(arr[t - 1, :, ..., :], 0) * np.sum(
+                        arrproj[t, :, ..., :], 0) / np.sum(arrproj[t - 1, :, ..., :], 0)
+                    arr[np.isnan(arr) | np.isinf(arr)] = 0
+                    arr[t, ...] *= np.sum(arr[t - 1, ...]) / np.sum(arr[t, ...]) * np.sum(
+                        arrproj[t, ...]) / np.sum(arrproj[t - 1, ...])
                 elif not def_regI and not def_regJ:
-                    exec(
-                        "E"
-                        + VAR
-                        + "[t,0,...,0] = np.sum(np.sum(E"
-                        + VAR
-                        + "[t-1,:,...,:],-1),0) * np.sum(np.sum(E"
-                        + VAR
-                        + "proj[t,:,...,:],-1),0)/np.sum(np.sum(E"
-                        + VAR
-                        + "proj[t-1,:,...,:],-1),0)"
-                    )
-            exec("E" + VAR + "[np.isnan(E" + VAR + ")|np.isinf(E" + VAR + ")] = 0")
+                    arr[t, 0, ..., 0] = np.sum(np.sum(arr[t - 1, :, ..., :], -1),
+                                               0) * np.sum(
+                        np.sum(arrproj[t, :, ..., :], -1), 0) / np.sum(
+                        np.sum(arrproj[t - 1, :, ..., :], -1), 0)
+            arr[np.isnan(arr) | np.isinf(arr)] = 0
 
 # delete individual datasets
-for VAR in ["FF"]:
-    exec(
-        "del E" + VAR + "cdiac,E" + VAR + "edgar,E" + VAR + "eft,E" + VAR + "past,E" + VAR + "proj")
-for VAR in ["CH4"]:
-    exec(
-        "del E"
-        + VAR
-        + "epa,E"
-        + VAR
-        + "edgar,E"
-        + VAR
-        + "eft,E"
-        + VAR
-        + "accmip,E"
-        + VAR
-        + "past,E"
-        + VAR
-        + "proj,E"
-        + VAR
-        + "stern,p_E"
-        + VAR
-        + "_bio"
-    )
-for VAR in ["N2O"]:
-    exec(
-        "del E"
-        + VAR
-        + "epa,E"
-        + VAR
-        + "edgar,E"
-        + VAR
-        + "eft,E"
-        + VAR
-        + "ehyde,E"
-        + VAR
-        + "past,E"
-        + VAR
-        + "proj,E"
-        + VAR
-        + "davidson,p_E"
-        + VAR
-        + "_bio"
-    )
+del EFFcdiac, EFFedgar, EFFeft, EFFpast, EFFproj
+del ECH4epa, ECH4edgar, ECH4eft, ECH4accmip, ECH4past, ECH4proj, ECH4stern, p_ECH4_bio
+del EN2Oepa, EN2Oedgar, EN2Oeft, EN2Oehyde, EN2Opast, EN2Oproj, EN2Odavidson, p_EN2O_bio
 
 # ===========
 # 1.11. PETERS
