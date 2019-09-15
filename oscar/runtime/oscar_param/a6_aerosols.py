@@ -178,7 +178,6 @@ EOMBB_rcp85P = load_organic_aero_chem('rcp85', 'EOMBB')
 POA_rcp85P = load_organic_aero_chem('rcp85', 'POA')
 tas_rcp85P = load_organic_aero_chem('rcp85', 'tas')
 
-
 EOM_allP = np.array(list(EOM_histP)+list(EOM_histP)+list(EOM_histP)+list(EOM_histP)+list(EOM_rcp26P)+list(EOM_rcp45P)+list(EOM_rcp60P)+list(EOM_rcp85P), dtype=dty)
 EOMBB_allP = np.array(list(EOMBB_histP)+list(EOMBB_histP)+list(EOMBB_histP)+list(EOMBB_histP)+list(EOMBB_rcp26P)+list(EOMBB_rcp45P)+list(EOMBB_rcp60P)+list(EOMBB_rcp85P), dtype=dty)
 POA_allP = np.array(list(POA_histP)+list(POA_histP)+list(POA_histP)+list(POA_histP)+list(POA_rcp26P)+list(POA_rcp45P)+list(POA_rcp60P)+list(POA_rcp85P), dtype=dty)

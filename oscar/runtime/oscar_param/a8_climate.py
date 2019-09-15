@@ -4,11 +4,12 @@ import os
 import numpy as np
 from scipy.optimize import fmin
 
-from .a1_carbon import CO2_0
+from .a1_carbon import CO2_0, load_data
 from .a7_radiative_forces import f_RF_CO2
 from ..oscar_data import nb_regionI, regionI_index
 from ...config import dty, mod_TEMPresp, mod_PRECradfact, mod_TEMPpattern, mod_ACIDsurf, \
     mod_PRECpattern, mod_PRECresp
+
 
 ##################################################
 #   8. CLIMATE
@@ -22,51 +23,33 @@ from ...config import dty, mod_TEMPresp, mod_PRECradfact, mod_TEMPpattern, mod_A
 # 8.1.A. Reconstructions
 # ----------------------
 
+
 # historical global temperatures from NOAA/NCDC {degC}
 # from [Smith et al., 2008] updated from website
-for var in ["gst", "lst", "sst"]:
-    exec(var + "_ncdc = np.ones([314+1], dtype=dty) * np.nan")
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open(
-                "data/HistClim_NOAA-NCDC/#DATA.HistClim_NOAA-NCDC.1880-2014." + var + ".csv",
-                "r")
-        )],
-        dtype=dty,
-    )
-    exec(var + "_ncdc[180:] = TMP[:,0]")
+def historical_temperatures(model):
+    arr = np.ones([314 + 1], dtype=dty) * np.nan
+    path = f"data/HistClim_NOAA-NCDC/#DATA.HistClim_NOAA-NCDC.1880-2014.{model}.csv"
+    arr[180:] = load_data(path)[:, 0]
+    return arr
+
+
+gst_ncdc = historical_temperatures("gst")
+lst_ncdc = historical_temperatures("lst")
+sst_ncdc = historical_temperatures("sst")
 
 # historical global temperature from GISTEMP {degC}
 # from [Hansen et al., 2010] updated from website
-for var in ["gst"]:
-    exec(var + "_giss = np.ones([314+1], dtype=dty) * np.nan")
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open("data/HistClim_GISTEMP/#DATA.HistClim_GISTEMP.1880-2014." + var + ".csv",
-                 "r"))],
-        dtype=dty,
-    )
-    exec(var + "_giss[180:] = TMP[:,0]")
+gst_giss = np.ones([314 + 1], dtype=dty) * np.nan
+path = f"data/HistClim_GISTEMP/#DATA.HistClim_GISTEMP.1880-2014.gst.csv"
+TMP = load_data(path)
+gst_giss[180:] = TMP[:, 0]
 
 # historical global temperature from HadCRUT4 {degC}
 # from [Morice et al., 2012] updated from website
-for var in ["gst"]:
-    exec(var + "_had = np.ones([314+1], dtype=dty) * np.nan")
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open(
-                "data/HistClim_HadCRUT4/#DATA.HistClim_HadCRUT4.1850-2014." + var + ".csv",
-                "r")
-        )],
-        dtype=dty,
-    )
-    exec(var + "_had[150:] = TMP[:,0]")
+gst_had = np.ones([314 + 1], dtype=dty) * np.nan
+path = "data/HistClim_HadCRUT4/#DATA.HistClim_HadCRUT4.1850-2014.gst.csv"
+TMP = load_data(path)
+gst_had[150:] = TMP[:, 0]
 
 # ------------
 # 8.1.1. CMIP5
@@ -102,78 +85,37 @@ lng = {
     "NorESM1-M": 150,
 }
 
+
 # load pre-processed CMIP5 results for specified model
 # data related to temperature change
-for sim in ["ctrl", "quad"]:
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open(
-                "data/Climate_CMIP5/#DATA.Climate_"
-                + mod_TEMPresp
-                + "."
-                + str(lng[mod_TEMPresp])
-                + "yr_(7var)."
-                + sim
-                + "_global.csv",
-                "r",
-            )
-        )][1:],
-        dtype=dty,
-    )
-    lgd = [
-        line
-        for line in csv.reader(
-            open(
-                "data/Climate_CMIP5/#DATA.Climate_"
-                + mod_TEMPresp
-                + "."
-                + str(lng[mod_TEMPresp])
-                + "yr_(7var)."
-                + sim
-                + "_global.csv",
-                "r",
-            )
-        )][0]
-    exec("gst_" + sim + 'T = TMP[:,lgd.index("tas")]')
-    exec(
-        "erb_" + sim + 'T = TMP[:,lgd.index("rsdt")] - TMP[:,lgd.index("rsut")] - TMP[:,lgd.index("rlut")]')
+def load_cmip5_temperature_change(sim):
+    path = f"data/Climate_CMIP5/#DATA.Climate_{mod_TEMPresp}.{lng[mod_TEMPresp]}yr_(7var).{sim}_global.csv"
+    TMP = load_data(path, slice=1)
+
+    path = f"data/Climate_CMIP5/#DATA.Climate_{mod_TEMPresp}.{lng[mod_TEMPresp]}yr_(7var).{sim}_global.csv"
+    lgd = [line for line in csv.reader(open(path, "r"))][0]
+
+    gst = TMP[:, lgd.index("tas")]
+    erb = TMP[:, lgd.index("rsdt")] - TMP[:, lgd.index("rsut")] - TMP[:, lgd.index("rlut")]
+    return gst, erb
+
+
+gst_ctrlT, erb_ctrlT = load_cmip5_temperature_change('ctrl')
+gst_quadT, erb_quadT = load_cmip5_temperature_change('quad')
+
+
 # data related to precipitations change
-for sim in ["ctrl", "quad"]:
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open(
-                "data/Climate_CMIP5/#DATA.Climate_"
-                + mod_PRECresp
-                + "."
-                + str(lng[mod_PRECresp])
-                + "yr_(7var)."
-                + sim
-                + "_global.csv",
-                "r",
-            )
-        )][1:],
-        dtype=dty,
-    )
-    lgd = [
-        line
-        for line in csv.reader(
-            open(
-                "data/Climate_CMIP5/#DATA.Climate_"
-                + mod_PRECresp
-                + "."
-                + str(lng[mod_PRECresp])
-                + "yr_(7var)."
-                + sim
-                + "_global.csv",
-                "r",
-            )
-        )][0]
-    exec("gst_" + sim + 'P = TMP[:,lgd.index("tas")]')
-    exec("gyp_" + sim + 'P = TMP[:,lgd.index("pr")]')
+def load_precipitation_change(sim):
+    path = f"data/Climate_CMIP5/#DATA.Climate_{mod_PRECresp}.{lng[mod_PRECresp]}yr_(7var).{sim}_global.csv"
+    TMP = load_data(path, slice=1)
+    lgd = [line for line in csv.reader(open(path, 'r'))][0]
+    gst = TMP[:, lgd.index("tas")]
+    gyp = TMP[:, lgd.index("pr")]
+    return gst, gyp
+
+
+gst_ctrlP, gyp_ctrlP = load_precipitation_change("ctrl")
+gst_quadP, gyp_quadP = load_precipitation_change("quad")
 
 # definition of parameters
 # equilibrium climate sensitivity {K}&{K/{W/m2}}
@@ -278,6 +220,7 @@ elif mod_PRECradfact == "Kvalevag2013":
 # normalization of radiative factor of precipitations
 beta_gyp /= p_atm_CO2
 
+
 # ==========
 # 8.2. OCEAN
 # ==========
@@ -288,72 +231,37 @@ beta_gyp /= p_atm_CO2
 
 # historical sea climate from HadISST1 {degC}&{Mha}
 # from [Rayner et al., 2003] updated from website
-for var in ["sst", "sic"]:
-    exec(var + "_had = np.ones([314+1], dtype=dty) * np.nan")
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open(
-                "data/HistOcean_HadISST1/#DATA.HistOcean_HadISST1.1870-2014_18x10lat." + var + ".csv",
-                "r")
-        )],
-        dtype=dty,
-    )
-    TMP2 = np.array(
-        [
-            line
-            for line in csv.reader(
-            open(
-                "data/HistOcean_HadISST1/#DATA.HistOcean_HadISST1.1870-2014_18x10lat.SURF.csv",
-                "r")
-        )],
-        dtype=dty,
-    )
-    exec(var + "_had[170:] = np.sum(TMP[:,:]*TMP2[:,:],1)")
-    exec(var + "_had[170:] /= np.sum(TMP2[:,:],1)")
+def load_sea_climate(var):
+    arr = np.ones([314 + 1], dtype=dty) * np.nan
+    path = f"data/HistOcean_HadISST1/#DATA.HistOcean_HadISST1.1870-2014_18x10lat.{var}.csv"
+    path2 = "data/HistOcean_HadISST1/#DATA.HistOcean_HadISST1.1870-2014_18x10lat.SURF.csv"
+    TMP = load_data(path)
+    TMP2 = load_data(path2)
+    arr[170:] = np.sum(TMP[:, :] * TMP2[:, :], 1)
+    arr[170:] /= np.sum(TMP2[:, :], 1)
+    return arr
+
+
+sst_had = load_sea_climate("sst")
+sic_had = load_sea_climate("sic")
 
 # historical sea climate from ERSST4 {degC}
 # from [Huang et al., 2015] updated from website
-for var in ["sst"]:
-    exec(var + "_ncdc2 = np.ones([314+1], dtype=dty) * np.nan")
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open(
-                "data/HistOcean_ERSST4/#DATA.HistOcean_ERSST4.1854-2014_18x10lat." + var + ".csv",
-                "r")
-        )],
-        dtype=dty,
-    )
-    TMP2 = np.array(
-        [
-            line
-            for line in csv.reader(
-            open(
-                "data/HistOcean_ERSST4/#DATA.HistOcean_ERSST4.1854-2014_18x10lat.SURF.csv",
-                "r")
-        )],
-        dtype=dty,
-    )
-    exec(var + "_ncdc2[154:] = np.sum(TMP[:,:]*TMP2[:,:],1)")
-    exec(var + "_ncdc2[154:] /= np.sum(TMP2[:,:],1)")
+sst_ncdc2 = np.ones([314 + 1], dtype=dty) * np.nan
+path = "data/HistOcean_ERSST4/#DATA.HistOcean_ERSST4.1854-2014_18x10lat.sst.csv"
+path2 = "data/HistOcean_ERSST4/#DATA.HistOcean_ERSST4.1854-2014_18x10lat.SURF.csv"
+TMP = load_data(path)
+TMP2 = load_data(path2)
+sst_ncdc2[154:] = np.sum(TMP[:, :] * TMP2[:, :], 1)
+sst_ncdc2[154:] /= np.sum(TMP2[:, :], 1)
 
 # historical ocean heat content
 # from [Levitus et al., 2012] updated from website
 # reference period is whole period
-for var in ["D_OHC"]:
-    exec(var + "_nodc = np.ones([311+1], dtype=dty) * np.nan")
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open("data/HistOcean_NOAA-NODC/#DATA.HistOcean_NOAA-NODC.1955-2011.D_OHC.csv",
-                 "r"))],
-        dtype=dty,
-    )
-    exec(var + "_nodc[255:] = TMP[:,0]")
+D_OHC_nodc = np.ones([311 + 1], dtype=dty) * np.nan
+path = "data/HistOcean_NOAA-NODC/#DATA.HistOcean_NOAA-NODC.1955-2011.D_OHC.csv"
+TMP = load_data(path)
+D_OHC_nodc[255:] = TMP[:, 0]
 
 # ------------
 # 8.2.1. CMIP5
@@ -400,180 +308,114 @@ prd = {
 # load pre-processed CMIP5 results for specified model
 # temperature patterns based on 'abrupt4xCO2'
 if mod_TEMPpattern == "4xCO2":
-    for sim in ["ctrl", "quad"]:
+    def load_abrupt4xCO2(sim):
         # global
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/Climate_CMIP5/#DATA.Climate_"
-                    + mod_TEMPresp
-                    + "."
-                    + str(lng[mod_TEMPresp])
-                    + "yr_(7var)."
-                    + sim
-                    + "_global.csv",
-                    "r",
-                )
-            )][1:],
-            dtype=dty,
-        )
-        lgd = [
-            line
-            for line in csv.reader(
-                open(
-                    "data/Climate_CMIP5/#DATA.Climate_"
-                    + mod_TEMPresp
-                    + "."
-                    + str(lng[mod_TEMPresp])
-                    + "yr_(7var)."
-                    + sim
-                    + "_global.csv",
-                    "r",
-                )
-            )][0]
-        exec("gst_" + sim + 'TR = TMP[:,lgd.index("tas")]')
+        path = f"data/Climate_CMIP5/#DATA.Climate_{mod_TEMPresp}.{lng[mod_TEMPresp]}yr_(7var).{sim}_global.csv"
+        TMP = load_data(path, slice=1)
+        lgd = [line for line in csv.reader(open(path, "r"))][0]
+        gst = TMP[:, lgd.index("tas")]
+
         # local
-        for var in ["tos"]:
-            TMP = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/Climate_CMIP5/#DATA.Climate_"
-                        + mod_TEMPresp
-                        + "."
-                        + str(lng[mod_TEMPresp])
-                        + "yr_18x10lat."
-                        + sim
-                        + "_"
-                        + var
-                        + ".csv",
-                        "r",
-                    )
-                )],
-                dtype=dty,
-            )
-            TMP2 = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/Climate_CMIP5/#DATA.Climate_"
-                        + mod_TEMPresp
-                        + "."
-                        + str(lng[mod_TEMPresp])
-                        + "yr_18x10lat.SURF.csv",
-                        "r",
-                    )
-                )],
-                dtype=dty,
-            )
-            exec(var + "_" + sim + "TR = np.sum(TMP*TMP2,1)/np.sum(TMP2,1)")
+        path = f"data/Climate_CMIP5/#DATA.Climate_{mod_TEMPresp}.{lng[mod_TEMPresp]}yr_18x10lat.{sim}_tos.csv"
+        path2 = f"data/Climate_CMIP5/#DATA.Climate_{mod_TEMPresp}.{lng[mod_TEMPresp]}yr_18x10lat.SURF.csv"
+        TMP = load_data(path)
+        TMP2 = load_data(path2)
+        tos = np.sum(TMP * TMP2, 1) / np.sum(TMP2, 1)
+        return gst, tos
+
+
+    gst_ctrlTR, tos_ctrlTR = load_abrupt4xCO2("ctrl")
+    gst_quadTR, tos_quadTR = load_abrupt4xCO2("quad")
 
 # temperature patterns based on 'historical' and 'rcp'
 elif mod_TEMPpattern == "hist&RCPs":
-    for sim in ["ctrl", "hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
+    def load_temp_historical(sim):
         # global
-        if os.path.isfile(
-                "data/ClimReg_CMIP5/#DATA.ClimReg_" + mod_TEMPresp + "." + prd[
-                    sim] + "_(3var)." + sim + "_global.csv"
-        ):
-            TMP = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/ClimReg_CMIP5/#DATA.ClimReg_"
-                        + mod_TEMPresp
-                        + "."
-                        + prd[sim]
-                        + "_(3var)."
-                        + sim
-                        + "_global.csv",
-                        "r",
-                    )
-                )][1:],
-                dtype=dty,
-            )
-            lgd = [
-                line
-                for line in csv.reader(
-                    open(
-                        "data/ClimReg_CMIP5/#DATA.ClimReg_"
-                        + mod_TEMPresp
-                        + "."
-                        + prd[sim]
-                        + "_(3var)."
-                        + sim
-                        + "_global.csv",
-                        "r",
-                    )
-                )][0]
-            exec("gst_" + sim + 'TR = TMP[:,lgd.index("tas")]')
+        path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{mod_TEMPresp}.{prd[sim]}_(3var).{sim}_global.csv"
+        if os.path.isfile(path):
+            path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{mod_TEMPresp}.{prd[sim]}_(3var).{sim}_global.csv"
+            TMP = load_data(path, slice=1)
+            lgd = [line for line in csv.reader(open(path, "r"))][0]
+            gst = TMP[:, lgd.index("tas")]
+
         # local
-        for var in ["tos"]:
-            if os.path.isfile(
-                    "data/ClimReg_CMIP5/#DATA.ClimReg_"
-                    + mod_TEMPresp
-                    + "."
-                    + prd[sim]
-                    + "_18x10lat."
-                    + sim
-                    + "_"
-                    + var
-                    + ".csv"
-            ):
-                TMP = np.array(
-                    [
-                        line
-                        for line in csv.reader(
-                        open(
-                            "data/ClimReg_CMIP5/#DATA.ClimReg_"
-                            + mod_TEMPresp
-                            + "."
-                            + prd[sim]
-                            + "_18x10lat."
-                            + sim
-                            + "_"
-                            + var
-                            + ".csv",
-                            "r",
-                        )
-                    )],
-                    dtype=dty,
-                )
-                TMP2 = np.array(
-                    [
-                        line
-                        for line in csv.reader(
-                        open(
-                            "data/ClimReg_CMIP5/#DATA.ClimReg_" + mod_TEMPresp + ".251yr_18x10lat.SURF.csv",
-                            "r")
-                    )],
-                    dtype=dty,
-                )
-                exec(
-                    var + "_" + sim + "TR = np.sum(TMP*TMP2[:len(TMP)],1)/np.sum(TMP2[:len(TMP)],1)")
+        path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{mod_TEMPresp}.{prd[sim]}_18x10lat.{sim}_tos.csv"
+        if os.path.isfile(path):
+            TMP = load_data(path)
+            TMP2 = load_data(f"data/ClimReg_CMIP5/#DATA.ClimReg_{mod_TEMPresp}.251yr_18x10lat.SURF.csv")
+            tos = np.sum(TMP * TMP2[:len(TMP)], 1) / np.sum(TMP2[:len(TMP)], 1)
+        return gst, tos
+
+
+    gst_ctrlTR, tos_ctrlTR = load_temp_historical("ctrl")
+    gst_histTR, tos_histTR = load_temp_historical("hist")
+    gst_rcp26TR, tos_rcp26TR = load_temp_historical("rcp26")
+    gst_rcp45TR, tos_rcp45TR = load_temp_historical("rcp45")
+    gst_rcp60TR, tos_rcp60TR = load_temp_historical("rcp60")
+    gst_rcp85TR, tos_rcp85TR = load_temp_historical("rcp85")
+
+
+def histTR(var):
+    mapping = {"tos": tos_histTR, "gst": gst_histTR}
+    try:
+        return mapping[var]
+    except KeyError:
+        mapping = {"tas": tas_histTR}
+        return mapping[var]
+
+
+def quadTR(var):
+    mapping = {"tos": tos_quadTR, "gst": gst_quadTR}
+    try:
+        return mapping[var]
+    except KeyError:
+        mapping = {"tas": tas_quadTR}
+        return mapping[var]
+
+
+def get_TR(var, sim):
+    mapping = {
+        ("tos", "rcp26"): tos_rcp26TR,
+        ("gst", "rcp26"): gst_rcp26TR,
+        ("tos", "rcp45"): tos_rcp45TR,
+        ("gst", "rcp45"): gst_rcp45TR,
+        ("tos", "rcp60"): tos_rcp60TR,
+        ("gst", "rcp60"): gst_rcp60TR,
+        ("tos", "rcp85"): tos_rcp85TR,
+        ("gst", "rcp85"): gst_rcp85TR,
+    }
+    try:
+        return mapping[var, sim]
+    except KeyError:
+        mapping = {
+            ("tas", "rcp26"): tas_rcp26TR,
+            ("tas", "rcp45"): tas_rcp45TR,
+            ("tas", "rcp60"): tas_rcp60TR,
+            ("tas", "rcp85"): tas_rcp85TR,
+        }
+        return mapping[var, sim]
+
 
 # aggregate all experiments
-for VAR in ["gst", "tos"]:
+def aggregate(VAR):
     if mod_TEMPpattern == "4xCO2":
-        exec(VAR + "_allTR = np.array(list(" + VAR + "_quadTR), dtype=dty)")
+        return np.array(list(quadTR(VAR)), dtype=dty)
     elif mod_TEMPpattern == "hist&RCPs":
-        exec(VAR + "_allTR = []")
+        res = []
         for sim in ["rcp26", "rcp45", "rcp60", "rcp85"]:
-            if os.path.isfile(
-                    "data/ClimReg_CMIP5/#DATA.ClimReg_" + mod_TEMPresp + "." + prd[
-                        sim] + "_(3var)." + sim + "_global.csv"
-            ):
-                exec(
-                    VAR + "_allTR += list(" + VAR + "_histTR)+list(" + VAR + "_" + sim + "TR)")
-        exec("test = " + VAR + "_allTR")
-        if test == []:
-            exec(VAR + "_allTR += list(" + VAR + "_histTR)")
-        exec(VAR + "_allTR = np.array(" + VAR + "_allTR, dtype=dty)")
+            path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{mod_TEMPresp}.{prd[sim]}_(3var).{sim}_global.csv"
+            if os.path.isfile(path):
+                res += list(histTR(VAR)) + list(get_TR(VAR, sim))
+        if res == []:
+            res.extend(list(histTR(VAR)))
+        return np.array(res, dtype=dty)
+    else:
+        raise ValueError
+
+
+if mod_TEMPpattern in ("4xCO2", "hist&RCPs"):
+    tos_allTR = aggregate("tos")
+    gst_allTR = aggregate("gst")
 
 # definition of parameter
 # scaling of sea surface temperature over gst {.}
@@ -618,13 +460,14 @@ if mod_ACIDsurf == "Tans2009":
 elif mod_ACIDsurf == "Bernie2010":
 
     def f_pH(D_CO2):
-        D_pH = D_pH = (
+        D_pH = (
                 -0.00173 * D_CO2
                 + 1.3264e-6 * (2 * CO2_0 * D_CO2 + D_CO2 ** 2)
                 - 4.4943e-10 * (
                         3 * D_CO2 * CO2_0 ** 2 + 3 * CO2_0 * D_CO2 ** 2 + D_CO2 ** 3)
         )
         return np.array(D_pH, dtype=dty)
+
 
 # ----------------
 # 8.2.4. Sea-level
@@ -640,61 +483,42 @@ elif mod_ACIDsurf == "Bernie2010":
 # 8.3.A. Reconstructions
 # ----------------------
 
+
 # historical local climate from CRU {degC}&{mm}
 # from [Harris et al., 2014]
-for var in ["lst", "lyp"]:
-    exec(var + "_cru = np.zeros([314+1,nb_regionI], dtype=dty)")
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open("data/HistLand_CRU/#DATA.HistLand_CRU.1901-2014_114reg1." + var + ".csv",
-                 "r"))],
-        dtype=dty,
-    )
-    TMP2 = np.array(
-        [line for line in csv.reader(
-            open("data/HistLand_CRU/#DATA.HistLand_CRU.1901-2014_114reg1.AREA.csv",
-                 "r"))],
-        dtype=dty,
-    )
+def load_historical_climate(var):
+    arr = np.zeros([314 + 1, nb_regionI], dtype=dty)
+    path = f"data/HistLand_CRU/#DATA.HistLand_CRU.1901-2014_114reg1.{var}.csv"
+    TMP = load_data(path)
+
+    path = "data/HistLand_CRU/#DATA.HistLand_CRU.1901-2014_114reg1.AREA.csv"
+    TMP2 = load_data(path)
+
     for i in range(1, 114 + 1):
-        exec(var + "_cru[201:,regionI_index[i]] += TMP[:,i-1]*TMP2[:,i-1]")
+        arr[201:, regionI_index[i]] += TMP[:, i - 1] * TMP2[:, i - 1]
     TMP = np.zeros([314 + 1, nb_regionI], dtype=dty)
     for i in range(1, 114 + 1):
         TMP[201:, regionI_index[i]] += TMP2[:, i - 1]
-    exec(var + "_cru /= TMP[:,:]")
+    arr /= TMP[:, :]
+    return arr
+
+
+lst_cru = load_historical_climate("lst")
+lyp_cru = load_historical_climate("lyp")
 
 # historical local climate from GHCN+CAMS {degC}
 # from [Fan and van den Dool, 2008] updated from website
-for var in ["lst"]:
-    exec(var + "_ghcn = np.zeros([314+1,nb_regionI], dtype=dty)")
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open(
-                "data/HistLand_GHCN-CAMS/#DATA.HistLand_GHCN-CAMS.1948-2014_114reg1." + var + ".csv",
-                "r")
-        )],
-        dtype=dty,
-    )
-    TMP2 = np.array(
-        [
-            line
-            for line in csv.reader(
-            open(
-                "data/HistLand_GHCN-CAMS/#DATA.HistLand_GHCN-CAMS.1948-2014_114reg1.AREA.csv",
-                "r")
-        )],
-        dtype=dty,
-    )
-    for i in range(1, 114 + 1):
-        exec(var + "_ghcn[248:,regionI_index[i]] += TMP[:,i-1]*TMP2[:,i-1]")
-    TMP = np.zeros([314 + 1, nb_regionI], dtype=dty)
-    for i in range(1, 114 + 1):
-        TMP[248:, regionI_index[i]] += TMP2[:, i - 1]
-    exec(var + "_ghcn /= TMP[:,:]")
+lst_ghcn = np.zeros([314 + 1, nb_regionI], dtype=dty)
+path = f"data/HistLand_GHCN-CAMS/#DATA.HistLand_GHCN-CAMS.1948-2014_114reg1.lst.csv"
+path2 = "data/HistLand_GHCN-CAMS/#DATA.HistLand_GHCN-CAMS.1948-2014_114reg1.AREA.csv"
+TMP = load_data(path)
+TMP2 = load_data(path2)
+for i in range(1, 114 + 1):
+    lst_ghcn[248:, regionI_index[i]] += TMP[:, i - 1] * TMP2[:, i - 1]
+TMP = np.zeros([314 + 1, nb_regionI], dtype=dty)
+for i in range(1, 114 + 1):
+    TMP[248:, regionI_index[i]] += TMP2[:, i - 1]
+lst_ghcn /= TMP[:, :]
 
 # ------------
 # 8.3.1. CMIP5
@@ -741,223 +565,118 @@ prd = {
 # load pre-processed CMIP5 results for specified model
 # temperature patterns based on 'abrupt4xCO2'
 if mod_TEMPpattern == "4xCO2":
-    for sim in ["ctrl", "quad"]:
+    def load_temp_patterns(sim):
         # global
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/Climate_CMIP5/#DATA.Climate_"
-                    + mod_TEMPresp
-                    + "."
-                    + str(lng[mod_TEMPresp])
-                    + "yr_(7var)."
-                    + sim
-                    + "_global.csv",
-                    "r",
-                )
-            )][1:],
-            dtype=dty,
-        )
-        lgd = [
-            line
-            for line in csv.reader(
-                open(
-                    "data/Climate_CMIP5/#DATA.Climate_"
-                    + mod_TEMPresp
-                    + "."
-                    + str(lng[mod_TEMPresp])
-                    + "yr_(7var)."
-                    + sim
-                    + "_global.csv",
-                    "r",
-                )
-            )][0]
-        exec("gst_" + sim + 'TR = TMP[:,lgd.index("tas")]')
+        path = f"data/Climate_CMIP5/#DATA.Climate_{mod_TEMPresp}.{lng[mod_TEMPresp]}yr_(7var).{sim}global.csv"
+        TMP = load_data(path, slice=1)
+        lgd = [line for line in csv.reader(open(path, "r"))][0]
+        gst = TMP[:, lgd.index("tas")]
+
         # local
-        for var in ["tas"]:
-            exec(
-                var + "_" + sim + "TR = np.zeros([lng[mod_TEMPresp],nb_regionI], dtype=dty)")
-            TMP = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/Climate_CMIP5/#DATA.Climate_"
-                        + mod_TEMPresp
-                        + "."
-                        + str(lng[mod_TEMPresp])
-                        + "yr_114reg1."
-                        + sim
-                        + "_"
-                        + var
-                        + ".csv",
-                        "r",
-                    )
-                )],
-                dtype=dty,
-            )
-            TMP2 = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/Climate_CMIP5/#DATA.Climate_"
-                        + mod_TEMPresp
-                        + "."
-                        + str(lng[mod_TEMPresp])
-                        + "yr_114reg1.AREA.csv",
-                        "r",
-                    )
-                )],
-                dtype=dty,
-            )
-            exec(var + "_" + sim + "TR = np.zeros([len(TMP),nb_regionI], dtype=dty)")
-            exec("AREA_" + sim + "TR = np.zeros([len(TMP),nb_regionI], dtype=dty)")
-            for i in range(1, 114 + 1):
-                exec(
-                    var + "_" + sim + "TR[:,regionI_index[i]] += TMP[:,i-1]*TMP2[:len(TMP),i-1]")
-                exec("AREA_" + sim + "TR[:,regionI_index[i]] += TMP2[:len(TMP),i-1]")
-            exec(var + "_" + sim + "TR /= AREA_" + sim + "TR")
-            exec(
-                var + "_" + sim + "TR[np.isnan(" + var + "_" + sim + "TR)|np.isinf(" + var + "_" + sim + "TR)] = 0")
+        # tas = np.zeros([lng[mod_TEMPresp],nb_regionI], dtype=dty)
+        path = f"data/Climate_CMIP5/#DATA.Climate_{mod_TEMPresp}.{lng[mod_TEMPresp]}yr_114reg1.{sim}_tas.csv"
+        path2 = f"data/Climate_CMIP5/#DATA.Climate_{mod_TEMPresp}.{lng[mod_TEMPresp]}yr_114reg1.AREA.csv"
+        TMP = load_data(path)
+        TMP2 = load_data(path2)
+        tas = np.zeros([len(TMP), nb_regionI], dtype=dty)
+        area = np.zeros([len(TMP), nb_regionI], dtype=dty)
+        for i in range(1, 114 + 1):
+            tas[:, regionI_index[i]] += TMP[:, i - 1] * TMP2[:len(TMP), i - 1]
+            area[:, regionI_index[i]] += TMP2[:len(TMP), i - 1]
+        tas /= area
+        tas[np.isnan(tas) | np.isinf(tas)] = 0
+
+        return gst, tas, area
+
+
+    gst_ctrlTR, tas_ctrlTR, AREA_ctrlTR = load_temp_patterns("ctrl")
+    gst_quadTR, tas_quadTR, AREA_quadTR = load_temp_patterns("quad")
+
 
 # temperature patterns based on 'historical' and 'rcp'
 elif mod_TEMPpattern == "hist&RCPs":
-    for sim in ["ctrl", "hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
+    def load_temperature_patterns(sim):
         # global
-        if os.path.isfile(
-                "data/ClimReg_CMIP5/#DATA.ClimReg_" + mod_TEMPresp + "." + prd[
-                    sim] + "_(3var)." + sim + "_global.csv"
-        ):
-            TMP = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/ClimReg_CMIP5/#DATA.ClimReg_"
-                        + mod_TEMPresp
-                        + "."
-                        + prd[sim]
-                        + "_(3var)."
-                        + sim
-                        + "_global.csv",
-                        "r",
-                    )
-                )][1:],
-                dtype=dty,
-            )
-            lgd = [
-                line
-                for line in csv.reader(
-                    open(
-                        "data/ClimReg_CMIP5/#DATA.ClimReg_"
-                        + mod_TEMPresp
-                        + "."
-                        + prd[sim]
-                        + "_(3var)."
-                        + sim
-                        + "_global.csv",
-                        "r",
-                    )
-                )][0]
-            exec("gst_" + sim + 'TR = TMP[:,lgd.index("tas")]')
+        path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{mod_TEMPresp}.{prd[sim]}_(3var).{sim}_global.csv"
+        if os.path.isfile(path):
+            TMP = load_data(path, slice=1)
+            lgd = [line for line in csv.reader(open(path, "r"))][0]
+            gst = TMP[:, lgd.index("tas")]
+
         # local
-        for var in ["tas"]:
-            if os.path.isfile(
-                    "data/ClimReg_CMIP5/#DATA.ClimReg_"
-                    + mod_TEMPresp
-                    + "."
-                    + prd[sim]
-                    + "_114reg1."
-                    + sim
-                    + "_"
-                    + var
-                    + ".csv"
-            ):
-                TMP = np.array(
-                    [
-                        line
-                        for line in csv.reader(
-                        open(
-                            "data/ClimReg_CMIP5/#DATA.ClimReg_"
-                            + mod_TEMPresp
-                            + "."
-                            + prd[sim]
-                            + "_114reg1."
-                            + sim
-                            + "_"
-                            + var
-                            + ".csv",
-                            "r",
-                        )
-                    )],
-                    dtype=dty,
-                )
-                TMP2 = np.array(
-                    [
-                        line
-                        for line in csv.reader(
-                        open(
-                            "data/ClimReg_CMIP5/#DATA.ClimReg_" + mod_TEMPresp + ".251yr_114reg1.AREA.csv",
-                            "r")
-                    )],
-                    dtype=dty,
-                )
-                exec(var + "_" + sim + "TR = np.zeros([len(TMP),nb_regionI], dtype=dty)")
-                exec("AREA_" + sim + "TR = np.zeros([len(TMP),nb_regionI], dtype=dty)")
-                for i in range(1, 114 + 1):
-                    exec(
-                        var + "_" + sim + "TR[:,regionI_index[i]] += TMP[:,i-1]*TMP2[:len(TMP),i-1]")
-                    exec("AREA_" + sim + "TR[:,regionI_index[i]] += TMP2[:len(TMP),i-1]")
-                exec(var + "_" + sim + "TR /= AREA_" + sim + "TR")
-                exec(
-                    var + "_" + sim + "TR[np.isnan(" + var + "_" + sim + "TR)|np.isinf(" + var + "_" + sim + "TR)] = 0"
-                )
+        path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{mod_TEMPresp}.{prd[sim]}_114reg1.{sim}_tas.csv"
+        if os.path.isfile(path):
+            path2 = f"data/ClimReg_CMIP5/#DATA.ClimReg_{mod_TEMPresp}.251yr_114reg1.AREA.csv"
+            TMP = load_data(path)
+            TMP2 = load_data(path2)
+            tas = np.zeros([len(TMP), nb_regionI], dtype=dty)
+            area = np.zeros([len(TMP), nb_regionI], dtype=dty)
+            for i in range(1, 114 + 1):
+                tas[:, regionI_index[i]] += TMP[:, i - 1] * TMP2[:len(TMP), i - 1]
+                area[:, regionI_index[i]] += TMP2[:len(TMP), i - 1]
+            tas /= area
+            tas[np.isnan(tas) | np.isinf(tas)] = 0
+
+            return gst, tas, area
+
+
+    gst_ctrlTR, tas_ctrlTR, AREA_ctrlTR = load_temperature_patterns("ctrl")
+    gst_histTR, tas_histTR, AREA_histTR = load_temperature_patterns("hist")
+    gst_rcp26TR, tas_rcp26TR, AREA_rcp26TR = load_temperature_patterns("rcp26")
+    gst_rcp45TR, tas_rcp45TR, AREA_rcp45TR = load_temperature_patterns("rcp45")
+    gst_rcp60TR, tas_rcp60TR, AREA_rcp60TR = load_temperature_patterns("rcp60")
+    gst_rcp85TR, tas_rcp85TR, AREA_rcp85TR = load_temperature_patterns("rcp85")
 
 # aggregate all experiments
-for VAR in ["gst", "tas"]:
+# FIXME: this seems to be repeated. Does anything change from first definition
+# of <VAR>_allTR to now?
+nrcp = 0
+
+
+def aggregate(VAR):
+    global nrcp
     if mod_TEMPpattern == "4xCO2":
-        exec(VAR + "_allTR = np.array(list(" + VAR + "_quadTR), dtype=dty)")
+        return np.array(list(quadTR(VAR)), dtype=dty)
     elif mod_TEMPpattern == "hist&RCPs":
-        exec(VAR + "_allTR = []")
+        res = []
         nrcp = 0
         for sim in ["rcp26", "rcp45", "rcp60", "rcp85"]:
-            if os.path.isfile(
-                    "data/ClimReg_CMIP5/#DATA.ClimReg_" + mod_TEMPresp + "." + prd[
-                        sim] + "_(3var)." + sim + "_global.csv"
-            ):
+            path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{mod_TEMPresp}.{prd[sim]}_(3var).{sim}_global.csv"
+            if os.path.isfile(path):
                 nrcp += 1
-                exec(
-                    VAR + "_allTR += list(" + VAR + "_histTR)+list(" + VAR + "_" + sim + "TR)")
-        exec("test = " + VAR + "_allTR")
-        if test == []:
-            exec(VAR + "_allTR += list(" + VAR + "_histTR)")
-        exec(VAR + "_allTR = np.array(" + VAR + "_allTR, dtype=dty)")
+                res += list(histTR(VAR)) + list(get_TR(VAR, sim))
+        if res == []:
+            res += list(histTR(VAR))
+        return np.array(res, dtype=dty)
+
+
+gst_allTR = aggregate("gst")
+tas_allTR = aggregate("tas")
+
 
 # decadal means
-for VAR in ["gst", "tas"]:
+def decadal_means(base):
     if mod_TEMPpattern == "4xCO2":
-        exec(
-            VAR + "_decTR= np.zeros([lng[mod_TEMPresp]-10]+list(np.shape(" + VAR + "_allTR)[1:]), dtype=dty)")
+        arr = np.zeros([lng[mod_TEMPresp] - 10] + list(np.shape(base)[1:]), dtype=dty)
         for t in range(lng[mod_TEMPresp] - 10):
-            exec(VAR + "_decTR[t,...] = np.mean(" + VAR + "_allTR[t:t+10,...],0)")
+            arr[t, ...] = np.mean(base[t:t + 10, ...], 0)
     elif mod_TEMPpattern == "hist&RCPs":
-        exec(
-            VAR + "_decTR= np.zeros([(156-10)+nrcp*(95-10)]+list(np.shape(" + VAR + "_allTR)[1:]), dtype=dty)")
+        arr = np.zeros([(156 - 10) + nrcp * (95 - 10)] + list(np.shape(base)[1:]), dtype=dty)
         for t in range(156 - 10):
-            exec(VAR + "_decTR[t,...] = np.mean(" + VAR + "_allTR[t:t+10,...],0)")
+            arr[t, ...] = np.mean(base[t:t + 10, ...], 0)
         for n in range(nrcp):
             for t in range(95 - 10):
-                exec(
-                    VAR
-                    + "_decTR[(156-10)+n*(95-10)+t,...] = np.mean("
-                    + VAR
-                    + "_allTR[(156-10)+n*(95-10)+t:(156-10)+n*(95-10)+t+10,...],0)"
-                )
+                arr[(156 - 10) + n * (95 - 10) + t, ...] = np.mean(
+                    base[(156 - 10) + n * (95 - 10) + t:(156 - 10) + n * (95 - 10) + t + 10, ...], 0)
+    else:
+        raise ValueError('invalid module!')
+    return arr
 
-            # definition of parameter
+
+gst_decTR = decadal_means(gst_allTR)
+tas_decTR = decadal_means(tas_allTR)
+
+# definition of parameter
 # scaling of local surface temperature over gst {.}
 w_reg_lst = np.zeros([nb_regionI], dtype=dty)
 
@@ -976,218 +695,132 @@ for i in range(nb_regionI):
 # load pre-processed CMIP5 results for specified model
 # precipitation patterns based on 'abrupt4xCO2'
 if mod_PRECpattern == "4xCO2":
-    for sim in ["ctrl", "quad"]:
+    def load_mod_prec(sim):
         # global
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/Climate_CMIP5/#DATA.Climate_"
-                    + mod_PRECresp
-                    + "."
-                    + str(lng[mod_PRECresp])
-                    + "yr_(7var)."
-                    + sim
-                    + "_global.csv",
-                    "r",
-                )
-            )][1:],
-            dtype=dty,
-        )
-        lgd = [
-            line
-            for line in csv.reader(
-                open(
-                    "data/Climate_CMIP5/#DATA.Climate_"
-                    + mod_PRECresp
-                    + "."
-                    + str(lng[mod_PRECresp])
-                    + "yr_(7var)."
-                    + sim
-                    + "_global.csv",
-                    "r",
-                )
-            )][0]
-        exec("gyp_" + sim + 'PR = TMP[:,lgd.index("pr")]')
+        path = f"data/Climate_CMIP5/#DATA.Climate_{mod_PRECresp}.{lng[mod_PRECresp]}yr_(7var).{sim}_global.csv"
+        TMP = load_data(path, slice=1)
+        lgd = [line for line in csv.reader(open(path, "r"))][0]
+        gyp = TMP[:, lgd.index("pr")]
+
         # local
-        for var in ["pr"]:
-            TMP = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/Climate_CMIP5/#DATA.Climate_"
-                        + mod_PRECresp
-                        + "."
-                        + str(lng[mod_PRECresp])
-                        + "yr_114reg1."
-                        + sim
-                        + "_"
-                        + var
-                        + ".csv",
-                        "r",
-                    )
-                )],
-                dtype=dty,
-            )
-            TMP2 = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/Climate_CMIP5/#DATA.Climate_"
-                        + mod_PRECresp
-                        + "."
-                        + str(lng[mod_PRECresp])
-                        + "yr_114reg1.AREA.csv",
-                        "r",
-                    )
-                )],
-                dtype=dty,
-            )
-            exec(var + "_" + sim + "PR = np.zeros([len(TMP),nb_regionI], dtype=dty)")
-            exec("AREA_" + sim + "PR = np.zeros([len(TMP),nb_regionI], dtype=dty)")
-            for i in range(1, 114 + 1):
-                exec(
-                    var + "_" + sim + "PR[:,regionI_index[i]] += TMP[:,i-1]*TMP2[:len(TMP),i-1]")
-                exec("AREA_" + sim + "PR[:,regionI_index[i]] += TMP2[:len(TMP),i-1]")
-            exec(var + "_" + sim + "PR /= AREA_" + sim + "PR")
-            exec(
-                var + "_" + sim + "PR[np.isnan(" + var + "_" + sim + "PR)|np.isinf(" + var + "_" + sim + "PR)] = 0")
+        path = f"data/Climate_CMIP5/#DATA.Climate_{mod_PRECresp}.{lng[mod_PRECresp]}yr_114reg1.{sim}_pr.csv"
+        path2 = f"data/Climate_CMIP5/#DATA.Climate_{mod_PRECresp}.{lng[mod_PRECresp]}yr_114reg1.AREA.csv"
+        TMP = load_data(path)
+        TMP2 = load_data(path2)
+        pr = p.zeros([len(TMP), nb_regionI], dtype=dty)
+        area = np.zeros([len(TMP), nb_regionI], dtype=dty)
+        for i in range(1, 114 + 1):
+            pr[:, regionI_index[i]] += TMP[:, i - 1] * TMP2[:len(TMP), i - 1]
+            area[:, regionI_index[i]] += TMP2[:len(TMP), i - 1]
+        pr /= area
+        pr[np.isnan(pr) | np.isinf(pr)] = 0
+        return gyp, pr, area
+
+
+    gyp_ctrlPR, pr_ctrlPR, AREA_ctrlPR = load_mod_prec("ctrl")
+    gyp_quadPR, pr_quadPR, AREA_quadPR = load_mod_prec("quad")
+
 
 # precipitation patterns based on 'historical' and 'rcp'
 elif mod_PRECpattern == "hist&RCPs":
-    for sim in ["ctrl", "hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
+    def load_precipitation(sim):
         # global
-        if os.path.isfile(
-                "data/ClimReg_CMIP5/#DATA.ClimReg_" + mod_PRECresp + "." + prd[
-                    sim] + "_(3var)." + sim + "_global.csv"
-        ):
-            TMP = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/ClimReg_CMIP5/#DATA.ClimReg_"
-                        + mod_PRECresp
-                        + "."
-                        + prd[sim]
-                        + "_(3var)."
-                        + sim
-                        + "_global.csv",
-                        "r",
-                    )
-                )][1:],
-                dtype=dty,
-            )
-            lgd = [
-                line
-                for line in csv.reader(
-                    open(
-                        "data/ClimReg_CMIP5/#DATA.ClimReg_"
-                        + mod_PRECresp
-                        + "."
-                        + prd[sim]
-                        + "_(3var)."
-                        + sim
-                        + "_global.csv",
-                        "r",
-                    )
-                )][0]
-            exec("gyp_" + sim + 'PR = TMP[:,lgd.index("pr")]')
+        path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{mod_PRECresp}.{prd[sim]}_(3var).{sim}_global.csv"
+        if os.path.isfile(path):
+            TMP = load_data(path, slice=1)
+            lgd = [line for line in csv.reader(open(path, "r"))][0]
+            gyp = TMP[:, lgd.index("pr")]
+
         # local
-        for var in ["pr"]:
-            if os.path.isfile(
-                    "data/ClimReg_CMIP5/#DATA.ClimReg_"
-                    + mod_PRECresp
-                    + "."
-                    + prd[sim]
-                    + "_114reg1."
-                    + sim
-                    + "_"
-                    + var
-                    + ".csv"
-            ):
-                TMP = np.array(
-                    [
-                        line
-                        for line in csv.reader(
-                        open(
-                            "data/ClimReg_CMIP5/#DATA.ClimReg_"
-                            + mod_PRECresp
-                            + "."
-                            + prd[sim]
-                            + "_114reg1."
-                            + sim
-                            + "_"
-                            + var
-                            + ".csv",
-                            "r",
-                        )
-                    )],
-                    dtype=dty,
-                )
-                TMP2 = np.array(
-                    [
-                        line
-                        for line in csv.reader(
-                        open(
-                            "data/ClimReg_CMIP5/#DATA.ClimReg_" + mod_PRECresp + ".251yr_114reg1.AREA.csv",
-                            "r")
-                    )],
-                    dtype=dty,
-                )
-                exec(var + "_" + sim + "PR = np.zeros([len(TMP),nb_regionI], dtype=dty)")
-                exec("AREA_" + sim + "PR = np.zeros([len(TMP),nb_regionI], dtype=dty)")
-                for i in range(1, 114 + 1):
-                    exec(
-                        var + "_" + sim + "PR[:,regionI_index[i]] += TMP[:,i-1]*TMP2[:len(TMP),i-1]")
-                    exec("AREA_" + sim + "PR[:,regionI_index[i]] += TMP2[:len(TMP),i-1]")
-                exec(var + "_" + sim + "PR /= AREA_" + sim + "PR")
-                exec(
-                    var + "_" + sim + "PR[np.isnan(" + var + "_" + sim + "PR)|np.isinf(" + var + "_" + sim + "PR)] = 0"
-                )
+        path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{mod_PRECresp}.{prd[sim]}_114reg1.{sim}_pr.csv"
+        path2 = f"data/ClimReg_CMIP5/#DATA.ClimReg_{mod_PRECresp}.251yr_114reg1.AREA.csv"
+        if os.path.isfile(path):
+            TMP = load_data(path)
+            TMP2 = load_data(path2)
+            pr = np.zeros([len(TMP), nb_regionI], dtype=dty)
+            area = np.zeros([len(TMP), nb_regionI], dtype=dty)
+            for i in range(1, 114 + 1):
+                pr[:, regionI_index[i]] += TMP[:, i - 1] * TMP2[:len(TMP), i - 1]
+                area[:, regionI_index[i]] += TMP2[:len(TMP), i - 1]
+            pr /= area
+            pr[np.isnan(pr) | np.isinf(pr)] = 0
+
+        return gyp, pr, area
+
+
+    gyp_ctrlPR, pr_ctrlPR, AREA_ctrlPR = load_precipitation("ctrl")
+    gyp_histPR, pr_histPR, AREA_histPR = load_precipitation("hist")
+    gyp_rcp26PR, pr_rcp26PR, AREA_rcp26PR = load_precipitation("rcp26")
+    gyp_rcp45PR, pr_rcp45PR, AREA_rcp45PR = load_precipitation("rcp45")
+    gyp_rcp60PR, pr_rcp60PR, AREA_rcp60PR = load_precipitation("rcp60")
+    gyp_rcp85PR, pr_rcp85PR, AREA_rcp85PR = load_precipitation("rcp85")
+
 
 # aggregate all experiments
-for VAR in ["gyp", "pr"]:
+def quadPR(var):
+    return {"gyp": gyp_quadPR, "pr": pr_quadPR}[var]
+
+
+def histPR(var):
+    return {"gyp": gyp_histPR, "pr": pr_histPR}[var]
+
+
+def getPR(var, sim):
+    return {
+        ("gyp", "rcp26"): gyp_rcp26PR,
+        ("gyp", "rcp45"): gyp_rcp45PR,
+        ("gyp", "rcp60"): gyp_rcp60PR,
+        ("gyp", "rcp85"): gyp_rcp85PR,
+        ("pr", "rcp26"): pr_rcp26PR,
+        ("pr", "rcp45"): pr_rcp45PR,
+        ("pr", "rcp60"): pr_rcp60PR,
+        ("pr", "rcp85"): pr_rcp85PR,
+    }[var, sim]
+
+
+def aggregate(VAR):
+    global nrcp
+
     if mod_PRECpattern == "4xCO2":
-        exec(VAR + "_allPR = np.array(list(" + VAR + "_quadPR), dtype=dty)")
+        return np.array(list(quadPR(VAR)), dtype=dty)
     elif mod_PRECpattern == "hist&RCPs":
-        exec(VAR + "_allPR = []")
+        res = []
         nrcp = 0
         for sim in ["rcp26", "rcp45", "rcp60", "rcp85"]:
-            if os.path.isfile(
-                    "data/ClimReg_CMIP5/#DATA.ClimReg_" + mod_PRECresp + "." + prd[
-                        sim] + "_(3var)." + sim + "_global.csv"
-            ):
+            path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{mod_PRECresp}.{prd[sim]}_(3var).{sim}_global.csv"
+            if os.path.isfile(path):
                 nrcp += 1
-                exec(
-                    VAR + "_allPR += list(" + VAR + "_histPR)+list(" + VAR + "_" + sim + "PR)")
-        exec("test = " + VAR + "_allPR")
-        if test == []:
-            exec(VAR + "_allPR += list(" + VAR + "_histPR)")
-        exec(VAR + "_allPR = np.array(" + VAR + "_allPR, dtype=dty)")
+                res += list(histPR(VAR)) + list(getPR(VAR, sim))
+        if res == []:
+            res += list(histPR(VAR))
+        return np.array(res, dtype=dty)
+
+
+gyp_allPR = aggregate("gyp")
+pr_allPR = aggregate("pr")
+
+
 # decadal means
-for VAR in ["gyp", "pr"]:
+def decadal_means(base):
     if mod_PRECpattern == "4xCO2":
-        exec(
-            VAR + "_decPR= np.zeros([lng[mod_PRECresp]-10]+list(np.shape(" + VAR + "_allPR)[1:]), dtype=dty)")
+        dec = np.zeros([lng[mod_PRECresp] - 10] + list(np.shape(base)[1:]), dtype=dty)
         for t in range(lng[mod_PRECresp] - 10):
-            exec(VAR + "_decPR[t,...] = np.mean(" + VAR + "_allPR[t:t+10,...],0)")
+            dec[t, ...] = np.mean(base[t:t + 10, ...], 0)
     elif mod_PRECpattern == "hist&RCPs":
-        exec(
-            VAR + "_decPR= np.zeros([(156-10)+nrcp*(95-10)]+list(np.shape(" + VAR + "_allPR)[1:]), dtype=dty)")
+        dec = np.zeros([(156 - 10) + nrcp * (95 - 10)] + list(np.shape(base)[1:]), dtype=dty)
         for t in range(156 - 10):
-            exec(VAR + "_decPR[t,...] = np.mean(" + VAR + "_allPR[t:t+10,...],0)")
+            dec[t, ...] = np.mean(base[t:t + 10, ...], 0)
         for n in range(nrcp):
             for t in range(95 - 10):
-                exec(
-                    VAR
-                    + "_decPR[(156-10)+n*(95-10)+t,...] = np.mean("
-                    + VAR
-                    + "_allPR[(156-10)+n*(95-10)+t:(156-10)+n*(95-10)+t+10,...],0)"
-                )
+                dec[(156 - 10) + n * (95 - 10) + t, ...] = np.mean(
+                    base[(156 - 10) + n * (95 - 10) + t:(156 - 10) + n * (95 - 10) + t + 10, ...], 0)
+    else:
+        raise ValueError(mod_PRECpattern)
+    return dec
+
+
+gyp_decPR = decadal_means(gyp_allPR)
+pr_decPR = decadal_means(pr_allPR)
 
 # definition of parameter
 # scaling of local yearly precipitations over gst {.}

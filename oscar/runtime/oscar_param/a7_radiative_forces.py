@@ -2,7 +2,7 @@ import csv
 
 import numpy as np
 
-from .a1_carbon import CO2_0
+from .a1_carbon import CO2_0, load_data
 from .a2_methane import CH4_0
 from .a3_nitrous_oxide import N2O_0
 from ..oscar_data import nb_regionI, nb_biome, regionI_index, biome_index
@@ -23,20 +23,16 @@ from ...config import dty, mod_O3Tradeff, mod_SO4radeff, mod_POAradeff, mod_BCra
 # from [IPCC WG1, 2013] annexe 2
 RF_ipcc = np.zeros([311 + 1], dtype=dty)
 RF_ipcc[:50] = np.nan
-for VAR in ["WMGHG", "O3", "AER", "Alb"]:
-    exec("RF_" + VAR + "_ipcc = RF_ipcc.copy()")
-TMP = np.array(
-    [line for line in csv.reader(
-        open("data/Historic_IPCC-AR5/#DATA.Historic_IPCC-AR5.1750-2011_(11for).RF.csv",
-             "r"))][
-    1:],
-    dtype=dty,
-)
-lgd = [
-    line for line in csv.reader(
-        open("data/Historic_IPCC-AR5/#DATA.Historic_IPCC-AR5.1750-2011_(11for).RF.csv",
-             "r"))
-][0]
+
+RF_WMGHG_ipcc = RF_ipcc.copy()
+RF_O3_ipcc = RF_ipcc.copy()
+RF_AER_ipcc = RF_ipcc.copy()
+RF_Alb_ipcc = RF_ipcc.copy()
+
+TMP = load_data("data/Historic_IPCC-AR5/#DATA.Historic_IPCC-AR5.1750-2011_(11for).RF.csv", slice=1)
+path = "data/Historic_IPCC-AR5/#DATA.Historic_IPCC-AR5.1750-2011_(11for).RF.csv"
+lgd = [line for line in csv.reader(open(path, "r"))][0]
+
 for x in range(len(lgd)):
     if lgd[x] in ["CO2", "GHG Other", "H2O (Strat)"]:
         RF_WMGHG_ipcc[51:] += TMP[1:, x]
@@ -59,14 +55,13 @@ for x in range(len(lgd)):
 # from [Meinshausen et al., 2011]
 RF_cmip5 = np.zeros([305 + 1], dtype=dty)
 RF_cmip5[:65] = np.nan
-TMP = np.array(
-    [line for line in csv.reader(
-        open("data/Historic_CMIP5/#DATA.Historic_CMIP5.1765-2005_(19for).RF.csv", "r"))][
-    1:],
-    dtype=dty,
-)
-lgd = [line for line in csv.reader(
-    open("data/Historic_CMIP5/#DATA.Historic_CMIP5.1765-2005_(19for).RF.csv", "r"))][0]
+
+path = "data/Historic_CMIP5/#DATA.Historic_CMIP5.1765-2005_(19for).RF.csv"
+TMP = load_data(path, slice=1)
+
+path = "data/Historic_CMIP5/#DATA.Historic_CMIP5.1765-2005_(19for).RF.csv"
+lgd = [line for line in csv.reader(open(path, "r"))][0]
+
 for x in range(len(lgd)):
     if lgd[x] == "VOLC":
         RF_cmip5[66:] += TMP[1:, x] - np.mean(TMP[1:, x])
@@ -479,19 +474,14 @@ TMP = np.array(
     )][1:],
     dtype=dty,
 )[:, 1:]
-lgd = [
-          line
-          for line in csv.reader(
-        open(
-            "data/AeroCloud_ACCMIP/#DATA.AeroCloud_" + mod_CLOUDerf + ".(2yr)_(7aer).LOAD.csv",
-            "r")
-    )][0][1:]
+path = f"data/AeroCloud_ACCMIP/#DATA.AeroCloud_{mod_CLOUDerf}.(2yr)_(7aer).LOAD.csv"
+lgd = [line for line in csv.reader(open(path, "r"))][0][1:]
 AER_ref0 = 0
 AER_ref1 = 0
 for n in range(len(lgd)):
     if not np.isnan(TMP[0, n]):
-        exec("AER_ref0 += TMP[0,n] * solub_" + lgd[n])
-        exec("AER_ref1 += TMP[1,n] * solub_" + lgd[n])
+        AER_ref0 += TMP[0,n] * globals()["solub_" + lgd[n]]
+        AER_ref1 += TMP[1,n] * globals()["solub_" + lgd[n]]
 
 # calculate parameters for aerosol-cloud interaction
 # intensity of indirect effect {W/m2}
