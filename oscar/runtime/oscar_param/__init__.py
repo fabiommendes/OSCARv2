@@ -12,3 +12,4 @@ from .a5_ozone import *
 from .a6_aerosols import *
 from .a7_radiative_forces import *
 from .a8_climate import *
+del np

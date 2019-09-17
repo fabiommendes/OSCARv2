@@ -1,9 +1,5 @@
-import csv
-
-import numpy as np
 from scipy.optimize import fmin
 
-from ..oscar_data import *
 from .a4_halogenated import *
 from .a3_nitrous_oxide import tau_lag
 from ..oscar_data import nb_regionI, regionI_index, nb_ODS, ODS

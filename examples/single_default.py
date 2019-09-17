@@ -1,6 +1,6 @@
 import csv
 
-# from oscar.runtime.run import *
+from oscar.config import *
 from oscar.runtime.oscar import *
 
 break_if_error = False

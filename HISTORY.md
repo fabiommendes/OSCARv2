@@ -33,7 +33,16 @@ is moved to oscar.oscar_data.*. The names of modules are temporary e we still
 expect a lot of refactoring. It takes ~3.3 seconds to load all data modules.
 
 [??]
-Eliminate all exec's from code
+Eliminate all exec's from code. Cleaned parameter, data and the OSCAR_lite 
+function from all exec() statements. Now code us much more amenable to 
+refactoring. Removing all exec's() produced a noticiable speed improvement to
+about 45s runtime.
+
+[??]
+Remove all direct references from csv module. Abstracted the data loading 
+procedures to call some OSCAR-specific functions that (for now) call the
+CSV module, but can be later abstracted to use more efficient data storage
+methods.
 
 
 ## Extract data

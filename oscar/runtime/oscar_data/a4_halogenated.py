@@ -178,14 +178,7 @@ EODSproj = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, 
 # HFCs
 if (scen_Ehalo[:3] == "RCP") & (ind_final > ind_cdiac):
     for VAR in HFC:
-        if os.path.isfile(
-                "data/EHaloComp_RCP/#DATA.EHaloComp_RCP.2000-2100_5reg0.rcp"
-                + scen_Ehalo[3]
-                + scen_Ehalo[5]
-                + "_E"
-                + VAR
-                + ".csv"
-        ):
+        if os.path.isfile(f"data/EHaloComp_RCP/#DATA.EHaloComp_RCP.2000-2100_5reg0.rcp{scen_Ehalo[3]}{scen_Ehalo[5]}_E{VAR}.csv"):
             TMP = np.array(
                 [
                     line
@@ -219,14 +212,7 @@ if (scen_Ehalo[:3] == "RCP") & (ind_final > ind_cdiac):
 # PFCs
 if (scen_Ehalo[:3] == "RCP") & (ind_final > ind_cdiac):
     for VAR in PFC:
-        if os.path.isfile(
-                "data/EHaloComp_RCP/#DATA.EHaloComp_RCP.2000-2100_5reg0.rcp"
-                + scen_Ehalo[3]
-                + scen_Ehalo[5]
-                + "_E"
-                + VAR
-                + ".csv"
-        ):
+        if os.path.isfile(f"data/EHaloComp_RCP/#DATA.EHaloComp_RCP.2000-2100_5reg0.rcp{scen_Ehalo[3]}{scen_Ehalo[5]}_E{VAR}.csv"):
             TMP = np.array(
                 [
                     line

@@ -2,7 +2,8 @@ import csv
 
 import numpy as np
 
-from .a1_carbon import CO2_0, load_data
+from .a1_carbon import CO2_0
+from oscar.data import load_data
 from .a2_methane import CH4_0
 from .a3_nitrous_oxide import N2O_0
 from ..oscar_data import nb_regionI, nb_biome, regionI_index, biome_index

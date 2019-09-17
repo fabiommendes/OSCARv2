@@ -4,7 +4,8 @@ import os
 import numpy as np
 from scipy.optimize import fmin
 
-from .a1_carbon import CO2_0, load_data
+from .a1_carbon import CO2_0
+from oscar.data import load_data
 from .a7_radiative_forces import f_RF_CO2
 from ..oscar_data import nb_regionI, regionI_index
 from ...config import dty, mod_TEMPresp, mod_PRECradfact, mod_TEMPpattern, mod_ACIDsurf, \

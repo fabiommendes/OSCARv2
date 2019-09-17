@@ -1,4 +1,5 @@
-from .a1_carbon import CO2_0, CO2_cmip5, load_data
+from .a1_carbon import CO2_0, CO2_cmip5
+from oscar.data import load_data
 from ..oscar_data import *
 from ..oscar_data import nb_regionI, regionI_index, nb_biome, biome_index
 from ...config import dty, mod_LSNKcover, mod_OHSNKtau, mod_OHSNKtrans, mod_OHSNKfct, \

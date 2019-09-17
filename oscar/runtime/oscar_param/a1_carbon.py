@@ -1,20 +1,13 @@
 from scipy.optimize import fmin, fsolve
 from scipy.special import gammainc
 
+from oscar.data import load_data
 from ..oscar_data import *
 from ..oscar_data import nb_regionI, nb_biome, regionI_index, biome_index
 from ...config import dty, mod_OSNKstruct, mod_OSNKchem, mod_OSNKtrans, PI_1750, \
     data_LULCC, mod_LSNKcover, ind_final, mod_EHWPspeed, mod_EHWPtau, mod_EHWPbb, \
     mod_biomeURB, mod_biomeV3, mod_biomeSHR, mod_ELUCagb, mod_EPFmain, mod_EFIREpreind, \
     mod_LSNKpreind, mod_LSNKnpp, mod_LSNKrho, mod_LSNKtrans, mod_EFIREtrans
-
-
-def load_data(path, slice=None):
-    data = [line for line in csv.reader(open(path, "r"))]
-    if slice is not None:
-        data = data[slice:]
-    return np.array(data, dtype=dty)
-
 
 ##################################################
 #   1. CARBON DIOXIDE
