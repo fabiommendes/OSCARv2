@@ -42,7 +42,9 @@ for VAR in HFC:
         HFC_ipcc[240:, HFC.index(VAR)] = TMP[:, 0]
 
 for VAR in PFC:
-    if os.path.isfile(f"data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1900-2011.{VAR}.csv"):
+    path = f"data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1900-2011.{VAR}.csv"
+
+    if os.path.isfile(path):
         TMP = np.array(
             [
                 line
@@ -56,7 +58,9 @@ for VAR in PFC:
         PFC_ipcc[200:, PFC.index(VAR)] = TMP[:, 0]
 
 for VAR in ODS:
-    if os.path.isfile(f"data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1960-2011.{VAR}.csv"):
+    path = f"data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1960-2011.{VAR}.csv"
+
+    if os.path.isfile(path):
         TMP = np.array(
             [
                 line
@@ -76,7 +80,9 @@ PFC_cmip5 = np.ones([305+1,nb_PFC], dtype=dty) * np.nan
 ODS_cmip5 = np.ones([305+1,nb_ODS], dtype=dty) * np.nan
 
 for VAR in HFC:
-    if os.path.isfile(f"data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.{VAR}.csv"):
+    path = f"data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.{VAR}.csv"
+
+    if os.path.isfile(path):
         TMP = np.array(
             [
                 line
@@ -88,7 +94,9 @@ for VAR in HFC:
         HFC_cmip5[65:, HFC.index(VAR)] = TMP[:, 0]
 
 for VAR in PFC:
-    if os.path.isfile(f"data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.{VAR}.csv"):
+    path = f"data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.{VAR}.csv"
+
+    if os.path.isfile(path):
         TMP = np.array(
             [
                 line
@@ -100,7 +108,9 @@ for VAR in PFC:
         PFC_cmip5[65:, PFC.index(VAR)] = TMP[:, 0]
 
 for VAR in ODS:
-    if os.path.isfile(f"data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.{VAR}.csv"):
+    path = f"data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.{VAR}.csv"
+
+    if os.path.isfile(path):
         TMP = np.array(
             [
                 line

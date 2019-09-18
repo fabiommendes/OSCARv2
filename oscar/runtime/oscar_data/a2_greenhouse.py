@@ -167,7 +167,9 @@ for s in range(1, len(sec_accmip) - 2):
 # N2O
 EN2Oeft = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
 for s in range(1, len(sec_ehyde) - 2):
-    if os.path.isfile(f"data/ENitrousOx_EDGAR-FT/#DATA.ENitrousOx_EDGAR-FT.2008-2010_114reg0.EN2O_{sec_ehyde[s]}.csv"):
+    path = f"data/ENitrousOx_EDGAR-FT/#DATA.ENitrousOx_EDGAR-FT.2008-2010_114reg0.EN2O_{sec_ehyde[s]}.csv"
+
+    if os.path.isfile(path):
         TMP = np.array(
             [
                 line
@@ -197,7 +199,9 @@ ECH4accmip = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI
                       dtype=dty)
 p_ECH4_bio = np.zeros([nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
 for s in range(1, len(sec_accmip) - 2):
-    if os.path.isfile(f"data/EMethane_ACCMIP/#DATA.EMethane_ACCMIP.1850-2000_114reg0.ECH4_{sec_accmip[s]}.csv"):
+    path = f"data/EMethane_ACCMIP/#DATA.EMethane_ACCMIP.1850-2000_114reg0.ECH4_{sec_accmip[s]}.csv"
+
+    if os.path.isfile(path):
         TMP = np.array(
             [
                 line
@@ -231,7 +235,9 @@ EN2Oehyde = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI]
                      dtype=dty)
 p_EN2O_bio = np.zeros([nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
 for s in range(1, len(sec_ehyde) - 2):
-    if os.path.isfile(f"data/ENitrousOx_EDGAR-HYDE/#DATA.ENitrousOx_EDGAR-HYDE.1890-1990_114reg0.EN2O_{sec_ehyde[s]}.csv"):
+    path = f"data/ENitrousOx_EDGAR-HYDE/#DATA.ENitrousOx_EDGAR-HYDE.1890-1990_114reg0.EN2O_{sec_ehyde[s]}.csv"
+
+    if os.path.isfile(path):
         TMP = np.array(
             [
                 line
@@ -473,7 +479,9 @@ if (scen_EFF[:3] == "RCP") & (ind_final > ind_cdiac):
 # CH4
 if (scen_ECH4[:3] == "RCP") & (ind_final > ind_cdiac):
     for s in range(1, len(sec_accmip) - 2):
-        if os.path.isfile(f"data/EMethane_RCP/#DATA.EMethane_RCP.2000-2100_5reg0.rcp{scen_ECH4[3]}{scen_ECH4[5]}_ECH4_{sec_accmip[s]}.csv"):
+        path = f"data/EMethane_RCP/#DATA.EMethane_RCP.2000-2100_5reg0.rcp{scen_ECH4[3]}{scen_ECH4[5]}_ECH4_{sec_accmip[s]}.csv"
+
+        if os.path.isfile(path):
             TMP = np.array(
                 [
                     line

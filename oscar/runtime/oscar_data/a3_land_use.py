@@ -33,7 +33,9 @@ bio = ["des", "for", "shr", "gra", "cro", "pas", "urb"]
 if data_LULCC[:3] == "LUH":
     for b1 in range(len(bio)):
         for b2 in range(len(bio)):
-            if os.path.isfile(f"data/LandUse_{data_LULCC}/#DATA.LandUse_{data_LULCC}_{mod_LSNKcover}.1501-2015_114reg1.LUC_{bio[b1]}2{bio[b2]}.csv"):
+            path = f"data/LandUse_{data_LULCC}/#DATA.LandUse_{data_LULCC}_{mod_LSNKcover}.1501-2015_114reg1.LUC_{bio[b1]}2{bio[b2]}.csv"
+
+            if os.path.isfile(path):
                 TMP = np.array(
                     [
                         line
@@ -68,7 +70,9 @@ if data_LULCC[:3] == "LUH":
 # HARV
 if data_LULCC[:3] == "LUH":
     for b in range(len(bio)):
-        if os.path.isfile(f"data/LandUse_{data_LULCC}/#DATA.LandUse_{data_LULCC}_{mod_LSNKcover}.1501-2015_114reg1.HARV_{bio[b]}.csv"):
+        path = f"data/LandUse_{data_LULCC}/#DATA.LandUse_{data_LULCC}_{mod_LSNKcover}.1501-2015_114reg1.HARV_{bio[b]}.csv"
+
+        if os.path.isfile(path):
             TMP = np.array(
                 [
                     line
@@ -97,7 +101,9 @@ if data_LULCC[:3] == "LUH":
 if data_LULCC[:3] == "LUH":
     for b1 in range(len(bio)):
         for b2 in range(b1, len(bio)):
-            if os.path.isfile(f"data/LandUse_{data_LULCC}/#DATA.LandUse_{data_LULCC}_{mod_LSNKcover}.1501-2015_114reg1.SHIFT_{bio[b1]}2{bio[b2]}.csv"):
+            path = f"data/LandUse_{data_LULCC}/#DATA.LandUse_{data_LULCC}_{mod_LSNKcover}.1501-2015_114reg1.SHIFT_{bio[b1]}2{bio[b2]}.csv"
+
+            if os.path.isfile(path):
                 TMP = np.array(
                     [
                         line
@@ -150,7 +156,9 @@ SHIFTproj = np.zeros(
 if (scen_LULCC[:3] == "RCP") & (ind_final > ind_cdiac):
     for b1 in range(len(bio)):
         for b2 in range(len(bio)):
-            if os.path.isfile(f"data/LandUse_RCP/#DATA.LandUse_RCP_{mod_LSNKcover}.2006-2100_114reg1.rcp{scen_LULCC[3]}{scen_LULCC[5]}_LUC_{bio[b1]}2{bio[b2]}.csv"):
+            path = f"data/LandUse_RCP/#DATA.LandUse_RCP_{mod_LSNKcover}.2006-2100_114reg1.rcp{scen_LULCC[3]}{scen_LULCC[5]}_LUC_{bio[b1]}2{bio[b2]}.csv"
+
+            if os.path.isfile(path):
                 TMP = np.array(
                     [
                         line
@@ -184,7 +192,9 @@ if (scen_LULCC[:3] == "RCP") & (ind_final > ind_cdiac):
 # HARV
 if (scen_LULCC[:3] == "RCP") & (ind_final > ind_cdiac):
     for b in range(len(bio)):
-        if os.path.isfile(f"data/LandUse_RCP/#DATA.LandUse_RCP_{mod_LSNKcover}.2006-2100_114reg1.rcp{scen_LULCC[3]}{scen_LULCC[5]}_HARV_{bio[b]}.csv"):
+        path = f"data/LandUse_RCP/#DATA.LandUse_RCP_{mod_LSNKcover}.2006-2100_114reg1.rcp{scen_LULCC[3]}{scen_LULCC[5]}_HARV_{bio[b]}.csv"
+
+        if os.path.isfile(path):
             TMP = np.array(
                 [
                     line
@@ -212,7 +222,9 @@ if (scen_LULCC[:3] == "RCP") & (ind_final > ind_cdiac):
 if (scen_LULCC[:3] == "RCP") & (ind_final > ind_cdiac):
     for b1 in range(len(bio)):
         for b2 in range(b1, len(bio)):
-            if os.path.isfile(f"data/LandUse_RCP/#DATA.LandUse_RCP_{mod_LSNKcover}.2006-2100_114reg1.rcp{scen_LULCC[3]}{scen_LULCC[5]}_SHIFT_{bio[b1]}2{bio[b2]}.csv"):
+            path = f"data/LandUse_RCP/#DATA.LandUse_RCP_{mod_LSNKcover}.2006-2100_114reg1.rcp{scen_LULCC[3]}{scen_LULCC[5]}_SHIFT_{bio[b1]}2{bio[b2]}.csv"
+
+            if os.path.isfile(path):
                 TMP = np.array(
                     [
                         line

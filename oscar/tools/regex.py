@@ -23,6 +23,13 @@ if\s+os.path.isfile\(\s*
 \s*\):
 ''', re.MULTILINE | re.VERBOSE)
 
+PATH = re.compile(r'''
+(?P<indent>\s*)
+if\s+os.path.isfile\(\s*
+    (?P<string>f"[^"]+")
+\s*\):
+''', re.MULTILINE | re.VERBOSE)
+
 
 @fn.curry(3)
 def transform_with_regex(regex, transform, data, debug=False):
@@ -76,6 +83,11 @@ def replace_is_file(fragment, indent, string, params):
     out = f'f"{out}"'
 
     return f'{indent}if os.path.isfile({out}):'
+
+
+@transform_with_regex(PATH)
+def replace_path(fragment, indent, string):
+    return f"{indent}path = {string}\n{indent}if os.path.isfile(path):"
 
 
 def tokens(st):
