@@ -1,5 +1,5 @@
 from .a1_carbon import CO2_0, CO2_cmip5
-from oscar.data import load_data
+from oscar.data import load_data, load_header
 from ..oscar_data import *
 from ..oscar_data import nb_regionI, regionI_index, nb_biome, biome_index
 from ...config import dty, mod_LSNKcover, mod_OHSNKtau, mod_OHSNKtrans, mod_OHSNKfct, \
@@ -559,7 +559,7 @@ def wetchimp(sim):
     if mod_AWETtrans != "":
         TMP = load_data(f"data/Wetlands_WETCHIMP/#DATA.Wetlands_{mod_AWETtrans}.1910s_114reg1_(4exp).AREA.csv", slice=1)
         path = f"data/Wetlands_WETCHIMP/#DATA.Wetlands_{mod_AWETtrans}.1910s_114reg1_(4exp).AREA.csv"
-        lgd = [line for line in csv.reader(open(path, "r"))][0]
+        lgd = load_header(path)
         for i in range(1, 114 + 1):
             arr[regionI_index[i]] += TMP[i - 1, lgd.index(sim)]
     return arr

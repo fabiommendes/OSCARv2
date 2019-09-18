@@ -19,11 +19,8 @@ from ...config import dty, mod_O3Tregsat, mod_O3Temis, mod_O3Tclim, mod_O3Sfracr
 # -----------
 
 # read region distribution
-TMP = np.array(
-    [line for line in csv.reader(
-        open("data/RegDiv_HTAP/#DATA.RegDiv_HTAP.114reg1_(4reg0).AREA.csv", "r"))][1:],
-    dtype=dty,
-)
+path = "data/RegDiv_HTAP/#DATA.RegDiv_HTAP.114reg1_(4reg0).AREA.csv"
+TMP = load_data(path, slice=1)
 p_reg4 = np.zeros([nb_regionI, 4 + 1], dtype=dty)
 
 for i in range(1, 114 + 1):
@@ -229,23 +226,8 @@ w_reg_VOC /= w_reg_VOC[0]
 # for sensitivity to emissions
 if mod_O3Temis != "mean-OxComp":
     def load_ozoe(var):
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/OzoChem_ACCMIP/#DATA.OzoChem_" + mod_O3Temis + ".2000s_(6exp)." + var + ".csv",
-                    "r")
-            )][1:],
-            dtype=dty,
-        )
-        lgd = [
-            line
-            for line in csv.reader(
-                open(
-                    "data/OzoChem_ACCMIP/#DATA.OzoChem_" + mod_O3Temis + ".2000s_(6exp)." + var + ".csv",
-                    "r")
-            )][0]
+        path = f"data/OzoChem_ACCMIP/#DATA.OzoChem_{mod_O3Temis}.2000s_(6exp).{var}.csv"
+        TMP, lgd = load_data_and_header(path)
         return TMP[0,:]
 
     O3t_ozoe = load_ozoe("O3t")
@@ -564,17 +546,8 @@ EESC_0 = np.sum(f_fracrel(tau_lag) * (n_Cl + alpha_Br * n_Br) * ODS_0)
 # load pre-processed CCMVal2 results for specified model
 for var in ["ta2"]:
     ta2_atm = np.zeros([2099-1961+1], dtype=dty)
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open(
-                "data/Atmosphere_CCMVal2/#DATA.Atmosphere_" + mod_O3Strans + ".1961-2099_(1lvl)." + var + ".csv",
-                "r",
-            )
-        )][1:],
-        dtype=dty,
-    )
+    path = f"data/Atmosphere_CCMVal2/#DATA.Atmosphere_{mod_O3Strans}.1961-2099_(1lvl).{var}.csv"
+    TMP = load_data(path, slice=1)
     ta2_atm[:] = TMP[:,0]
 
 # fit of linear yearly trend

@@ -1,6 +1,4 @@
-import csv
 import os
-
 import numpy as np
 
 from ..oscar_data import *
@@ -45,32 +43,15 @@ for VAR in PFC:
     path = f"data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1900-2011.{VAR}.csv"
 
     if os.path.isfile(path):
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1900-2011." + VAR + ".csv",
-                    "r")
-            )],
-            dtype=dty,
-        )
+        TMP = load_data(path)
         PFC_ipcc[200:, PFC.index(VAR)] = TMP[:, 0]
 
 for VAR in ODS:
     path = f"data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1960-2011.{VAR}.csv"
 
     if os.path.isfile(path):
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1960-2011." + VAR + ".csv",
-                    "r")
-            )],
-            dtype=dty,
-        )
+        path = f"data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1960-2011.{VAR}.csv"
+        TMP = load_data(path)
         ODS_ipcc[260:, ODS.index(VAR)] = TMP[:, 0]
 
 # historic HaloC from CMIP5 {ppt}
@@ -83,42 +64,19 @@ for VAR in HFC:
     path = f"data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.{VAR}.csv"
 
     if os.path.isfile(path):
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open("data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005." + VAR + ".csv",
-                     "r"))],
-            dtype=dty,
-        )
+        TMP = load_data(path)
         HFC_cmip5[65:, HFC.index(VAR)] = TMP[:, 0]
 
 for VAR in PFC:
     path = f"data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.{VAR}.csv"
-
     if os.path.isfile(path):
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open("data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005." + VAR + ".csv",
-                     "r"))],
-            dtype=dty,
-        )
+        TMP = load_data(path)
         PFC_cmip5[65:, PFC.index(VAR)] = TMP[:, 0]
 
 for VAR in ODS:
     path = f"data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.{VAR}.csv"
-
     if os.path.isfile(path):
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open("data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005." + VAR + ".csv",
-                     "r"))],
-            dtype=dty,
-        )
+        TMP = load_data(path)
         ODS_cmip5[65:, ODS.index(VAR)] = TMP[:, 0]
 
 # preindustrial HaloC concentrations {ppt}

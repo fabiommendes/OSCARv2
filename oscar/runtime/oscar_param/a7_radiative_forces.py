@@ -1,9 +1,6 @@
-import csv
-
 import numpy as np
 
 from .a1_carbon import CO2_0
-from oscar.data import load_data
 from .a2_methane import CH4_0
 from .a3_nitrous_oxide import N2O_0
 from ..oscar_data import nb_regionI, nb_biome, regionI_index, biome_index
@@ -11,6 +8,7 @@ from ...config import dty, mod_O3Tradeff, mod_SO4radeff, mod_POAradeff, mod_BCra
     mod_NO3radeff, mod_SOAradeff, mod_BCadjust, mod_CLOUDsolub, mod_CLOUDerf, \
     mod_CLOUDpreind, mod_ALBBCrf, mod_ALBBCreg, mod_ALBBCwarm, mod_ALBLCalb, \
     mod_ALBLCflux, mod_ALBLCcover, mod_ALBLCwarm, mod_O3Sradeff
+from ...data import load_data, load_header, load_data_and_header
 
 ##################################################
 #   7. RADIATIVE FORCING
@@ -32,7 +30,7 @@ RF_Alb_ipcc = RF_ipcc.copy()
 
 TMP = load_data("data/Historic_IPCC-AR5/#DATA.Historic_IPCC-AR5.1750-2011_(11for).RF.csv", slice=1)
 path = "data/Historic_IPCC-AR5/#DATA.Historic_IPCC-AR5.1750-2011_(11for).RF.csv"
-lgd = [line for line in csv.reader(open(path, "r"))][0]
+lgd = load_header(path)
 
 for x in range(len(lgd)):
     if lgd[x] in ["CO2", "GHG Other", "H2O (Strat)"]:
@@ -58,10 +56,7 @@ RF_cmip5 = np.zeros([305 + 1], dtype=dty)
 RF_cmip5[:65] = np.nan
 
 path = "data/Historic_CMIP5/#DATA.Historic_CMIP5.1765-2005_(19for).RF.csv"
-TMP = load_data(path, slice=1)
-
-path = "data/Historic_CMIP5/#DATA.Historic_CMIP5.1765-2005_(19for).RF.csv"
-lgd = [line for line in csv.reader(open(path, "r"))][0]
+TMP, lgd = load_data_and_header(path)
 
 for x in range(len(lgd)):
     if lgd[x] == "VOLC":
@@ -76,28 +71,10 @@ RF_rcp[:300] = np.nan
 n = -1
 for rcp in ["rcp26", "rcp45", "rcp60", "rcp85", "rcp45to26", "rcp60to45"]:
     n += 1
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open(
-                "data/Scenario_ECP/#DATA.Scenario_ECP.2000-2500_(19for)." + rcp + "_RF.csv",
-                "r")
-        )][1:],
-        dtype=dty,
-    )
-    TMP2 = np.array(
-        [line for line in csv.reader(
-            open("data/Historic_CMIP5/#DATA.Historic_CMIP5.1765-2005_(19for).RF.csv",
-                 "r"))][
-        1:],
-        dtype=dty,
-    )
-    lgd = [
-        line
-        for line in csv.reader(open(
-            "data/Scenario_ECP/#DATA.Scenario_ECP.2000-2500_(19for)." + rcp + "_RF.csv",
-            "r"))][0]
+    path = f"data/Scenario_ECP/#DATA.Scenario_ECP.2000-2500_(19for).{rcp}_RF.csv"
+    path2 = "data/Historic_CMIP5/#DATA.Historic_CMIP5.1765-2005_(19for).RF.csv"
+    TMP, lgd = load_data_and_header(path)
+    TMP2 = load_data(path, slice=1)
     for x in range(len(lgd)):
         RF_rcp[300:, n] += TMP[:, x]
         if lgd[x] == "VOLC":
@@ -465,24 +442,15 @@ elif mod_CLOUDerf == "NCAR-CAM-51":
 
 # soluble aerosol load for the aerosol-cloud interaction
 # load pre-processed ACCMIP data
-TMP = np.array(
-    [
-        line
-        for line in csv.reader(
-        open(
-            "data/AeroCloud_ACCMIP/#DATA.AeroCloud_" + mod_CLOUDerf + ".(2yr)_(7aer).LOAD.csv",
-            "r")
-    )][1:],
-    dtype=dty,
-)[:, 1:]
 path = f"data/AeroCloud_ACCMIP/#DATA.AeroCloud_{mod_CLOUDerf}.(2yr)_(7aer).LOAD.csv"
-lgd = [line for line in csv.reader(open(path, "r"))][0][1:]
+TMP, lgd = load_data_and_header(path)
+del lgd[0]
 AER_ref0 = 0
 AER_ref1 = 0
 for n in range(len(lgd)):
     if not np.isnan(TMP[0, n]):
-        AER_ref0 += TMP[0,n] * globals()["solub_" + lgd[n]]
-        AER_ref1 += TMP[1,n] * globals()["solub_" + lgd[n]]
+        AER_ref0 += TMP[0, n] * globals()["solub_" + lgd[n]]
+        AER_ref1 += TMP[1, n] * globals()["solub_" + lgd[n]]
 
 # calculate parameters for aerosol-cloud interaction
 # intensity of indirect effect {W/m2}
@@ -515,13 +483,8 @@ warmeff_volc = np.array([0.6], dtype=dty)
 # -------------------
 
 # read region distribution
-TMP = np.array(
-    [line for line in csv.reader(
-        open("data/RegDiv_Reddy2007/#DATA.RegDiv_Reddy2007.114reg1_(9reg0).AREA.csv",
-             "r"))][
-    1:],
-    dtype=dty,
-)
+path = "data/RegDiv_Reddy2007/#DATA.RegDiv_Reddy2007.114reg1_(9reg0).AREA.csv"
+TMP = load_data(path, slice=1)
 p_reg9 = np.zeros([nb_regionI, 9 + 1], dtype=dty)
 for i in range(1, 114 + 1):
     p_reg9[regionI_index[i], :] += TMP[i - 1, :]
@@ -584,44 +547,10 @@ elif mod_ALBBCwarm == "high":
 bio = ["des", "for", "shr", "gra", "cro", "pas", "urb"]
 
 # load pre-processed albedo climatology
-TMP = np.array(
-    [
-        line
-        for line in csv.reader(
-        open(
-            "data/Albedo_"
-            + mod_ALBLCalb
-            + "/#DATA.Albedo_"
-            + mod_ALBLCalb
-            + "_"
-            + mod_ALBLCflux
-            + "_"
-            + mod_ALBLCcover
-            + ".114reg1_7bio.alb.csv",
-            "r",
-        )
-    )],
-    dtype=dty,
-)
-TMP2 = np.array(
-    [
-        line
-        for line in csv.reader(
-        open(
-            "data/Albedo_"
-            + mod_ALBLCalb
-            + "/#DATA.Albedo_"
-            + mod_ALBLCalb
-            + "_"
-            + mod_ALBLCflux
-            + "_"
-            + mod_ALBLCcover
-            + ".114reg1_7bio.RSDS.csv",
-            "r",
-        )
-    )],
-    dtype=dty,
-)
+path = f"data/Albedo_{mod_ALBLCalb}/#DATA.Albedo_{mod_ALBLCalb}_{mod_ALBLCflux}_{mod_ALBLCcover}.114reg1_7bio.alb.csv"
+path2 = f"data/Albedo_{mod_ALBLCalb}/#DATA.Albedo_{mod_ALBLCalb}_{mod_ALBLCflux}_{mod_ALBLCcover}.114reg1_7bio.RSDS.csv"
+TMP = load_data(path)
+TMP2 = load_data(path2)
 alpha_alb = np.zeros([nb_regionI, nb_biome])
 RSDS_alb = np.zeros([nb_regionI, nb_biome])
 for i in range(1, 114 + 1):
@@ -645,26 +574,10 @@ if np.sum(alpha_alb[:, biome_index["pas"]]) == 0:
     alpha_alb[np.isnan(alpha_alb) | np.isinf(alpha_alb)] = 0
 
 # load pre-processed radiation climatology
-TMP = np.array(
-    [
-        line
-        for line in csv.reader(
-        open(
-            "data/RadFlux_" + mod_ALBLCflux + "/#DATA.RadFlux_" + mod_ALBLCflux + ".114reg1.rsds.csv",
-            "r")
-    )],
-    dtype=dty,
-)
-TMP2 = np.array(
-    [
-        line
-        for line in csv.reader(
-        open(
-            "data/RadFlux_" + mod_ALBLCflux + "/#DATA.RadFlux_" + mod_ALBLCflux + ".114reg1.AREA.csv",
-            "r")
-    )],
-    dtype=dty,
-)
+path = f"data/RadFlux_{mod_ALBLCflux}/#DATA.RadFlux_{mod_ALBLCflux}.114reg1.rsds.csv"
+path2 = f"data/RadFlux_{mod_ALBLCflux}/#DATA.RadFlux_{mod_ALBLCflux}.114reg1.AREA.csv"
+TMP = load_data(path)
+TMP2 = load_data(path2)
 rsds_alb = np.zeros([nb_regionI])
 AREA_alb = np.zeros([nb_regionI])
 for i in range(1, 114 + 1):

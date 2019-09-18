@@ -1,8 +1,8 @@
-import csv
 import os
 
 import numpy as np
 
+from oscar.data import load_data
 from .a1_regions import nb_regionJ, nb_kind, nb_regionI, \
     nb_sector, regionJ_index, regionI_index, ind_final, kLUC, biome_index, nb_biome
 from .a2_greenhouse import ind_cdiac
@@ -36,25 +36,7 @@ if data_LULCC[:3] == "LUH":
             path = f"data/LandUse_{data_LULCC}/#DATA.LandUse_{data_LULCC}_{mod_LSNKcover}.1501-2015_114reg1.LUC_{bio[b1]}2{bio[b2]}.csv"
 
             if os.path.isfile(path):
-                TMP = np.array(
-                    [
-                        line
-                        for line in csv.reader(
-                        open(
-                            "data/LandUse_LUH1/#DATA.LandUse_"
-                            + data_LULCC
-                            + "_"
-                            + mod_LSNKcover
-                            + ".1501-2015_114reg1.LUC_"
-                            + bio[b1]
-                            + "2"
-                            + bio[b2]
-                            + ".csv",
-                            "r",
-                        )
-                    )],
-                    dtype=dty,
-                )
+                TMP = load_data(path)
                 for i in range(1, 114 + 1):
                     LUC[
                     1: min(ind_final, ind_cdiac) + 1,
@@ -73,23 +55,7 @@ if data_LULCC[:3] == "LUH":
         path = f"data/LandUse_{data_LULCC}/#DATA.LandUse_{data_LULCC}_{mod_LSNKcover}.1501-2015_114reg1.HARV_{bio[b]}.csv"
 
         if os.path.isfile(path):
-            TMP = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/LandUse_LUH1/#DATA.LandUse_"
-                        + data_LULCC
-                        + "_"
-                        + mod_LSNKcover
-                        + ".1501-2015_114reg1.HARV_"
-                        + bio[b]
-                        + ".csv",
-                        "r",
-                    )
-                )],
-                dtype=dty,
-            )
+            TMP = load_data(path)
             for i in range(1, 114 + 1):
                 HARV[
                 1: min(ind_final, ind_cdiac) + 1, regionJ_index[i], 0, kLUC,
@@ -102,27 +68,8 @@ if data_LULCC[:3] == "LUH":
     for b1 in range(len(bio)):
         for b2 in range(b1, len(bio)):
             path = f"data/LandUse_{data_LULCC}/#DATA.LandUse_{data_LULCC}_{mod_LSNKcover}.1501-2015_114reg1.SHIFT_{bio[b1]}2{bio[b2]}.csv"
-
             if os.path.isfile(path):
-                TMP = np.array(
-                    [
-                        line
-                        for line in csv.reader(
-                        open(
-                            "data/LandUse_LUH1/#DATA.LandUse_"
-                            + data_LULCC
-                            + "_"
-                            + mod_LSNKcover
-                            + ".1501-2015_114reg1.SHIFT_"
-                            + bio[b1]
-                            + "2"
-                            + bio[b2]
-                            + ".csv",
-                            "r",
-                        )
-                    )],
-                    dtype=dty,
-                )
+                TMP = load_data(path)
                 for i in range(1, 114 + 1):
                     SHIFT[
                     1: min(ind_final, ind_cdiac) + 1,
@@ -159,26 +106,7 @@ if (scen_LULCC[:3] == "RCP") & (ind_final > ind_cdiac):
             path = f"data/LandUse_RCP/#DATA.LandUse_RCP_{mod_LSNKcover}.2006-2100_114reg1.rcp{scen_LULCC[3]}{scen_LULCC[5]}_LUC_{bio[b1]}2{bio[b2]}.csv"
 
             if os.path.isfile(path):
-                TMP = np.array(
-                    [
-                        line
-                        for line in csv.reader(
-                        open(
-                            "data/LandUse_RCP/#DATA.LandUse_RCP_"
-                            + mod_LSNKcover
-                            + ".2006-2100_114reg1.rcp"
-                            + scen_LULCC[3]
-                            + scen_LULCC[5]
-                            + "_LUC_"
-                            + bio[b1]
-                            + "2"
-                            + bio[b2]
-                            + ".csv",
-                            "r",
-                        )
-                    )],
-                    dtype=dty,
-                )
+                TMP = load_data(path)
                 for i in range(1, 114 + 1):
                     LUCproj[
                     306: min(ind_final, 400) + 1,
@@ -195,24 +123,7 @@ if (scen_LULCC[:3] == "RCP") & (ind_final > ind_cdiac):
         path = f"data/LandUse_RCP/#DATA.LandUse_RCP_{mod_LSNKcover}.2006-2100_114reg1.rcp{scen_LULCC[3]}{scen_LULCC[5]}_HARV_{bio[b]}.csv"
 
         if os.path.isfile(path):
-            TMP = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/LandUse_RCP/#DATA.LandUse_RCP_"
-                        + mod_LSNKcover
-                        + ".2006-2100_114reg1.rcp"
-                        + scen_LULCC[3]
-                        + scen_LULCC[5]
-                        + "_HARV_"
-                        + bio[b]
-                        + ".csv",
-                        "r",
-                    )
-                )],
-                dtype=dty,
-            )
+            TMP = load_data(path)
             for i in range(1, 114 + 1):
                 HARVproj[
                 306: min(ind_final, 400) + 1, regionJ_index[i], 0, kLUC, regionI_index[i],
@@ -225,26 +136,7 @@ if (scen_LULCC[:3] == "RCP") & (ind_final > ind_cdiac):
             path = f"data/LandUse_RCP/#DATA.LandUse_RCP_{mod_LSNKcover}.2006-2100_114reg1.rcp{scen_LULCC[3]}{scen_LULCC[5]}_SHIFT_{bio[b1]}2{bio[b2]}.csv"
 
             if os.path.isfile(path):
-                TMP = np.array(
-                    [
-                        line
-                        for line in csv.reader(
-                        open(
-                            "data/LandUse_RCP/#DATA.LandUse_RCP_"
-                            + mod_LSNKcover
-                            + ".2006-2100_114reg1.rcp"
-                            + scen_LULCC[3]
-                            + scen_LULCC[5]
-                            + "_SHIFT_"
-                            + bio[b1]
-                            + "2"
-                            + bio[b2]
-                            + ".csv",
-                            "r",
-                        )
-                    )],
-                    dtype=dty,
-                )
+                TMP = load_data(path)
                 for i in range(1, 114 + 1):
                     SHIFTproj[
                     306: min(ind_final, 400) + 1,

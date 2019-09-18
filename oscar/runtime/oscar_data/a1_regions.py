@@ -1,15 +1,14 @@
-import csv
-
 import numpy as np
 
 from oscar.config import mod_regionI, mod_regionJ, mod_sector, ind_final, \
     mod_kindFF, mod_kindLUC, mod_kindGHG, \
     mod_kindCHI, mod_kindAER, mod_kindRF, mod_kindGE, mod_biomeSHR, mod_biomeURB, \
-    mod_biomeV3
+    mod_biomeV3, dty
 
 # ============
 # A.1. Regions
 # ============
+from oscar.data import load_data
 
 nb_regionI = nb_regionJ = 0
 mod_regions = {"I": mod_regionI, "J": mod_regionJ}
@@ -156,8 +155,8 @@ for X in ["I", "J"]:
         region_color = []
 
     region_index = {}
-    TMP = np.array([line for line in
-                    csv.reader(open("data/Regions_GTAP/#DATA.Regions_GTAP.csv", "r"))])[:,2:]
+    path = "data/Regions_GTAP/#DATA.Regions_GTAP.csv"
+    TMP = np.array(load_data(path, dtype=object, use='csv')[:,2:])
     for n in range(1, len(TMP)):
         if mod_region in list(TMP[0]):
             region_index[int(TMP[n, 0])] = int(TMP[n, list(TMP[0]).index(mod_region)])

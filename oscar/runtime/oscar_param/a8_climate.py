@@ -1,4 +1,3 @@
-import csv
 import os
 
 import numpy as np
@@ -7,7 +6,7 @@ from scipy.optimize import fmin
 from .a1_carbon import CO2_0
 from oscar.data import load_data
 from .a7_radiative_forces import f_RF_CO2
-from ..oscar_data import nb_regionI, regionI_index
+from ..oscar_data import nb_regionI, regionI_index, load_data_and_header
 from ...config import dty, mod_TEMPresp, mod_PRECradfact, mod_TEMPpattern, mod_ACIDsurf, \
     mod_PRECpattern, mod_PRECresp
 
@@ -91,11 +90,7 @@ lng = {
 # data related to temperature change
 def load_cmip5_temperature_change(sim):
     path = f"data/Climate_CMIP5/#DATA.Climate_{mod_TEMPresp}.{lng[mod_TEMPresp]}yr_(7var).{sim}_global.csv"
-    TMP = load_data(path, slice=1)
-
-    path = f"data/Climate_CMIP5/#DATA.Climate_{mod_TEMPresp}.{lng[mod_TEMPresp]}yr_(7var).{sim}_global.csv"
-    lgd = [line for line in csv.reader(open(path, "r"))][0]
-
+    TMP, lgd = load_data_and_header(path)
     gst = TMP[:, lgd.index("tas")]
     erb = TMP[:, lgd.index("rsdt")] - TMP[:, lgd.index("rsut")] - TMP[:, lgd.index("rlut")]
     return gst, erb
@@ -108,8 +103,7 @@ gst_quadT, erb_quadT = load_cmip5_temperature_change('quad')
 # data related to precipitations change
 def load_precipitation_change(sim):
     path = f"data/Climate_CMIP5/#DATA.Climate_{mod_PRECresp}.{lng[mod_PRECresp]}yr_(7var).{sim}_global.csv"
-    TMP = load_data(path, slice=1)
-    lgd = [line for line in csv.reader(open(path, 'r'))][0]
+    TMP, lgd = load_data_and_header(path)
     gst = TMP[:, lgd.index("tas")]
     gyp = TMP[:, lgd.index("pr")]
     return gst, gyp
@@ -121,10 +115,12 @@ gst_quadP, gyp_quadP = load_precipitation_change("quad")
 # definition of parameters
 # equilibrium climate sensitivity {K}&{K/{W/m2}}
 lambda_0 = np.array([0], dtype=dty)
+
 # dynamical parameters for temperature change {.}&{yr}&{yr}
 theta_0 = np.array([0], dtype=dty)
 tau_gst = np.array([0], dtype=dty)
 tau_gst0 = np.array([0], dtype=dty)
+
 # precipitation sensitivities to temperature and radiative forcing {mm/K}&{mm/{W/m2}}
 alpha_gyp = np.array([0], dtype=dty)
 beta_gyp = np.array([0], dtype=dty)
@@ -312,8 +308,7 @@ if mod_TEMPpattern == "4xCO2":
     def load_abrupt4xCO2(sim):
         # global
         path = f"data/Climate_CMIP5/#DATA.Climate_{mod_TEMPresp}.{lng[mod_TEMPresp]}yr_(7var).{sim}_global.csv"
-        TMP = load_data(path, slice=1)
-        lgd = [line for line in csv.reader(open(path, "r"))][0]
+        TMP, lgd = load_data_and_header(path)
         gst = TMP[:, lgd.index("tas")]
 
         # local
@@ -335,8 +330,7 @@ elif mod_TEMPpattern == "hist&RCPs":
         path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{mod_TEMPresp}.{prd[sim]}_(3var).{sim}_global.csv"
         if os.path.isfile(path):
             path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{mod_TEMPresp}.{prd[sim]}_(3var).{sim}_global.csv"
-            TMP = load_data(path, slice=1)
-            lgd = [line for line in csv.reader(open(path, "r"))][0]
+            TMP, lgd = load_data_and_header(path)
             gst = TMP[:, lgd.index("tas")]
 
         # local
@@ -569,8 +563,7 @@ if mod_TEMPpattern == "4xCO2":
     def load_temp_patterns(sim):
         # global
         path = f"data/Climate_CMIP5/#DATA.Climate_{mod_TEMPresp}.{lng[mod_TEMPresp]}yr_(7var).{sim}global.csv"
-        TMP = load_data(path, slice=1)
-        lgd = [line for line in csv.reader(open(path, "r"))][0]
+        TMP, lgd = load_data_and_header(path)
         gst = TMP[:, lgd.index("tas")]
 
         # local
@@ -600,8 +593,7 @@ elif mod_TEMPpattern == "hist&RCPs":
         # global
         path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{mod_TEMPresp}.{prd[sim]}_(3var).{sim}_global.csv"
         if os.path.isfile(path):
-            TMP = load_data(path, slice=1)
-            lgd = [line for line in csv.reader(open(path, "r"))][0]
+            TMP, lgd = load_data_and_header(path)
             gst = TMP[:, lgd.index("tas")]
 
         # local
@@ -699,8 +691,7 @@ if mod_PRECpattern == "4xCO2":
     def load_mod_prec(sim):
         # global
         path = f"data/Climate_CMIP5/#DATA.Climate_{mod_PRECresp}.{lng[mod_PRECresp]}yr_(7var).{sim}_global.csv"
-        TMP = load_data(path, slice=1)
-        lgd = [line for line in csv.reader(open(path, "r"))][0]
+        TMP, lgd = load_data_and_header(path)
         gyp = TMP[:, lgd.index("pr")]
 
         # local
@@ -728,8 +719,7 @@ elif mod_PRECpattern == "hist&RCPs":
         # global
         path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{mod_PRECresp}.{prd[sim]}_(3var).{sim}_global.csv"
         if os.path.isfile(path):
-            TMP = load_data(path, slice=1)
-            lgd = [line for line in csv.reader(open(path, "r"))][0]
+            TMP, lgd = load_data_and_header(path)
             gyp = TMP[:, lgd.index("pr")]
 
         # local

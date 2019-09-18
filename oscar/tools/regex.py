@@ -30,6 +30,14 @@ if\s+os.path.isfile\(\s*
 \s*\):
 ''', re.MULTILINE | re.VERBOSE)
 
+OPEN_FILE = re.compile(r'''
+open\(\s*
+    (?P<string>"[^"]+")
+    (?P<params>.+?)
+    \s*,\s*(?:"r"|'r')\s*
+\s*\)\s*
+''', re.MULTILINE | re.VERBOSE)
+
 
 @fn.curry(3)
 def transform_with_regex(regex, transform, data, debug=False):
@@ -59,8 +67,7 @@ def transform_with_regex(regex, transform, data, debug=False):
     return "".join(fragments)
 
 
-@transform_with_regex(IS_FILE)
-def replace_is_file(fragment, indent, string, params):
+def to_fstring(string, params):
     last_kind = tokenize.STRING
     parts = [string[1:-1]]
     token_list = list(tokens(params))
@@ -80,8 +87,18 @@ def replace_is_file(fragment, indent, string, params):
         last_kind = tk.type
 
     out = ''.join(parts)
-    out = f'f"{out}"'
+    return f'f"{out}"'
 
+
+@transform_with_regex(OPEN_FILE)
+def replace_open_file(fragment, string, params):
+    out = to_fstring(string, params)
+    return f'open({out}, "r")'
+
+
+@transform_with_regex(IS_FILE)
+def replace_is_file(fragment, indent, string, params):
+    out = to_fstring(string, params)
     return f'{indent}if os.path.isfile({out}):'
 
 

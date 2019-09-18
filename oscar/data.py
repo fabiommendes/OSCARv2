@@ -1,24 +1,37 @@
-import csv
-
 import numpy as np
-
+import csv
+from functools import lru_cache
 from .config import dty
 
 
-def load_data(path, slice=None):
+@lru_cache(512)
+def load_data(path, slice=None, dtype=dty, use='csv'):
     """
     Return an array with data loaded from given path.
     """
-    data = [line for line in csv.reader(open(path, "r"))]
-    if slice is not None:
-        data = data[slice:]
-    return np.array(data, dtype=dty)
+    if use == 'numpy' and slice in (0, None):
+        return np.genfromtxt(path, dtype=dtype)
+    elif use == 'numpy' and slice == 1:
+        return np.genfromtxt(path, dtype=dtype, skip_header=True)
+    else:
+        with open(path, "r") as fd:
+            data = [line for line in csv.reader(fd)]
+        if slice is not None:
+            data = data[slice:]
+        return np.array(data, dtype=dtype)
 
 
-def load_header_and_table(path):
+def load_data_and_header(path):
     """
     Return (header, array) with a list of column names and numeric data loaded
     from given path.
     """
     header, *data = csv.reader(open(path, "r"))
-    return header, np.array(data, dtype=dty)
+    return np.array(data, dtype=dty), header
+
+
+def load_header(path):
+    """
+    Return a list with the header from a table stored as CSV data.
+    """
+    return next(iter(csv.reader(open(path, "r"))))

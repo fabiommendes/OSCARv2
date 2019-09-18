@@ -24,7 +24,7 @@ alpha_CO2 = 0.1765 * np.array([12.0], dtype=dty)
 # from [IPCC WG1, 2013] annexe 2
 CO2_ipcc = np.ones([311 + 1], dtype=dty) * np.nan
 path = "data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1750-2011.CO2.csv"
-TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+TMP = load_data(path)
 CO2_ipcc[50:] = TMP[:, 0]
 CO2_0 = np.array([CO2_ipcc[50]], dtype=dty)
 
@@ -32,25 +32,25 @@ CO2_0 = np.array([CO2_ipcc[50]], dtype=dty)
 # from [Meinshausen et al., 2011]
 CO2_cmip5 = np.ones([305 + 1], dtype=dty) * np.nan
 path = "data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.CO2.csv"
-TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+TMP = load_data(path)
 CO2_cmip5[65:] = TMP[:, 0]
 
 # historic CO2 from NOAA {ppm}
 # from the website
 CO2_noaa_ml = np.ones([314 + 1], dtype=dty) * np.nan
 path = "data/HistAtmo_NOAA-ESRL/#DATA.HistAtmo_NOAA-ESRL.1959-2014.CO2_maunaloa.csv"
-TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+TMP = load_data(path)
 CO2_noaa_ml[259:] = TMP[:, 0]
 CO2_noaa_gl = np.ones([314 + 1], dtype=dty) * np.nan
 
 path = "data/HistAtmo_NOAA-ESRL/#DATA.HistAtmo_NOAA-ESRL.1980-2014.CO2_global.csv"
-TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+TMP = load_data(path)
 CO2_noaa_gl[280:] = TMP[:, 0]
 
 # historic CO2 from Law Dome ice cores {ppm}
 # from [Etheridge et al., 1996] and [MacFarling Meure et al., 2006]
 path = "data/HistAtmo_NOAA-NCDC/#DATA.HistAtmo_NOAA-NCDC.(IceCores).CO2_lawdome.csv"
-CO2_lawdome = np.array([line for line in csv.reader(open(path, "r"))][1:], dtype=dty)
+CO2_lawdome = load_data(path, slice=1)
 
 # load RCP concentrations {ppm}
 # from [Meinshausen et al., 2011]
@@ -59,13 +59,13 @@ n = -1
 for rcp in ["rcp26", "rcp45", "rcp60", "rcp85", "rcp45to26", "rcp60to45"]:
     n += 1
     path = f"data/Scenario_ECP/#DATA.Scenario_ECP.2000-2500.{rcp}_CO2.csv"
-    TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+    TMP = load_data(path)
     CO2_rcp[300:, n] = TMP[:, 0]
 
 # global CO2 historic flux {GtC/yr}
 # from [Le Quere et al., 2015]
 path = "data/Historic_GCP/#DATA.Historic_GCP.1959-2014_(5flx).budget.csv"
-TMP = np.array([line for line in csv.reader(open(path, "r"))][1:], dtype=dty)
+TMP = load_data(path, slice=1)
 
 n = 0
 EFF_gcp = np.ones([314 + 1], dtype=dty) * np.nan
@@ -362,7 +362,7 @@ def load_cmip5(sim, VAR):
     if VAR in ["FCO2", "FEXP"]:
         path = f"data/Ocean_CMIP5/#DATA.Ocean_{mod_OSNKtrans}.{prd[sim]}_18x10lat.{sim}_{VAR}.csv"
         if os.path.isfile(path):
-            TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+            TMP = load_data(path)
             return np.sum(TMP, 1)
         else:
             return np.zeros([lng[sim]], dtype=dty)
@@ -371,8 +371,8 @@ def load_cmip5(sim, VAR):
         path = f"data/Ocean_CMIP5/#DATA.Ocean_{mod_OSNKtrans}.{prd[sim]}_18x10lat.{sim}_{VAR}.csv"
         path_surf = f"data/Ocean_CMIP5/#DATA.Ocean_{mod_OSNKtrans}.451yr_18x10lat.SURF.csv"
         if os.path.isfile(path):
-            TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
-            TMP2 = np.array([line for line in csv.reader(open(path_surf, "r"))], dtype=dty)
+            TMP = load_data(path)
+            TMP2 = load_data(path_surf)
             return np.sum(TMP * TMP2[:len(TMP)], 1) / np.sum(TMP2[:len(TMP)], 1)
         else:
             return np.zeros([lng[sim]], dtype=dty)
@@ -380,7 +380,7 @@ def load_cmip5(sim, VAR):
     if VAR in ["amoc"]:
         path = f"data/Ocean_CMIP5/#DATA.Ocean_{mod_OSNKtrans}.{prd[sim]}.{sim}_{VAR}.csv"
         if os.path.isfile(path):
-            TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+            TMP = load_data(path)
             return TMP[:, 0]
         else:
             return np.zeros([lng[sim]], dtype=dty)

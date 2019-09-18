@@ -1,9 +1,9 @@
 from scipy.optimize import fmin
 
+from oscar.data import load_data
 from ..oscar_data import *
 from ..oscar_data import nb_ODS, ODS
 from ...config import dty, mod_HVSNKtau, mod_HVSNKtrans, mod_HVSNKcirc
-from oscar.data import load_data
 
 ##################################################
 #   3. NITROUS OXIDE
@@ -19,44 +19,29 @@ alpha_N2O = 0.1765 * np.array([28.0], dtype=dty)
 # historic N2O from IPCC-AR5 {ppb}
 # from [IPCC WG1, 2013] annexe 2
 N2O_ipcc = np.ones([311 + 1], dtype=dty) * np.nan
-TMP = np.array(
-    [line for line in csv.reader(
-        open("data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1750-2011.N2O.csv", "r"))],
-    dtype=dty,
-)
+path = "data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1750-2011.N2O.csv"
+TMP = load_data(path)
 N2O_ipcc[50:] = TMP[:, 0]
 N2O_0 = np.array([N2O_ipcc[50]], dtype=dty)
 
 # historic N2O from CMIP5 {ppb}
 # from [Meinshausen et al., 2011]
 N2O_cmip5 = np.ones([305 + 1], dtype=dty) * np.nan
-TMP = np.array(
-    [line for line in
-     csv.reader(open("data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.N2O.csv", "r"))],
-    dtype=dty
-)
+path = "data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.N2O.csv"
+TMP = load_data(path)
 N2O_cmip5[65:] = TMP[:, 0]
 
 # historic N2O from AGAGE {ppb}
 # from [Prinn et al., 2013] updated from the website
 N2O_agage = np.ones([313 + 1], dtype=dty) * np.nan
-TMP = np.array(
-    [line for line in csv.reader(
-        open("data/HistAtmo_AGAGE/#DATA.HistAtmo_AGAGE.1979-2013.N2O_global.csv", "r"))],
-    dtype=dty,
-)
+path = "data/HistAtmo_AGAGE/#DATA.HistAtmo_AGAGE.1979-2013.N2O_global.csv"
+TMP = load_data(path)
 N2O_agage[279:] = TMP[:, 0]
 
 # historic N2O from Law Dome ice cores {ppm}
 # from [MacFarling Meure et al., 2006]
-N2O_lawdome = np.array(
-    [
-        line
-        for line in csv.reader(open(
-        "data/HistAtmo_NOAA-NCDC/#DATA.HistAtmo_NOAA-NCDC.(IceCores).N2O_lawdome.csv",
-        "r"))][1:],
-    dtype=dty,
-)
+path = "data/HistAtmo_NOAA-NCDC/#DATA.HistAtmo_NOAA-NCDC.(IceCores).N2O_lawdome.csv"
+N2O_lawdome = load_data(path, slice=1)
 
 # load RCP concentrations {ppb}
 # from [Meinshausen et al., 2011]
@@ -64,12 +49,8 @@ N2O_rcp = np.ones([800 + 1, 6], dtype=dty) * np.nan
 n = -1
 for rcp in ["rcp26", "rcp45", "rcp60", "rcp85", "rcp45to26", "rcp60to45"]:
     n += 1
-    TMP = np.array(
-        [line for line in csv.reader(
-            open("data/Scenario_ECP/#DATA.Scenario_ECP.2000-2500." + rcp + "_N2O.csv",
-                 "r"))],
-        dtype=dty,
-    )
+    path = f"data/Scenario_ECP/#DATA.Scenario_ECP.2000-2500.{rcp}_N2O.csv"
+    TMP = load_data(path)
     N2O_rcp[300:, n] = TMP[:, 0]
 
 # ==============
@@ -115,16 +96,8 @@ tau_lag = np.array([3.0], dtype=dty)
 EESC_hv = np.zeros([nb_ODS], dtype=dty)
 EESC_hv0 = np.zeros([nb_ODS], dtype=dty)
 for VAR in ODS:
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open(
-                "data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1960-2011." + VAR + ".csv",
-                "r")
-        )],
-        dtype=dty,
-    )
+    path = f"data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1960-2011.{VAR}.csv"
+    TMP = load_data(path)
     EESC_hv[ODS.index(VAR)] = TMP[45, :]
 EESC_hv0[ODS.index("CH3Br")] = 5.8
 EESC_hv0[ODS.index("CH3Cl")] = 480.0

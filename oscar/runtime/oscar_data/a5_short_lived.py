@@ -1,8 +1,8 @@
-import csv
 import os
 
 import numpy as np
 
+from oscar.data import load_data
 from .a1_regions import nb_regionJ, nb_kind, nb_regionI, nb_sector, regionJ_index, \
     regionI_index, ind_final, kindAER_index, kindCHI_index
 from .a2_greenhouse import sec_accmip, ind_edgar, ind_cdiac
@@ -51,7 +51,7 @@ for VAR in ["NOX", "CO", "VOC"]:
     for s in range(1, len(sec_accmip) - 2):
         path = f"data/EOzoPrec_EDGAR/#DATA.EOzoPrec_EDGAR.1970-{1700 + ind_edgar}_114reg0.E{VAR}_{sec_accmip[s]}.csv"
         if os.path.isfile(path):
-            TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+            TMP = load_data(path)
             for i in range(114 + 1):
                 arr[270:ind_edgar + 1, regionJ_index[i], 0, kindCHI_index[VAR],
                 regionI_index[i]] += TMP[:ind_edgar - 270 + 1, i]
@@ -70,7 +70,7 @@ for VAR in ["SO2", "NH3"]:
     for s in range(1, len(sec_accmip) - 2):
         path = f"data/EAeroPrec_EDGAR/#DATA.EAeroPrec_EDGAR.1970-{1700 + ind_edgar}_114reg0.E{VAR}_{sec_accmip[s]}.csv"
         if os.path.isfile(path):
-            TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+            TMP = load_data(path)
             for i in range(114 + 1):
                 arr[270:ind_edgar + 1, regionJ_index[i], 0, kindAER_index[VAR], regionI_index[i]] += \
                     TMP[:ind_edgar - 270 + 1, i]
@@ -80,7 +80,7 @@ EPM10edgar = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI
 for s in range(1, len(sec_accmip) - 2):
     path = f"data/EAeroPrec_EDGAR/#DATA.EAeroPrec_EDGAR.1970-{1700 + ind_edgar}_114reg0.EPM10_{sec_accmip[s]}.csv"
     if os.path.isfile(path):
-        TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+        TMP = load_data(path)
         for i in range(114 + 1):
             EPM10edgar[270: ind_edgar + 1, regionJ_index[i], 0, kindAER_index["OC"], regionI_index[i]] += \
                 TMP[: ind_edgar - 270 + 1, i] / 2
@@ -107,7 +107,7 @@ for VAR in ["NOX", "CO", "VOC"]:
     for s in range(1, len(sec_accmip) - 2):
         path = f"data/EOzoPrec_EDGAR-HTAP/#DATA.EOzoPrec_EDGAR-HTAP.2008-2010_114reg0.E{VAR}_{sec_accmip[s]}.csv"
         if os.path.isfile(path):
-            TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+            TMP = load_data(path)
             for i in range(114 + 1):
                 arr[308:310 + 1, regionJ_index[i], 0, kindCHI_index[VAR], regionI_index[i]] += \
                     TMP[:ind_edgar - 270 + 1, i]
@@ -128,7 +128,7 @@ for VAR in ["SO2", "NH3", "OC", "BC"]:
     for s in range(1, len(sec_accmip) - 2):
         path = f"data/EAeroPrec_EDGAR-HTAP/#DATA.EAeroPrec_EDGAR-HTAP.2008-2010_114reg0.E{VAR}_{sec_accmip[s]}.csv"
         if os.path.isfile(path):
-            TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+            TMP = load_data(path)
             for i in range(114 + 1):
                 arr[308:310 + 1, regionJ_index[i], 0, kindAER_index[VAR], regionI_index[i]] += \
                     TMP[:ind_edgar - 270 + 1, i]
@@ -158,7 +158,7 @@ for VAR in ["NOX", "CO", "VOC"]:
     for s in range(1, len(sec_accmip) - 2):
         path = f"data/EOzoPrec_ACCMIP/#DATA.EOzoPrec_ACCMIP.1850-2000_114reg0.E{VAR}_{sec_accmip[s]}.csv"
         if os.path.isfile(path):
-            TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+            TMP = load_data(path)
             for i in range(114 + 1):
                 accmip[150:300 + 1, regionJ_index[i], 0, kindCHI_index[VAR], regionI_index[i]] += TMP[:300 - 150 + 1, i]
                 if sec_accmip[s] in ["agr", "awb", "wst"]:
@@ -187,7 +187,7 @@ for VAR in ["SO2", "NH3", "OC", "BC"]:
     for s in range(1, len(sec_accmip) - 2):
         path = f"data/EAeroPrec_ACCMIP/#DATA.EAeroPrec_ACCMIP.1850-2000_114reg0.E{VAR}_{sec_accmip[s]}.csv"
         if os.path.isfile(path):
-            TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+            TMP = load_data(path)
             for i in range(114 + 1):
                 accmip[150:300 + 1, regionJ_index[i], 0, kindAER_index[VAR], regionI_index[i]] += TMP[:300 - 150 + 1, i]
                 if sec_accmip[s] in ["agr", "awb", "wst"]:
@@ -219,7 +219,7 @@ for VAR, scen, arr in [
 ]:
     if (scen[:4] == "SRES") & (ind_final > ind_cdiac):
         path = f"data/EOzoPrec_SRES/#DATA.EOzoPrec_SRES.2000-2100_4reg0.{scen[5:]}_E{VAR}.csv"
-        TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+        TMP = load_data(path)
 
         for i in range(4 + 1):
             if (mod_regionI == "SRES4") & (mod_regionJ == "SRES4"):
@@ -234,7 +234,7 @@ for VAR, scen, arr in [
 # AeroPrec (SO2 only)
 if (scen_ESO2[:4] == "SRES") & (ind_final > ind_cdiac):
     path = f"data/EAeroPrec_SRES/#DATA.EAeroPrec_SRES.2000-2100_4reg0.{scen_ESO2[5:]}_ESO2.csv"
-    TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+    TMP = load_data(path)
     for i in range(4 + 1):
         if (mod_regionI == "SRES4") & (mod_regionJ == "SRES4"):
             ESO2proj[300: min(ind_final, 400) + 1, i, 0, kindAER_index["SO2"], i] += \
@@ -267,7 +267,7 @@ for VAR, scen, arr in [
             path = f"data/EOzoPrec_RCP/#DATA.EOzoPrec_RCP.2000-2100_5reg0.rcp{scen[3]}{scen[5]}_E{VAR}_" \
                    f"{sec_accmip[s]}.csv"
             if os.path.isfile(path):
-                TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+                TMP = load_data(path)
                 for i in range(5 + 1):
                     if (mod_regionI == "RCP5") & (mod_regionJ == "RCP5"):
                         arr[300:min(ind_final, 400) + 1, i, 0, kindCHI_index[VAR], i] += \
@@ -295,7 +295,7 @@ for VAR, scen, arr in [
                    f"{sec_accmip[s]}.csv"
 
             if os.path.isfile(path):
-                TMP = np.array([line for line in csv.reader(open(path, "r"))], dtype=dty)
+                TMP = load_data(path)
                 for i in range(5 + 1):
                     if (mod_regionI == "RCP5") & (mod_regionJ == "RCP5"):
                         arr[300:min(ind_final, 400) + 1, i, 0, kindAER_index[VAR], i] += \

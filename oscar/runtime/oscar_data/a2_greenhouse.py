@@ -1,12 +1,12 @@
 import os
-import csv
+
 import numpy as np
 
-from ...data import load_data
 from .a1_regions import nb_regionJ, nb_kind, nb_regionI, \
     nb_sector, regionJ_index, kFF, regionI_index, ind_final, kindGHG_index
 from ...config import dty, scen_EFF, mod_regionI, scen_EN2O, scen_ECH4, data_ECH4, \
     data_EN2O, mod_DATAscen, mod_regionJ, data_EFF
+from ...data import load_data, load_data_and_header
 
 ##################################################
 #   1. GREENHOUSE GASES
@@ -170,19 +170,7 @@ for s in range(1, len(sec_ehyde) - 2):
     path = f"data/ENitrousOx_EDGAR-FT/#DATA.ENitrousOx_EDGAR-FT.2008-2010_114reg0.EN2O_{sec_ehyde[s]}.csv"
 
     if os.path.isfile(path):
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/ENitrousOx_EDGAR-FT/#DATA.ENitrousOx_EDGAR-FT.2008-2010_114reg0.EN2O_"
-                    + sec_ehyde[s]
-                    + ".csv",
-                    "r",
-                )
-            )],
-            dtype=dty,
-        )
+        TMP = load_data(path)
         for i in range(114 + 1):
             EN2Oeft[308: 310 + 1, regionJ_index[i], 0, kindGHG_index["N2O"],
             regionI_index[i]] += TMP[: 310 - 308 + 1, i]
@@ -202,18 +190,7 @@ for s in range(1, len(sec_accmip) - 2):
     path = f"data/EMethane_ACCMIP/#DATA.EMethane_ACCMIP.1850-2000_114reg0.ECH4_{sec_accmip[s]}.csv"
 
     if os.path.isfile(path):
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/EMethane_ACCMIP/#DATA.EMethane_ACCMIP.1850-2000_114reg0.ECH4_" +
-                    sec_accmip[s] + ".csv",
-                    "r",
-                )
-            )],
-            dtype=dty,
-        )
+        TMP = load_data(path)
         for i in range(114 + 1):
             ECH4accmip[150: 300 + 1, regionJ_index[i], 0, kindGHG_index["CH4"],
             regionI_index[i]] += TMP[: 300 - 150 + 1, i]
@@ -238,19 +215,7 @@ for s in range(1, len(sec_ehyde) - 2):
     path = f"data/ENitrousOx_EDGAR-HYDE/#DATA.ENitrousOx_EDGAR-HYDE.1890-1990_114reg0.EN2O_{sec_ehyde[s]}.csv"
 
     if os.path.isfile(path):
-        TMP = np.array(
-            [
-                line
-                for line in csv.reader(
-                open(
-                    "data/ENitrousOx_EDGAR-HYDE/#DATA.ENitrousOx_EDGAR-HYDE.1890-1990_114reg0.EN2O_"
-                    + sec_ehyde[s]
-                    + ".csv",
-                    "r",
-                )
-            )],
-            dtype=dty,
-        )
+        TMP = load_data(path)
         for i in range(114 + 1):
             EN2Oehyde[190: 290 + 1, regionJ_index[i], 0, kindGHG_index["N2O"],
             regionI_index[i]] += TMP[: 290 - 190 + 1, i]
@@ -266,19 +231,8 @@ p_EN2O_bio[np.isnan(p_EN2O_bio) | np.isinf(p_EN2O_bio)] = 0
 
 # load emissions from [Stern et al., 1998]
 ECH4stern = np.zeros([ind_cdiac + 1], dtype=dty)
-TMP = np.array(
-    [
-        line
-        for line in csv.reader(
-        open("data/EMethane_Stern1998/#DATA.EMethane_Stern1998.1860-1994_(7sec).ECH4.csv",
-             "r"))][1:],
-    dtype=dty,
-)
-lgd = [
-    line for line in csv.reader(
-        open("data/EMethane_Stern1998/#DATA.EMethane_Stern1998.1860-1994_(7sec).ECH4.csv",
-             "r"))
-][0]
+path = "data/EMethane_Stern1998/#DATA.EMethane_Stern1998.1860-1994_(7sec).ECH4.csv"
+TMP, lgd = load_data_and_header(path)
 for s in range(len(lgd)):
     if not lgd[s] in ["Biomass Burning"]:
         ECH4stern[160: 294 + 1] += TMP[: 294 - 160 + 1, s]
@@ -289,24 +243,8 @@ for s in range(len(lgd)):
 
 # load emissions from [Davidson et al., 2009]
 EN2Odavidson = np.zeros([ind_cdiac + 1], dtype=dty)
-TMP = np.array(
-    [
-        line
-        for line in csv.reader(
-        open(
-            "data/ENitrousOx_Davidson2009/#DATA.ENitrousOx_Davidson2009.1860-2005_(5sec).EN2O.csv",
-            "r")
-    )][1:],
-    dtype=dty,
-)
-lgd = [
-    line
-    for line in csv.reader(
-        open(
-            "data/ENitrousOx_Davidson2009/#DATA.ENitrousOx_Davidson2009.1860-2005_(5sec).EN2O.csv",
-            "r")
-    )
-][0]
+path = "data/ENitrousOx_Davidson2009/#DATA.ENitrousOx_Davidson2009.1860-2005_(5sec).EN2O.csv"
+TMP, lgd = load_data_and_header(path)
 for s in range(len(lgd)):
     if lgd[s] in ["nyl_prod", "ff_burn", "biogen"]:
         EN2Odavidson[160: 305 + 1] += TMP[: 305 - 160 + 1, s]
@@ -336,59 +274,33 @@ EN2Oproj = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI],
 
 # FF
 if (scen_EFF[:4] == "SRES") & (ind_final > ind_cdiac):
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open("data/EFossil_SRES/#DATA.EFossil_SRES.2000-2100_4reg0." + scen_EFF[
-                                                                           5:] + "_EFF.csv",
-                 "r")
-        )],
-        dtype=dty,
-    )
+    path = f"data/EFossil_SRES/#DATA.EFossil_SRES.2000-2100_4reg0.{scen_EFF[5:]}_EFF.csv"
+    TMP = load_data(path)
     for i in range(4 + 1):
         if (mod_regionI == "SRES4") & (mod_regionJ == "SRES4"):
-            EFFproj[300: min(ind_final, 400) + 1, i, 0, kFF, i] += TMP[: min(ind_final,
-                                                                             400) - 300 + 1,
-                                                                   i]
+            EFFproj[300: min(ind_final, 400) + 1, i, 0, kFF, i] += \
+                TMP[: min(ind_final, 400) - 300 + 1, i]
         elif (mod_regionI == "SRES4") & (mod_regionJ != "SRES4"):
-            EFFproj[300: min(ind_final, 400) + 1, 0, 0, kFF, i] += TMP[: min(ind_final,
-                                                                             400) - 300 + 1,
-                                                                   i]
+            EFFproj[300: min(ind_final, 400) + 1, 0, 0, kFF, i] += \
+                TMP[: min(ind_final, 400) - 300 + 1, i]
         elif (mod_regionI != "SRES4") & (mod_regionJ == "SRES4"):
-            EFFproj[300: min(ind_final, 400) + 1, i, 0, kFF, 0] += TMP[: min(ind_final,
-                                                                             400) - 300 + 1,
-                                                                   i]
+            EFFproj[300: min(ind_final, 400) + 1, i, 0, kFF, 0] += \
+                TMP[: min(ind_final, 400) - 300 + 1, i]
         elif (mod_regionI != "SRES4") & (mod_regionJ != "SRES4"):
-            EFFproj[300: min(ind_final, 400) + 1, 0, 0, kFF, 0] += TMP[: min(ind_final,
-                                                                             400) - 300 + 1,
-                                                                   i]
+            EFFproj[300: min(ind_final, 400) + 1, 0, 0, kFF, 0] += \
+                TMP[: min(ind_final,400) - 300 + 1, i]
 
 # CH4
 if (scen_ECH4[:4] == "SRES") & (ind_final > ind_cdiac):
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open("data/EMethane_SRES/#DATA.EMethane_SRES.2000-2100_4reg0." + scen_ECH4[
-                                                                             5:] + "_ECH4.csv",
-                 "r")
-        )],
-        dtype=dty,
-    )
+    path = f"data/EMethane_SRES/#DATA.EMethane_SRES.2000-2100_4reg0.{scen_ECH4[5:]}_ECH4.csv"
+    TMP = load_data(path)
     for i in range(4 + 1):
         if (mod_regionI == "SRES4") & (mod_regionJ == "SRES4"):
-            ECH4proj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["CH4"], i] += TMP[
-                                                                                     : min(
-                                                                                         ind_final,
-                                                                                         400) - 300 + 1,
-                                                                                     i]
+            ECH4proj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["CH4"], i] += \
+                TMP[: min(ind_final,400) - 300 + 1,i]
         elif (mod_regionI == "SRES4") & (mod_regionJ != "SRES4"):
-            ECH4proj[300: min(ind_final, 400) + 1, 0, 0, kindGHG_index["CH4"], i] += TMP[
-                                                                                     : min(
-                                                                                         ind_final,
-                                                                                         400) - 300 + 1,
-                                                                                     i]
+            ECH4proj[300: min(ind_final, 400) + 1, 0, 0, kindGHG_index["CH4"], i] += \
+                TMP[: min(ind_final,400) - 300 + 1, i]
         elif (mod_regionI != "SRES4") & (mod_regionJ == "SRES4"):
             ECH4proj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["CH4"], 0] += TMP[
                                                                                      : min(
@@ -404,42 +316,21 @@ if (scen_ECH4[:4] == "SRES") & (ind_final > ind_cdiac):
 
 # N2O
 if (scen_EN2O[:4] == "SRES") & (ind_final > ind_cdiac):
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open(
-                "data/ENitrousOx_SRES/#DATA.ENitrousOx_SRES.2000-2100_4reg0." + scen_EN2O[
-                                                                                5:] + "_EN2O.csv",
-                "r")
-        )],
-        dtype=dty,
-    )
+    path = f"data/ENitrousOx_SRES/#DATA.ENitrousOx_SRES.2000-2100_4reg0.{scen_EN2O[5:]}_EN2O.csv"
+    TMP = load_data(path)
     for i in range(4 + 1):
         if (mod_regionI == "SRES4") & (mod_regionJ == "SRES4"):
-            EN2Oproj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["N2O"], i] += TMP[
-                                                                                     : min(
-                                                                                         ind_final,
-                                                                                         400) - 300 + 1,
-                                                                                     i]
+            EN2Oproj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["N2O"], i] += \
+                TMP[: min(ind_final,400) - 300 + 1, i]
         elif (mod_regionI == "SRES4") & (mod_regionJ != "SRES4"):
-            EN2Oproj[300: min(ind_final, 400) + 1, 0, 0, kindGHG_index["N2O"], i] += TMP[
-                                                                                     : min(
-                                                                                         ind_final,
-                                                                                         400) - 300 + 1,
-                                                                                     i]
+            EN2Oproj[300: min(ind_final, 400) + 1, 0, 0, kindGHG_index["N2O"], i] += \
+                TMP[: min(ind_final,400) - 300 + 1, i]
         elif (mod_regionI != "SRES4") & (mod_regionJ == "SRES4"):
-            EN2Oproj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["N2O"], 0] += TMP[
-                                                                                     : min(
-                                                                                         ind_final,
-                                                                                         400) - 300 + 1,
-                                                                                     i]
+            EN2Oproj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["N2O"], 0] += \
+                TMP[: min(ind_final,400) - 300 + 1, i]
         elif (mod_regionI != "SRES4") & (mod_regionJ != "SRES4"):
-            EN2Oproj[300: min(ind_final, 400) + 1, 0, 0, kindGHG_index["N2O"], 0] += TMP[
-                                                                                     : min(
-                                                                                         ind_final,
-                                                                                         400) - 300 + 1,
-                                                                                     i]
+            EN2Oproj[300: min(ind_final, 400) + 1, 0, 0, kindGHG_index["N2O"], 0] += \
+                TMP[: min(ind_final,400) - 300 + 1, i]
 
 # =========
 # 1.10. RCP
@@ -450,18 +341,8 @@ if (scen_EN2O[:4] == "SRES") & (ind_final > ind_cdiac):
 
 # FF
 if (scen_EFF[:3] == "RCP") & (ind_final > ind_cdiac):
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open(
-                "data/EFossil_RCP/#DATA.EFossil_RCP.2000-2100_5reg0.rcp" + scen_EFF[3] +
-                scen_EFF[5] + "_EFF.csv",
-                "r",
-            )
-        )],
-        dtype=dty,
-    )
+    path = f"data/EFossil_RCP/#DATA.EFossil_RCP.2000-2100_5reg0.rcp{scen_EFF[3]}{scen_EFF[5]}_EFF.csv"
+    TMP = load_data(path)
     for i in range(5 + 1):
         if (mod_regionI == "RCP5") & (mod_regionJ == "RCP5"):
             EFFproj[300: min(ind_final, 400) + 1, i, 0, kFF, i] += \
@@ -479,25 +360,11 @@ if (scen_EFF[:3] == "RCP") & (ind_final > ind_cdiac):
 # CH4
 if (scen_ECH4[:3] == "RCP") & (ind_final > ind_cdiac):
     for s in range(1, len(sec_accmip) - 2):
-        path = f"data/EMethane_RCP/#DATA.EMethane_RCP.2000-2100_5reg0.rcp{scen_ECH4[3]}{scen_ECH4[5]}_ECH4_{sec_accmip[s]}.csv"
+        path = f"data/EMethane_RCP/#DATA.EMethane_RCP.2000-2100_5reg0.rcp{scen_ECH4[3]}{scen_ECH4[5]}_ECH4_" \
+               f"{sec_accmip[s]}.csv"
 
         if os.path.isfile(path):
-            TMP = np.array(
-                [
-                    line
-                    for line in csv.reader(
-                    open(
-                        "data/EMethane_RCP/#DATA.EMethane_RCP.2000-2100_5reg0.rcp"
-                        + scen_ECH4[3]
-                        + scen_ECH4[5]
-                        + "_ECH4_"
-                        + sec_accmip[s]
-                        + ".csv",
-                        "r",
-                    )
-                )],
-                dtype=dty,
-            )
+            TMP = load_data(path)
             for i in range(5 + 1):
                 if (mod_regionI == "RCP5") & (mod_regionJ == "RCP5"):
                     ECH4proj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["CH4"],
@@ -514,45 +381,21 @@ if (scen_ECH4[:3] == "RCP") & (ind_final > ind_cdiac):
 
 # N2O
 if (scen_EN2O[:3] == "RCP") & (ind_final > ind_cdiac):
-    TMP = np.array(
-        [
-            line
-            for line in csv.reader(
-            open(
-                "data/ENitrousOx_RCP/#DATA.ENitrousOx_RCP.2000-2100_5reg0.rcp"
-                + scen_EN2O[3]
-                + scen_EN2O[5]
-                + "_EN2O.csv",
-                "r",
-            )
-        )],
-        dtype=dty,
-    )
+    path = f"data/ENitrousOx_RCP/#DATA.ENitrousOx_RCP.2000-2100_5reg0.rcp{scen_EN2O[3]}{scen_EN2O[5]}_EN2O.csv"
+    TMP = load_data(path)
     for i in range(5 + 1):
         if (mod_regionI == "RCP5") & (mod_regionJ == "RCP5"):
-            EN2Oproj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["N2O"], i] += TMP[
-                                                                                     : min(
-                                                                                         ind_final,
-                                                                                         400) - 300 + 1,
-                                                                                     i]
+            EN2Oproj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["N2O"], i] += \
+                TMP[: min(ind_final,400) - 300 + 1, i]
         elif (mod_regionI == "RCP5") & (mod_regionJ != "RCP5"):
-            EN2Oproj[300: min(ind_final, 400) + 1, 0, 0, kindGHG_index["N2O"], i] += TMP[
-                                                                                     : min(
-                                                                                         ind_final,
-                                                                                         400) - 300 + 1,
-                                                                                     i]
+            EN2Oproj[300: min(ind_final, 400) + 1, 0, 0, kindGHG_index["N2O"], i] += \
+                TMP[: min(ind_final,400) - 300 + 1, i]
         elif (mod_regionI != "RCP5") & (mod_regionJ == "RCP5"):
-            EN2Oproj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["N2O"], 0] += TMP[
-                                                                                     : min(
-                                                                                         ind_final,
-                                                                                         400) - 300 + 1,
-                                                                                     i]
+            EN2Oproj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["N2O"], 0] += \
+                TMP[: min(ind_final,400) - 300 + 1, i]
         elif (mod_regionI != "RCP5") & (mod_regionJ != "RCP5"):
-            EN2Oproj[300: min(ind_final, 400) + 1, 0, 0, kindGHG_index["N2O"], 0] += TMP[
-                                                                                     : min(
-                                                                                         ind_final,
-                                                                                         400) - 300 + 1,
-                                                                                     i]
+            EN2Oproj[300: min(ind_final, 400) + 1, 0, 0, kindGHG_index["N2O"], 0] += \
+                TMP[: min(ind_final, 400) - 300 + 1, i]
 
 # =================
 # 1.A. PAST DATASET
