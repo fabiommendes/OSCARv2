@@ -28,7 +28,7 @@ RF_O3_ipcc = RF_ipcc.copy()
 RF_AER_ipcc = RF_ipcc.copy()
 RF_Alb_ipcc = RF_ipcc.copy()
 
-TMP = load_data("data/Historic_IPCC-AR5/#DATA.Historic_IPCC-AR5.1750-2011_(11for).RF.csv", slice=1)
+TMP = load_data("data/Historic_IPCC-AR5/#DATA.Historic_IPCC-AR5.1750-2011_(11for).RF.csv", start=1)
 path = "data/Historic_IPCC-AR5/#DATA.Historic_IPCC-AR5.1750-2011_(11for).RF.csv"
 lgd = load_header(path)
 
@@ -74,7 +74,7 @@ for rcp in ["rcp26", "rcp45", "rcp60", "rcp85", "rcp45to26", "rcp60to45"]:
     path = f"data/Scenario_ECP/#DATA.Scenario_ECP.2000-2500_(19for).{rcp}_RF.csv"
     path2 = "data/Historic_CMIP5/#DATA.Historic_CMIP5.1765-2005_(19for).RF.csv"
     TMP, lgd = load_data_and_header(path)
-    TMP2 = load_data(path, slice=1)
+    TMP2 = load_data(path, start=1)
     for x in range(len(lgd)):
         RF_rcp[300:, n] += TMP[:, x]
         if lgd[x] == "VOLC":
@@ -484,7 +484,7 @@ warmeff_volc = np.array([0.6], dtype=dty)
 
 # read region distribution
 path = "data/RegDiv_Reddy2007/#DATA.RegDiv_Reddy2007.114reg1_(9reg0).AREA.csv"
-TMP = load_data(path, slice=1)
+TMP = load_data(path, start=1)
 p_reg9 = np.zeros([nb_regionI, 9 + 1], dtype=dty)
 for i in range(1, 114 + 1):
     p_reg9[regionI_index[i], :] += TMP[i - 1, :]

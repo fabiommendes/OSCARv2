@@ -20,7 +20,7 @@ from ...config import dty, mod_O3Tregsat, mod_O3Temis, mod_O3Tclim, mod_O3Sfracr
 
 # read region distribution
 path = "data/RegDiv_HTAP/#DATA.RegDiv_HTAP.114reg1_(4reg0).AREA.csv"
-TMP = load_data(path, slice=1)
+TMP = load_data(path, start=1)
 p_reg4 = np.zeros([nb_regionI, 4 + 1], dtype=dty)
 
 for i in range(1, 114 + 1):
@@ -274,10 +274,10 @@ elif mod_O3Temis == "mean-OxComp":
 # load pre-processed ACCMIP results for specified model
 # for sensitivity to climate
 if mod_O3Tclim != "":
-    TMP = load_data(f"data/OzoChem_ACCMIP/#DATA.OzoChem_{mod_O3Tclim}.2000s_(4exp).O3t.csv", slice=1)
+    TMP = load_data(f"data/OzoChem_ACCMIP/#DATA.OzoChem_{mod_O3Tclim}.2000s_(4exp).O3t.csv", start=1)
     O3t_ozoc = TMP[0,:]
 
-    TMP = load_data(f"data/OzoChem_ACCMIP/#DATA.OzoChem_{mod_O3Tclim}.2000s_(4exp).tas.csv", slice=1)
+    TMP = load_data(f"data/OzoChem_ACCMIP/#DATA.OzoChem_{mod_O3Tclim}.2000s_(4exp).tas.csv", start=1)
     tas_ozoc = TMP[0, :]
 
 # definition of parameter
@@ -547,7 +547,7 @@ EESC_0 = np.sum(f_fracrel(tau_lag) * (n_Cl + alpha_Br * n_Br) * ODS_0)
 for var in ["ta2"]:
     ta2_atm = np.zeros([2099-1961+1], dtype=dty)
     path = f"data/Atmosphere_CCMVal2/#DATA.Atmosphere_{mod_O3Strans}.1961-2099_(1lvl).{var}.csv"
-    TMP = load_data(path, slice=1)
+    TMP = load_data(path, start=1)
     ta2_atm[:] = TMP[:,0]
 
 # fit of linear yearly trend

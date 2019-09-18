@@ -41,7 +41,7 @@ N2O_agage[279:] = TMP[:, 0]
 # historic N2O from Law Dome ice cores {ppm}
 # from [MacFarling Meure et al., 2006]
 path = "data/HistAtmo_NOAA-NCDC/#DATA.HistAtmo_NOAA-NCDC.(IceCores).N2O_lawdome.csv"
-N2O_lawdome = load_data(path, slice=1)
+N2O_lawdome = load_data(path, start=1)
 
 # load RCP concentrations {ppb}
 # from [Meinshausen et al., 2011]
@@ -214,7 +214,7 @@ age_atm = np.zeros([2099 - 1961 + 1], dtype=dty)
 ta_atm = np.zeros([2099 - 1961 + 1], dtype=dty)
 for VAR, arr in [('age', age_atm), ('ta', ta_atm)]:
     path = f"data/Atmosphere_CCMVal2/#DATA.Atmosphere_{mod_HVSNKcirc}.1961-2099_(1lvl).{VAR}.csv"
-    TMP = load_data(path, slice=1)
+    TMP = load_data(path, start=1)
     arr[:] = TMP[:, 0]
 
 # definition of parameter

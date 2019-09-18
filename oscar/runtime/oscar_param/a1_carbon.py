@@ -50,7 +50,7 @@ CO2_noaa_gl[280:] = TMP[:, 0]
 # historic CO2 from Law Dome ice cores {ppm}
 # from [Etheridge et al., 1996] and [MacFarling Meure et al., 2006]
 path = "data/HistAtmo_NOAA-NCDC/#DATA.HistAtmo_NOAA-NCDC.(IceCores).CO2_lawdome.csv"
-CO2_lawdome = load_data(path, slice=1)
+CO2_lawdome = load_data(path, start=1)
 
 # load RCP concentrations {ppm}
 # from [Meinshausen et al., 2011]
@@ -65,7 +65,7 @@ for rcp in ["rcp26", "rcp45", "rcp60", "rcp85", "rcp45to26", "rcp60to45"]:
 # global CO2 historic flux {GtC/yr}
 # from [Le Quere et al., 2015]
 path = "data/Historic_GCP/#DATA.Historic_GCP.1959-2014_(5flx).budget.csv"
-TMP = load_data(path, slice=1)
+TMP = load_data(path, start=1)
 
 n = 0
 EFF_gcp = np.ones([314 + 1], dtype=dty) * np.nan
@@ -1667,7 +1667,7 @@ p_HWP2 = np.zeros([nb_regionI, nb_biome], dtype=dty)
 p_HWP3 = np.zeros([nb_regionI, nb_biome], dtype=dty)
 
 path = "data/WoodUse_Earles/#DATA.WoodUse_Earles.2000s_114reg1_(4use).HWP.csv"
-TMP = load_data(path, slice=1)
+TMP = load_data(path, start=1)
 for i in range(1, 114 + 1):
     p_HWP0[regionI_index[i], :] += TMP[i - 1, 0]
     p_HWP1[regionI_index[i], :] += TMP[i - 1, 1]

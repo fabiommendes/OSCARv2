@@ -37,7 +37,7 @@ CH4_agage[287:] = TMP[:, 0]
 
 # historic CH4 from Law Dome ice cores {ppm}
 # from [Etheridge et al., 1998] and [MacFarling Meure et al., 2006]
-CH4_lawdome = load_data("data/HistAtmo_NOAA-NCDC/#DATA.HistAtmo_NOAA-NCDC.(IceCores).CH4_lawdome.csv", slice=1)
+CH4_lawdome = load_data("data/HistAtmo_NOAA-NCDC/#DATA.HistAtmo_NOAA-NCDC.(IceCores).CH4_lawdome.csv", start=1)
 
 # load RCP concentrations {ppb}
 # from [Meinshausen et al., 2011]
@@ -534,7 +534,7 @@ ECH4_wet0 = np.zeros([nb_regionI], dtype=dty)
 for VAR, arr in [("AREA", AREA_wet0), ("ECH4", ECH4_wet0)]:
     if mod_EWETpreind != "":
         TMP = load_data(f"data/Wetlands_WETCHIMP/#DATA.Wetlands_{mod_EWETpreind}.1910s_114reg1_(1exp).{VAR}.csv",
-                        slice=1)
+                        start=1)
         for i in range(1, 114 + 1):
             arr[regionI_index[i]] += TMP[i - 1, 0]
 
@@ -557,7 +557,7 @@ p_wet /= np.sum(p_wet, 1)[:, np.newaxis]
 def wetchimp(sim):
     arr = np.zeros([nb_regionI], dtype=dty)
     if mod_AWETtrans != "":
-        TMP = load_data(f"data/Wetlands_WETCHIMP/#DATA.Wetlands_{mod_AWETtrans}.1910s_114reg1_(4exp).AREA.csv", slice=1)
+        TMP = load_data(f"data/Wetlands_WETCHIMP/#DATA.Wetlands_{mod_AWETtrans}.1910s_114reg1_(4exp).AREA.csv", start=1)
         path = f"data/Wetlands_WETCHIMP/#DATA.Wetlands_{mod_AWETtrans}.1910s_114reg1_(4exp).AREA.csv"
         lgd = load_header(path)
         for i in range(1, 114 + 1):

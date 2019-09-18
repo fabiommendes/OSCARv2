@@ -597,17 +597,11 @@ def OSCAR_lite(
             D_hv = f_hv(D_N2O_lag, D_EESC, fT * D_gst)
 
             # fluxes
-            D_OHSNK_CH4 = -alpha_CH4 / tau_CH4_OH * (
-                    CH4_0 * D_kOH + D_CH4 + D_kOH * D_CH4)
-            D_HVSNK_CH4 = -alpha_CH4 / tau_CH4_hv * (
-                    CH4_0 * D_hv + D_CH4_lag + D_hv * D_CH4_lag)
+            D_OHSNK_CH4 = -alpha_CH4 / tau_CH4_OH * (CH4_0 * D_kOH + D_CH4 + D_kOH * D_CH4)
+            D_HVSNK_CH4 = -alpha_CH4 / tau_CH4_hv * (CH4_0 * D_hv + D_CH4_lag + D_hv * D_CH4_lag)
             D_XSNK_CH4 = -alpha_CH4 * (1 / tau_CH4_soil + 1 / tau_CH4_ocean) * D_CH4
-            D_FOXI_CH4 = -0.001 * (
-                    1.0 * np.sum(ECH4[t]) + np.sum(D_EBB_CH4) + np.sum(
-                D_EWET) + D_OHSNK_CH4 + D_HVSNK_CH4 + D_XSNK_CH4
-            )
+            D_FOXI_CH4 = -0.001 * (1.0 * np.sum(ECH4[t]) + np.sum(D_EBB_CH4) + np.sum(D_EWET) + D_OHSNK_CH4 + D_HVSNK_CH4 + D_XSNK_CH4)
             D_HVSNK_N2O = -alpha_N2O / tau_N2O_hv * (N2O_0 * D_hv + D_N2O_lag + D_hv * D_N2O_lag)
-
             D_OHSNK_HFC = -alpha_HFC / tau_HFC_OH * (HFC_0 * D_kOH + D_HFC + D_kOH * D_HFC)
             D_OHSNK_PFC = -alpha_PFC / tau_PFC_OH * (PFC_0 * D_kOH + D_PFC + D_kOH * D_PFC)
             D_OHSNK_ODS = -alpha_ODS / tau_ODS_OH * (ODS_0 * D_kOH + D_ODS + D_kOH * D_ODS)
@@ -622,12 +616,9 @@ def OSCAR_lite(
 
             # stocks
             D_O3t = chi_O3t_CH4 * np.log(1 + D_CH4 / CH4_0) + Gamma_O3t * fT * D_gst
-            D_O3t += chi_O3t_NOX * np.sum(
-                w_reg_NOX * np.sum(p_reg4 * (ENOX[t] + D_EBB_NOX)[:, np.newaxis], 0))
-            D_O3t += chi_O3t_CO * np.sum(
-                w_reg_CO * np.sum(p_reg4 * (ECO[t] + D_EBB_CO)[:, np.newaxis], 0))
-            D_O3t += chi_O3t_VOC * np.sum(
-                w_reg_VOC * np.sum(p_reg4 * (EVOC[t] + D_EBB_VOC)[:, np.newaxis], 0))
+            D_O3t += chi_O3t_NOX * np.sum(w_reg_NOX * np.sum(p_reg4 * (ENOX[t] + D_EBB_NOX)[:, np.newaxis], 0))
+            D_O3t += chi_O3t_CO * np.sum(w_reg_CO * np.sum(p_reg4 * (ECO[t] + D_EBB_CO)[:, np.newaxis], 0))
+            D_O3t += chi_O3t_VOC * np.sum(w_reg_VOC * np.sum(p_reg4 * (EVOC[t] + D_EBB_VOC)[:, np.newaxis], 0))
             D_EESC = np.sum(f_fracrel(tau_lag) * (n_Cl + alpha_Br * n_Br) * D_ODS_lag)
             D_O3s = chi_O3s_EESC * D_EESC + chi_O3s_N2O * D_N2O_lag \
                     * (1 - D_EESC / EESC_x) + Gamma_O3s * fT * D_gst
@@ -653,8 +644,7 @@ def OSCAR_lite(
                     + alpha_NO3 * tau_NH3 * np.sum(ENH3[t] + D_EBB_NH3)
                     + Gamma_NO3 * fT * D_gst
             )
-            D_SOA = tau_VOC * np.sum(
-                EVOC[t] + D_EBB_VOC) + tau_BVOC * 0 + Gamma_SOA * fT * D_gst
+            D_SOA = tau_VOC * np.sum(EVOC[t] + D_EBB_VOC) + tau_BVOC * 0 + Gamma_SOA * fT * D_gst
             D_DUST = 0 * (tau_DUST * 0 + Gamma_DUST * fT * D_gst)
             D_SALT = 0 * (tau_SALT * 0 + Gamma_SALT * fT * D_gst)
             D_AERh = (
@@ -691,14 +681,10 @@ def OSCAR_lite(
                             + D_XSNK_CH4
                     )
             )
-            D_N2O += dt * (1 / alpha_N2O) * (
-                    np.sum(EN2O[t]) + np.sum(D_EBB_N2O) + D_HVSNK_N2O)
-            D_HFC += dt * (1 / alpha_HFC) * (
-                    np.sum(EHFC[t], 0) + D_OHSNK_HFC + D_HVSNK_HFC + D_XSNK_HFC)
-            D_PFC += dt * (1 / alpha_PFC) * (
-                    np.sum(EPFC[t], 0) + D_OHSNK_PFC + D_HVSNK_PFC + D_XSNK_PFC)
-            D_ODS += dt * (1 / alpha_ODS) * (
-                    np.sum(EODS[t], 0) + D_OHSNK_ODS + D_HVSNK_ODS + D_XSNK_ODS)
+            D_N2O += dt * (1 / alpha_N2O) * (np.sum(EN2O[t]) + np.sum(D_EBB_N2O) + D_HVSNK_N2O)
+            D_HFC += dt * (1 / alpha_HFC) * (np.sum(EHFC[t], 0) + D_OHSNK_HFC + D_HVSNK_HFC + D_XSNK_HFC)
+            D_PFC += dt * (1 / alpha_PFC) * (np.sum(EPFC[t], 0) + D_OHSNK_PFC + D_HVSNK_PFC + D_XSNK_PFC)
+            D_ODS += dt * (1 / alpha_ODS) * (np.sum(EODS[t], 0) + D_OHSNK_ODS + D_HVSNK_ODS + D_XSNK_ODS)
 
             D_CH4_lag += dt * ((1 / tau_lag) * D_CH4 - (1 / tau_lag) * D_CH4_lag)
             D_N2O_lag += dt * ((1 / tau_lag) * D_N2O - (1 / tau_lag) * D_N2O_lag)

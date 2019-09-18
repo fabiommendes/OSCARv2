@@ -1,24 +1,37 @@
 import numpy as np
 import csv
+import os
 from functools import lru_cache
 from .config import dty
 
 
 @lru_cache(512)
-def load_data(path, slice=None, dtype=dty, use='csv'):
+def load_data(path, start=None, dtype=dty, use='csv'):
     """
     Return an array with data loaded from given path.
     """
-    if use == 'numpy' and slice in (0, None):
-        return np.genfromtxt(path, dtype=dtype)
-    elif use == 'numpy' and slice == 1:
-        return np.genfromtxt(path, dtype=dtype, skip_header=True)
+
+    cached = os.path.join('cache', path) + '.npy'
+    try:
+        return np.load(cached)
+    except FileNotFoundError:
+        pass
+
+    if use == 'numpy' and start in (0, None):
+        data = np.genfromtxt(path, dtype=dtype)
+    elif use == 'numpy' and start == 1:
+        data = np.genfromtxt(path, dtype=dtype, skip_header=True)
     else:
         with open(path, "r") as fd:
             data = [line for line in csv.reader(fd)]
-        if slice is not None:
-            data = data[slice:]
-        return np.array(data, dtype=dtype)
+        if start is not None:
+            data = data[start:]
+        data = np.array(data, dtype=dtype)
+
+    if dtype is not object:
+        os.makedirs(os.path.dirname(cached), exist_ok=True)
+        np.save(cached, data)
+    return data
 
 
 def load_data_and_header(path):
