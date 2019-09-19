@@ -1,8 +1,10 @@
+import os
+
+import numpy as np
 from scipy.optimize import fmin, fsolve
 from scipy.special import gammainc
 
-from oscar.data import load_data
-from ..oscar_data import *
+from ..oscar_data import load_data
 from ..oscar_data import nb_regionI, nb_biome, regionI_index, biome_index
 from ...config import dty, mod_OSNKstruct, mod_OSNKchem, mod_OSNKtrans, PI_1750, \
     data_LULCC, mod_LSNKcover, ind_final, mod_EHWPspeed, mod_EHWPtau, mod_EHWPbb, \
@@ -347,7 +349,6 @@ elif mod_OSNKchem == "CO2SysPower":
         df_tot = df_1 + df_2
         return [np.nan_to_num(df_1 / df_tot), np.nan_to_num(df_2 / df_tot)]
 
-
 # ------------
 # 1.2.3. CMIP5
 # ------------
@@ -513,7 +514,6 @@ if mod_OSNKtrans != "":
 
 
     [Alpha_exp[0], gamma_exp[0]] = fmin(err, [-1, 0], disp=False)
-
 
 # =========
 # 1.3. LAND
@@ -884,7 +884,6 @@ if PI_1750:
     AREA_0 += np.sum(np.sum(LUC_tmp, 2), 0) - np.sum(np.sum(LUC_tmp, 3), 0)
     del LUC_tmp
 
-
 # ------------
 # 1.3.4. CMIP5
 # ------------
@@ -960,8 +959,6 @@ pr_upct = load_cmip5('upct', 'pr')
 pr_fxcl = load_cmip5('fxcl', 'pr')
 pr_fdbk = load_cmip5('fdbk', 'pr')
 
-
-
 # complete with arbitrary values
 for area, other in [
     (AREA_ctrl, [CSOIL0_ctrl, NPP_ctrl, RH_ctrl, FINPUT_ctrl]),
@@ -1001,7 +998,6 @@ for area, other in [
         area[:, :, bio.index("urb")] = area[:, :, bio.index("des")]
         for arr in other:
             arr[:, :, bio.index("urb")] = arr[:, :, bio.index("des")]
-
 
 # aggregate biomes
 for arr in [
@@ -1051,7 +1047,6 @@ FINPUT_dec = decadal_means(FINPUT_all)
 tas_dec = decadal_means(tas_all)
 pr_dec = decadal_means(pr_all)
 CO2_dec = decadal_means(CO2_all)
-
 
 # definition of parameters
 # sensitivity of NPP to CO2 {.} or {.}&{ppm}
@@ -1239,7 +1234,6 @@ if (nb_biome > 1) & ((mod_biomeURB == "URB") | mod_biomeV3):
         gamma_rhoP[:, biome_index["urb"]] = 0
 
 
-
 # load pre-processed CMIP5 results for specified model
 # data related to wildfires
 def load_pre_cmip5(sim, VAR):
@@ -1292,7 +1286,6 @@ pr2_upct = load_pre_cmip5("upct", "pr2")
 pr2_fxcl = load_pre_cmip5("fxcl", "pr2")
 pr2_fdbk = load_pre_cmip5("fdbk", "pr2")
 
-
 # complete with arbitrary values
 pairs = [
     (CBURNT_ctrl, EFIRE_ctrl),
@@ -1304,34 +1297,34 @@ pairs = [
 # if no shrubs in the model
 if (nb_biome > 1) & (np.sum(CBURNT_ctrl[:, :, bio.index("shr")]) == 0) & (mod_biomeSHR == "SHR"):
     for cburnt, efire in pairs:
-        cburnt[:,:,bio.index("shr")] = cburnt[:,:,bio.index("gra")]
-        efire[:,:,bio.index("shr")] = \
-            0.85*efire[:,:,bio.index("gra")] \
-            + 0.15*efire[:,:,bio.index("for")]*cburnt[:,:,bio.index("gra")]/cburnt[:,:,bio.index("for")]
-        TMP = (cburnt[:,:,bio.index("for")] == 0)
-        efire[:,:,bio.index("shr")][TMP] = efire[:,:,bio.index("gra")][TMP]
+        cburnt[:, :, bio.index("shr")] = cburnt[:, :, bio.index("gra")]
+        efire[:, :, bio.index("shr")] = \
+            0.85 * efire[:, :, bio.index("gra")] \
+            + 0.15 * efire[:, :, bio.index("for")] * cburnt[:, :, bio.index("gra")] / cburnt[:, :, bio.index("for")]
+        TMP = (cburnt[:, :, bio.index("for")] == 0)
+        efire[:, :, bio.index("shr")][TMP] = efire[:, :, bio.index("gra")][TMP]
 
 # if no crops in the model
 if (nb_biome > 1) & (np.sum(CBURNT_ctrl[:, :, bio.index("cro")]) == 0):
     for cburnt, efire in pairs:
         for arr in [cburnt, efire]:
-            arr[:,:,bio.index("cro")] = arr[:,:,bio.index("gra")]
+            arr[:, :, bio.index("cro")] = arr[:, :, bio.index("gra")]
 
 # if no pastures in the model
 if (nb_biome > 1) & (np.sum(CBURNT_ctrl[:, :, bio.index("pas")]) == 0):
     for cburnt, efire in pairs:
-        cburnt[:,:,bio.index("pas")] = cburnt[:,:,bio.index("gra")]
-        efire[:,:,bio.index("pas")] = \
-            0.60*efire[:,:,bio.index("gra")] \
-            + 0.40*efire[:,:,bio.index("des")]*cburnt[:,:,bio.index("gra")]/cburnt[:,:,bio.index("des")]
-        TMP = (cburnt[:,:,bio.index("des")] == 0)
-        efire[:,:,bio.index("pas")][TMP] = efire[:,:,bio.index("gra")][TMP]
+        cburnt[:, :, bio.index("pas")] = cburnt[:, :, bio.index("gra")]
+        efire[:, :, bio.index("pas")] = \
+            0.60 * efire[:, :, bio.index("gra")] \
+            + 0.40 * efire[:, :, bio.index("des")] * cburnt[:, :, bio.index("gra")] / cburnt[:, :, bio.index("des")]
+        TMP = (cburnt[:, :, bio.index("des")] == 0)
+        efire[:, :, bio.index("pas")][TMP] = efire[:, :, bio.index("gra")][TMP]
 
 # if no urban in the model
 if (nb_biome > 1) & (np.sum(CBURNT_ctrl[:, :, bio.index("urb")]) == 0) & ((mod_biomeURB == "URB") | mod_biomeV3):
     for cburnt, efire in pairs:
         for arr in [cburnt, efire]:
-            arr[:,:,bio.index("urb")] = arr[:,:,bio.index("des")]
+            arr[:, :, bio.index("urb")] = arr[:, :, bio.index("des")]
 
 # aggregate biomes
 for arr in [

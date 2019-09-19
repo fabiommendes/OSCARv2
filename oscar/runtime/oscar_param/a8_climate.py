@@ -4,11 +4,11 @@ import numpy as np
 from scipy.optimize import fmin
 
 from .a1_carbon import CO2_0
-from oscar.data import load_data
 from .a7_radiative_forces import f_RF_CO2
 from ..oscar_data import nb_regionI, regionI_index, load_data_and_header
 from ...config import dty, mod_TEMPresp, mod_PRECradfact, mod_TEMPpattern, mod_ACIDsurf, \
     mod_PRECpattern, mod_PRECresp
+from ...data import load_data
 
 
 ##################################################

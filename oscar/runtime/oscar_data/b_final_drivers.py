@@ -3,8 +3,7 @@ import numpy as np
 from .a2_greenhouse import ECH4, EN2O, EFF, ECH4_0, EN2O_0
 from .a3_land_use import LUC, HARV, SHIFT
 from .a4_halogenated import EHFC, EPFC, EODS
-from .a5_short_lived import ENOX, ECO, EVOC, ESO2, EOC, EBC, ENH3, \
-    ENOX_0, ECO_0, EVOC_0, ESO2_0, EOC_0, EBC_0, ENH3_0
+from .a5_short_lived import ENOX, ECO, EVOC, ESO2, EOC, EBC, ENH3, ENOX_0, ECO_0, EVOC_0, ESO2_0, EOC_0, EBC_0, ENH3_0
 from .a6_radiative_forces import RFcon, RFvolc, RFsolar
 from ...config import PI_1750, mod_sector, ind_final, ind_attrib
 

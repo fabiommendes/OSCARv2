@@ -1,11 +1,11 @@
 import os
+
 import numpy as np
 
-from ..oscar_data import *
-from oscar.data import load_data
 from .a2_methane import scale_OH
 from ..oscar_data import HFC, PFC, ODS, nb_HFC, nb_PFC, nb_ODS
 from ...config import dty
+from ...data import load_data
 
 ##################################################
 #   4. HALOGENATED COMPOUNDS
@@ -29,9 +29,9 @@ alpha_ODS = 0.1765 * np.array(
 # historic HaloC from IPCC-AR5 {ppt}
 # from [IPCC WG1, 2013] (annexe 2)
 for VAR in ["HFC", "PFC", "ODS"]:
-    HFC_ipcc = np.ones([311+1,nb_HFC], dtype=dty) * np.nan
-    PFC_ipcc = np.ones([311+1,nb_PFC], dtype=dty) * np.nan
-    ODS_ipcc = np.ones([311+1,nb_ODS], dtype=dty) * np.nan
+    HFC_ipcc = np.ones([311 + 1, nb_HFC], dtype=dty) * np.nan
+    PFC_ipcc = np.ones([311 + 1, nb_PFC], dtype=dty) * np.nan
+    ODS_ipcc = np.ones([311 + 1, nb_ODS], dtype=dty) * np.nan
 
 for VAR in HFC:
     path = f"data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1940-2011.{VAR}.csv"
@@ -56,9 +56,9 @@ for VAR in ODS:
 
 # historic HaloC from CMIP5 {ppt}
 # from [Meinshausen et al., 2011]
-HFC_cmip5 = np.ones([305+1,nb_HFC], dtype=dty) * np.nan
-PFC_cmip5 = np.ones([305+1,nb_PFC], dtype=dty) * np.nan
-ODS_cmip5 = np.ones([305+1,nb_ODS], dtype=dty) * np.nan
+HFC_cmip5 = np.ones([305 + 1, nb_HFC], dtype=dty) * np.nan
+PFC_cmip5 = np.ones([305 + 1, nb_PFC], dtype=dty) * np.nan
+ODS_cmip5 = np.ones([305 + 1, nb_ODS], dtype=dty) * np.nan
 
 for VAR in HFC:
     path = f"data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.{VAR}.csv"

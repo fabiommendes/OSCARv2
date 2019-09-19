@@ -1,6 +1,6 @@
 import numpy as np
 
-from oscar.config import mod_regionI, mod_regionJ, mod_sector, ind_final, \
+from ...config import mod_regionI, mod_regionJ, mod_sector, ind_final, \
     mod_kindFF, mod_kindLUC, mod_kindGHG, \
     mod_kindCHI, mod_kindAER, mod_kindRF, mod_kindGE, mod_biomeSHR, mod_biomeURB, \
     mod_biomeV3, dty
@@ -8,7 +8,7 @@ from oscar.config import mod_regionI, mod_regionJ, mod_sector, ind_final, \
 # ============
 # A.1. Regions
 # ============
-from oscar.data import load_data
+from ...data import load_data
 
 nb_regionI = nb_regionJ = 0
 mod_regions = {"I": mod_regionI, "J": mod_regionJ}

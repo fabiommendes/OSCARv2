@@ -1,4 +1,4 @@
-from oscar.data import load_data_and_header
+from ...data import load_data_and_header
 from .a1_regions import ind_final, nb_regionJ, nb_kind, nb_sector, kindRF_index
 from .a2_greenhouse import ind_cdiac
 from ...config import dty, data_RFant, scen_RFant, data_RFnat, scen_RFnat

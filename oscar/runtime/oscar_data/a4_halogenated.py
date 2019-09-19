@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-from oscar.data import load_data_and_header, load_data
+from ...data import load_data_and_header, load_data
 from .a1_regions import nb_regionJ, nb_kind, nb_regionI, \
     nb_sector, regionJ_index, regionI_index, ind_final, kindGHG_index, nb_HFC, HFC, PFC, \
     ODS, nb_PFC, nb_ODS

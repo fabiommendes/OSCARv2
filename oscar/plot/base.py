@@ -1,12 +1,13 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.font_manager import FontProperties
 
-from ..runtime.oscar_param import *
-from ..config import ind_final
-from ..runtime.oscar_param import CO2_0, ind_cdiac, CO2_ipcc, CO2_rcp, alpha_CO2, AREA_0, \
+from ..runtime.oscar_data import ind_cdiac, ind_final
+from ..runtime.oscar_param import CO2_0, CO2_ipcc, CO2_rcp, alpha_CO2, AREA_0, \
     CH4_ipcc, CH4_0, CH4_rcp, alpha_CH4, tau_CH4_OH, N2O_ipcc, N2O_0, N2O_rcp, alpha_N2O, \
-    tau_N2O_hv, gamma_age, tau_lag, RF_ipcc
+    tau_N2O_hv, gamma_age, tau_lag, RF_ipcc, ELUC_gcp, OSNK_gcp, LSNK_gcp, d_CO2_gcp, tau_CH4_hv, tau_CH4_soil, \
+    tau_CH4_ocean, chi_O3s_EESC, EESC_x, RF_WMGHG_ipcc, RF_O3_ipcc, RF_AER_ipcc, RF_Alb_ipcc, EFF_gcp, gst_giss, \
+    gst_had, gst_ncdc, chi_O3s_N2O
 
 
 def plot_CO2(

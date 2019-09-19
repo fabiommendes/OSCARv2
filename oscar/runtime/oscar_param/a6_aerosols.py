@@ -1,14 +1,6 @@
+import numpy as np
+from ...data import load_data
 from scipy.optimize import fmin
-
-from oscar.data import load_data
-from ..oscar_data import *
-from ...config import dty, mod_POAconv, mod_SO4regsat, mod_POAregsat, mod_BCregsat, \
-    mod_POAload, mod_BCload, mod_NO3load, mod_SOAload, mod_DUSTload, mod_SALTload, \
-    mod_SO4load
-from scipy.optimize import fmin
-
-from .a1_carbon import load_data
-from ..oscar_data import *
 from ...config import dty, mod_POAconv, mod_SO4regsat, mod_POAregsat, mod_BCregsat, \
     mod_POAload, mod_BCload, mod_NO3load, mod_SOAload, mod_DUSTload, mod_SALTload, \
     mod_SO4load

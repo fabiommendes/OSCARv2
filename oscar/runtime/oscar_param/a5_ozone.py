@@ -1,10 +1,12 @@
+import numpy as np
 from scipy.optimize import fmin
 
-from .a4_halogenated import *
+from .a4_halogenated import ODS_0
 from .a3_nitrous_oxide import tau_lag
 from ..oscar_data import nb_regionI, regionI_index, nb_ODS, ODS
 from ...config import dty, mod_O3Tregsat, mod_O3Temis, mod_O3Tclim, mod_O3Sfracrel, \
     mod_O3Strans, mod_O3Snitrous
+from ...data import load_data_and_header, load_data
 
 ##################################################
 #   5. OZONE
@@ -228,7 +230,8 @@ if mod_O3Temis != "mean-OxComp":
     def load_ozoe(var):
         path = f"data/OzoChem_ACCMIP/#DATA.OzoChem_{mod_O3Temis}.2000s_(6exp).{var}.csv"
         TMP, lgd = load_data_and_header(path)
-        return TMP[0,:]
+        return TMP[0, :]
+
 
     O3t_ozoe = load_ozoe("O3t")
     CH4_ozoe = load_ozoe("CH4")
@@ -275,7 +278,7 @@ elif mod_O3Temis == "mean-OxComp":
 # for sensitivity to climate
 if mod_O3Tclim != "":
     TMP = load_data(f"data/OzoChem_ACCMIP/#DATA.OzoChem_{mod_O3Tclim}.2000s_(4exp).O3t.csv", start=1)
-    O3t_ozoc = TMP[0,:]
+    O3t_ozoc = TMP[0, :]
 
     TMP = load_data(f"data/OzoChem_ACCMIP/#DATA.OzoChem_{mod_O3Tclim}.2000s_(4exp).tas.csv", start=1)
     tas_ozoc = TMP[0, :]
@@ -545,10 +548,10 @@ EESC_0 = np.sum(f_fracrel(tau_lag) * (n_Cl + alpha_Br * n_Br) * ODS_0)
 # surface temperature trend from CCMVal2
 # load pre-processed CCMVal2 results for specified model
 for var in ["ta2"]:
-    ta2_atm = np.zeros([2099-1961+1], dtype=dty)
+    ta2_atm = np.zeros([2099 - 1961 + 1], dtype=dty)
     path = f"data/Atmosphere_CCMVal2/#DATA.Atmosphere_{mod_O3Strans}.1961-2099_(1lvl).{var}.csv"
     TMP = load_data(path, start=1)
-    ta2_atm[:] = TMP[:,0]
+    ta2_atm[:] = TMP[:, 0]
 
 # fit of linear yearly trend
 ta_trend = np.array([0], dtype=dty)

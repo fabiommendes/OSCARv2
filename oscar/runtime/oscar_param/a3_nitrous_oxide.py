@@ -1,9 +1,9 @@
+import numpy as np
 from scipy.optimize import fmin
 
-from oscar.data import load_data
-from ..oscar_data import *
 from ..oscar_data import nb_ODS, ODS
 from ...config import dty, mod_HVSNKtau, mod_HVSNKtrans, mod_HVSNKcirc
+from ...data import load_data, load_data_and_header
 
 ##################################################
 #   3. NITROUS OXIDE

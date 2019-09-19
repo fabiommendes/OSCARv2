@@ -1,9 +1,10 @@
+import numpy as np
+
 from .a1_carbon import CO2_0, CO2_cmip5
-from oscar.data import load_data, load_header
-from ..oscar_data import *
 from ..oscar_data import nb_regionI, regionI_index, nb_biome, biome_index
 from ...config import dty, mod_LSNKcover, mod_OHSNKtau, mod_OHSNKtrans, mod_OHSNKfct, \
     mod_EWETpreind, mod_AWETtrans, mod_EPFmethane
+from ...data import load_data, load_header
 
 ##################################################
 #   2. METHANE
