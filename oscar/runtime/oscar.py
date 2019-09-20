@@ -1,32 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .oscar_data import EBC, EBC_0, ECH4, ECH4_0, ECO, ECO_0, EFF, EHFC, EN2O, EN2O_0, ENH3, ENH3_0, ENOX, ENOX_0, \
-    EOC, EOC_0, EODS, EPFC, ESO2, ESO2_0, EVOC, EVOC_0, HARV, LUC, RFcon, RFsolar, RFvolc, SHIFT
-from .oscar_param import AERh_0, AREA_0, AWET_0, CFROZ_0, CH4_0, EESC_x, Gamma_BC, Gamma_DUST, Gamma_NO3, Gamma_O3s, \
-    Gamma_O3t, Gamma_POA, Gamma_SALT, Gamma_SO4, Gamma_SOA, HFC_0, N2O_0, ODS_0, PFC_0, Phi_0, alpha_BB_BC, \
-    alpha_BB_CH4, alpha_BB_CO, alpha_BB_CO2, alpha_BB_N2O, alpha_BB_NH3, alpha_BB_NOX, alpha_BB_OC, alpha_BB_SO2, \
-    alpha_BB_VOC, alpha_Br, alpha_CH4, alpha_CO2, alpha_HFC, alpha_LCC, alpha_N2O, alpha_NO3, alpha_ODS, alpha_OHC, \
-    alpha_PFC, alpha_POM, alpha_SO4, alpha_dic, alpha_gyp, alpha_mld, beta_gyp, chi_O3s_EESC, chi_O3s_N2O, \
-    chi_O3t_CH4, \
-    chi_O3t_CO, chi_O3t_NOX, chi_O3t_VOC, csoil1_0, csoil2_0, cveg_0, dty, ewet_0, f_RF_CH4, f_RF_CO2, f_RF_H2Os, \
-    f_RF_N2O, f_RF_overlap, f_fracrel, f_hv, f_kOH, f_npp, f_pCO2, f_pH, f_rho, f_v_PF, gamma_igniC, gamma_igniP, \
-    gamma_igniT, gamma_mld, gamma_pthaw, gamma_rhoPF1, gamma_rhoPF2, gamma_wetC, gamma_wetP, gamma_wetT, igni_0, \
-    ind_final, k_BC_adjust, k_met, k_pthaw, lambda_0, mld_0, mu_0, n_Br, n_Cl, nb_HFC, nb_ODS, nb_PFC, nb_biome, \
-    nb_obox, nb_regionI, nb_regionPF, npp_0, p_AGB, p_HWP0, p_HWP1, p_HWP1_bb, p_HWP2, p_HWP3, p_OHC, p_PF1, p_PF2, \
-    p_PF3, p_PF_CH4, p_PF_inst, p_atm_CO2, p_atm_O3t, p_atm_absorb, p_atm_alb, p_atm_cloud, p_atm_noCO2, \
-    p_atm_scatter, \
-    p_atm_solar, p_atm_strat, p_circ, p_reg4, p_reg9, p_wet, pthaw_min, r_HWP1, r_HWP2, r_HWP3, radeff_BC, \
-    radeff_BCsnow, radeff_DUST, radeff_HFC, radeff_NO3, radeff_O3s, radeff_O3t, radeff_ODS, radeff_PFC, radeff_POA, \
-    radeff_SALT, radeff_SO4, radeff_SOA, rho1_0, rho2_0, solub_BC, solub_DUST, solub_NO3, solub_POA, solub_SALT, \
-    solub_SO4, solub_SOA, tau_BCbb, tau_BCff, tau_BVOC, tau_CH4_OH, tau_CH4_hv, tau_CH4_ocean, tau_CH4_soil, tau_DMS, \
-    tau_DUST, tau_HFC_OH, tau_HFC_hv, tau_HFC_othr, tau_N2O_hv, tau_NH3, tau_NOX, tau_ODS_OH, tau_ODS_hv, \
-    tau_ODS_othr, \
-    tau_OMbb, tau_OMff, tau_PF1, tau_PF2, tau_PF3, tau_PFC_OH, tau_PFC_hv, tau_PFC_othr, tau_SALT, tau_SO2, tau_VOC, \
-    tau_circ, tau_gst, tau_gst0, tau_lag, tau_shift, theta_0, v_fg, w_reg_BC, w_reg_BCsnow, w_reg_CO, w_reg_NOX, \
-    w_reg_OC, w_reg_SO2, w_reg_VOC, w_reg_lst, w_reg_lstPF, w_reg_lyp, w_reg_sst, w_rhoPF, warmeff_BCsnow, \
-    warmeff_LCC, \
-    warmeff_volc
+from ..historical import ODS_0, HFC_0, PFC_0
+from ..constants import HFC, ODS, PFC
+from .oscar_data import EBC, EBC_0, ECH4, ECH4_0, ECO, ECO_0, EFF, EHFC, EN2O, EN2O_0, ENH3, ENH3_0, ENOX, ENOX_0, EOC, EOC_0, EODS, EPFC, ESO2, ESO2_0, EVOC, EVOC_0, HARV, LUC, RFcon, RFsolar, RFvolc, SHIFT
+from .oscar_param import AERh_0, AREA_0, AWET_0, CFROZ_0, CH4_0, EESC_x, Gamma_BC, Gamma_DUST, Gamma_NO3, Gamma_O3s, Gamma_O3t, Gamma_POA, Gamma_SALT, Gamma_SO4, Gamma_SOA, N2O_0, Phi_0, alpha_BB_BC, alpha_BB_CH4, alpha_BB_CO, alpha_BB_CO2, alpha_BB_N2O, alpha_BB_NH3, alpha_BB_NOX, alpha_BB_OC, alpha_BB_SO2, alpha_BB_VOC, alpha_Br, alpha_CH4, alpha_CO2, alpha_HFC, alpha_LCC, alpha_N2O, alpha_NO3, alpha_ODS, alpha_OHC, alpha_PFC, alpha_POM, alpha_SO4, alpha_dic, alpha_gyp, alpha_mld, beta_gyp, chi_O3s_EESC, chi_O3s_N2O, chi_O3t_CH4, chi_O3t_CO, chi_O3t_NOX, chi_O3t_VOC, csoil1_0, csoil2_0, cveg_0, dty, ewet_0, f_RF_CH4, f_RF_CO2, f_RF_H2Os, f_RF_N2O, f_RF_overlap, f_fracrel, f_hv, f_kOH, f_npp, f_pCO2, f_pH, f_rho, f_v_PF, gamma_igniC, gamma_igniP, gamma_igniT, gamma_mld, gamma_pthaw, gamma_rhoPF1, gamma_rhoPF2, gamma_wetC, gamma_wetP, gamma_wetT, igni_0, ind_final, k_BC_adjust, k_met, k_pthaw, lambda_0, mld_0, mu_0, n_Br, n_Cl, nb_biome, nb_obox, nb_regionI, nb_regionPF, npp_0, p_AGB, p_HWP0, p_HWP1, p_HWP1_bb, p_HWP2, p_HWP3, p_OHC, p_PF1, p_PF2, p_PF3, p_PF_CH4, p_PF_inst, p_atm_CO2, p_atm_O3t, p_atm_absorb, p_atm_alb, p_atm_cloud, p_atm_noCO2, p_atm_scatter, p_atm_solar, p_atm_strat, p_circ, p_reg4, p_reg9, p_wet, pthaw_min, r_HWP1, r_HWP2, r_HWP3, radeff_BC, radeff_BCsnow, radeff_DUST, radeff_HFC, radeff_NO3, radeff_O3s, radeff_O3t, radeff_ODS, radeff_PFC, radeff_POA, radeff_SALT, radeff_SO4, radeff_SOA, rho1_0, rho2_0, solub_BC, solub_DUST, solub_NO3, solub_POA, solub_SALT, solub_SO4, solub_SOA, tau_BCbb, tau_BCff, tau_BVOC, tau_CH4_OH, tau_CH4_hv, tau_CH4_ocean, tau_CH4_soil, tau_DMS, tau_DUST, tau_HFC_OH, tau_HFC_hv, tau_HFC_othr, tau_N2O_hv, tau_NH3, tau_NOX, tau_ODS_OH, tau_ODS_hv, tau_ODS_othr, tau_OMbb, tau_OMff, tau_PF1, tau_PF2, tau_PF3, tau_PFC_OH, tau_PFC_hv, tau_PFC_othr, tau_SALT, tau_SO2, tau_VOC, tau_circ, tau_gst, tau_gst0, tau_lag, tau_shift, theta_0, v_fg, w_reg_BC, w_reg_BCsnow, w_reg_CO, w_reg_NOX, w_reg_OC, w_reg_SO2, w_reg_VOC, w_reg_lst, w_reg_lstPF, w_reg_lyp, w_reg_sst, w_rhoPF, warmeff_BCsnow, warmeff_LCC, warmeff_volc
 from ..config import fT, p
 
 
@@ -38,46 +16,12 @@ def reduce_param(param):
     return np.sum(np.sum(np.sum(param, 2), 1), 0)
 
 
-def OSCAR_lite(
-        p=p,
-        fT=fT,
-        force_CO2=False,
-        force_GHG=False,
-        force_halo=False,
-        force_RF=False,
-        force_RFs=False,
-        force_clim=False,
-        var_output=["ELUC", "OSNK", "LSNK", "D_CO2", "RF", "D_gst"],
-        plot=[],
-        D_CO2_force=None,
-        D_CH4_force=None,
-        D_N2O_force=None,
-        D_HFC_force=None,
-        D_PFC_force=None,
-        D_ODS_force=None,
-        RF_CO2_force=None,
-        RF_CH4_force=None,
-        RF_H2Os_force=None,
-        RF_N2O_force=None,
-        RF_halo_force=None,
-        RF_O3t_force=None,
-        RF_O3s_force=None,
-        RF_SO4_force=None,
-        RF_POA_force=None,
-        RF_BC_force=None,
-        RF_NO3_force=None,
-        RF_SOA_force=None,
-        RF_DUST_force=None,
-        RF_SALT_force=None,
-        RF_cloud_force=None,
-        RF_BCsnow_force=None,
-        RF_LCC_force=None,
-        D_gst_force=None,
-        D_sst_force=None,
-        D_lst_force=None,
-        D_lyp_force=None,
-        RF_force=None,
-):
+def OSCAR_lite(p=p, fT=fT, force_CO2=False, force_GHG=False, force_halo=False, force_RF=False, force_RFs=False, force_clim=False, var_output=["ELUC", "OSNK", "LSNK", "D_CO2", "RF", "D_gst"], plot=[], D_CO2_force=None, D_CH4_force=None, D_N2O_force=None, D_HFC_force=None, D_PFC_force=None, D_ODS_force=None, RF_CO2_force=None, RF_CH4_force=None, RF_H2Os_force=None, RF_N2O_force=None, RF_halo_force=None, RF_O3t_force=None, RF_O3s_force=None, RF_SO4_force=None, RF_POA_force=None, RF_BC_force=None, RF_NO3_force=None, RF_SOA_force=None, RF_DUST_force=None, RF_SALT_force=None, RF_cloud_force=None, RF_BCsnow_force=None, RF_LCC_force=None, D_gst_force=None, D_sst_force=None, D_lst_force=None, D_lyp_force=None, RF_force=None,):
+    print('STARTING SIMULATION')
+    nb_HFC = len(HFC)
+    nb_PFC = len(PFC)
+    nb_ODS = len(ODS)
+
     # ===============
     # A. DEFINITIONS
     # ===============
@@ -85,9 +29,7 @@ def OSCAR_lite(
     # plot variables
     var_plot = []
     if plot == "all" or plot == "CO2" or "CO2" in plot:
-        var_plot += ["D_CO2", "OSNK", "LSNK", "ELUC", "D_AREA", "D_npp", "D_efire", "D_fmort", "D_rh1", "D_fmet",
-                     "D_rh2", "D_FIN", "D_FOUT", "D_FCIRC", "EFIRE_luc", "FMORT_luc", "RH1_luc", "FMET_luc",
-                     "RH2_luc", "EHWP1_luc", "EHWP2_luc", "EHWP3_luc", ]
+        var_plot += ["D_CO2", "OSNK", "LSNK", "ELUC", "D_AREA", "D_npp", "D_efire", "D_fmort", "D_rh1", "D_fmet", "D_rh2", "D_FIN", "D_FOUT", "D_FCIRC", "EFIRE_luc", "FMORT_luc", "RH1_luc", "FMET_luc", "RH2_luc", "EHWP1_luc", "EHWP2_luc", "EHWP3_luc", ]
     if plot == "all" or plot == "CH4" or "CH4" in plot:
         var_plot += ["D_CH4", "D_OHSNK_CH4", "D_HVSNK_CH4", "D_XSNK_CH4", "D_EWET", "D_EBB_CH4"]
     if plot == "all" or plot == "N2O" or "N2O" in plot:
@@ -95,11 +37,9 @@ def OSCAR_lite(
     if plot == "all" or plot == "O3" or "O3" in plot:
         var_plot += ["D_O3t", "D_O3s", "D_EESC", "D_N2O_lag", "D_gst"]
     if plot == "all" or plot == "AER" or "AER" in plot:
-        var_plot += ["D_SO4", "D_POA", "D_BC", "D_NO3", "D_SOA", "D_AERh", "RF_SO4", "RF_POA", "RF_BC", "RF_NO3",
-                     "RF_SOA", "RF_cloud", ]
+        var_plot += ["D_SO4", "D_POA", "D_BC", "D_NO3", "D_SOA", "D_AERh", "RF_SO4", "RF_POA", "RF_BC", "RF_NO3", "RF_SOA", "RF_cloud", ]
     if plot == "all" or plot == "clim" or "clim" in plot:
-        var_plot += ["RF", "D_gst", "D_gyp", "RF_CO2", "RF_CH4", "RF_H2Os", "RF_N2O", "RF_halo", "RF_O3t", "RF_O3s",
-                     "RF_SO4", "RF_POA", "RF_BC", "RF_NO3", "RF_SOA", "RF_cloud", "RF_BCsnow", "RF_LCC"]
+        var_plot += ["RF", "D_gst", "D_gyp", "RF_CO2", "RF_CH4", "RF_H2Os", "RF_N2O", "RF_halo", "RF_O3t", "RF_O3s", "RF_SO4", "RF_POA", "RF_BC", "RF_NO3", "RF_SOA", "RF_cloud", "RF_BCsnow", "RF_LCC"]
 
     #
     # Global scalar variables
@@ -191,8 +131,7 @@ def OSCAR_lite(
     #
     # (region)*(biome)*(biome)*(age) variables
     #
-    mk_region_biome2_age_var = lambda: np.zeros([ind_final + 1, nb_regionI, nb_biome, nb_biome, ind_final + 1],
-                                                dtype=dty)
+    mk_region_biome2_age_var = lambda: np.zeros([ind_final + 1, nb_regionI, nb_biome, nb_biome, ind_final + 1], dtype=dty)
     EFIRE_luc_t = mk_region_biome2_age_var()
     FMORT_luc_t = mk_region_biome2_age_var()
     RH1_luc_t = mk_region_biome2_age_var()
@@ -381,11 +320,9 @@ def OSCAR_lite(
             D_AWET = AWET_0 * (gamma_wetT * fT * D_lst + gamma_wetP * fT * D_lyp + gamma_wetC * fT * D_CO2)
 
             # factors
-            D_k_igni = (
-                    gamma_igniT * fT * D_lst[:, np.newaxis]
+            D_k_igni = (gamma_igniT * fT * D_lst[:, np.newaxis]
                     + gamma_igniP * fT * D_lyp[:, np.newaxis]
-                    + gamma_igniC * fT * D_CO2
-            )
+                    + gamma_igniC * fT * D_CO2)
             D_k_rho = f_rho(fT * D_lst[:, np.newaxis], fT * D_lyp[:, np.newaxis])
 
             # fluxes
@@ -413,31 +350,19 @@ def OSCAR_lite(
             for b1 in range(nb_biome):
                 for b2 in range(nb_biome):
                     CVEG_luc[:, b1, b2, t] += (-dt) * (cveg_0 + D_cveg)[:, b2] * LUC[t, :, b1, b2]
-                    CSOIL1_luc[:, b1, b2, t] += (
-                            dt
+                    CSOIL1_luc[:, b1, b2, t] += (dt
                             * ((csoil1_0 + D_csoil1)[:, b1] - (csoil1_0 + D_csoil1)[:, b2])
-                            * LUC[t, :, b1, b2]
-                    )
-                    CSOIL2_luc[:, b1, b2, t] += (
-                            dt
+                            * LUC[t, :, b1, b2])
+                    CSOIL2_luc[:, b1, b2, t] += (dt
                             * ((csoil2_0 + D_csoil2)[:, b1] - (csoil2_0 + D_csoil2)[:, b2])
-                            * LUC[t, :, b1, b2]
-                    )
-                    CSOIL1_luc[:, b1, b2, t] += (
-                            dt
+                            * LUC[t, :, b1, b2])
+                    CSOIL1_luc[:, b1, b2, t] += (dt
                             * (cveg_0 + D_cveg)[:, b1]
                             * (p_AGB[:, b1] * p_HWP0[:, b1] + (1 - p_AGB[:, b1]))
-                            * LUC[t, :, b1, b2]
-                    )
-                    CHWP1_luc[:, b1, b2, t] += (
-                            dt * (cveg_0 + D_cveg)[:, b1] * p_AGB[:, b1] * p_HWP1[:, b1] * LUC[t, :, b1, b2]
-                    )
-                    CHWP2_luc[:, b1, b2, t] += (
-                            dt * (cveg_0 + D_cveg)[:, b1] * p_AGB[:, b1] * p_HWP2[:, b1] * LUC[t, :, b1, b2]
-                    )
-                    CHWP3_luc[:, b1, b2, t] += (
-                            dt * (cveg_0 + D_cveg)[:, b1] * p_AGB[:, b1] * p_HWP3[:, b1] * LUC[t, :, b1, b2]
-                    )
+                            * LUC[t, :, b1, b2])
+                    CHWP1_luc[:, b1, b2, t] += (dt * (cveg_0 + D_cveg)[:, b1] * p_AGB[:, b1] * p_HWP1[:, b1] * LUC[t, :, b1, b2])
+                    CHWP2_luc[:, b1, b2, t] += (dt * (cveg_0 + D_cveg)[:, b1] * p_AGB[:, b1] * p_HWP2[:, b1] * LUC[t, :, b1, b2])
+                    CHWP3_luc[:, b1, b2, t] += (dt * (cveg_0 + D_cveg)[:, b1] * p_AGB[:, b1] * p_HWP3[:, b1] * LUC[t, :, b1, b2])
 
             # harvest
             for b in range(nb_biome):
@@ -450,80 +375,60 @@ def OSCAR_lite(
             # shifting cultivation
             for b1 in range(nb_biome):
                 for b2 in range(b1, nb_biome):
-                    CVEG_luc[:, b1, b2, t] += (
-                            dt
+                    CVEG_luc[:, b1, b2, t] += (dt
                             * -(cveg_0 + D_cveg)[:, b2]
                             * (1 - np.exp(-mu_0[:, b2] * tau_shift))
-                            * SHIFT[t, :, b1, b2]
-                    )
-                    CSOIL1_luc[:, b1, b2, t] += (
-                            dt
+                            * SHIFT[t, :, b1, b2])
+                    CSOIL1_luc[:, b1, b2, t] += (dt
                             * (cveg_0 + D_cveg)[:, b1]
                             * (1 - np.exp(-mu_0[:, b1] * tau_shift))
                             * (p_AGB[:, b1] * p_HWP0[:, b1] + (1 - p_AGB[:, b1]))
-                            * SHIFT[t, :, b1, b2]
-                    )
-                    CHWP1_luc[:, b1, b2, t] += (
-                            dt
+                            * SHIFT[t, :, b1, b2])
+                    CHWP1_luc[:, b1, b2, t] += (dt
                             * (cveg_0 + D_cveg)[:, b1]
                             * (1 - np.exp(-mu_0[:, b1] * tau_shift))
                             * p_AGB[:, b1]
                             * p_HWP1[:, b1]
-                            * SHIFT[t, :, b1, b2]
-                    )
-                    CHWP2_luc[:, b1, b2, t] += (
-                            dt
+                            * SHIFT[t, :, b1, b2])
+                    CHWP2_luc[:, b1, b2, t] += (dt
                             * (cveg_0 + D_cveg)[:, b1]
                             * (1 - np.exp(-mu_0[:, b1] * tau_shift))
                             * p_AGB[:, b1]
                             * p_HWP2[:, b1]
-                            * SHIFT[t, :, b1, b2]
-                    )
-                    CHWP3_luc[:, b1, b2, t] += (
-                            dt
+                            * SHIFT[t, :, b1, b2])
+                    CHWP3_luc[:, b1, b2, t] += (dt
                             * (cveg_0 + D_cveg)[:, b1]
                             * (1 - np.exp(-mu_0[:, b1] * tau_shift))
                             * p_AGB[:, b1]
                             * p_HWP3[:, b1]
-                            * SHIFT[t, :, b1, b2]
-                    )
-                    CVEG_luc[:, b2, b1, t] += (
-                            dt
+                            * SHIFT[t, :, b1, b2])
+                    CVEG_luc[:, b2, b1, t] += (dt
                             * -(cveg_0 + D_cveg)[:, b1]
                             * (1 - np.exp(-mu_0[:, b1] * tau_shift))
-                            * SHIFT[t, :, b1, b2]
-                    )
-                    CSOIL1_luc[:, b2, b1, t] += (
-                            dt
+                            * SHIFT[t, :, b1, b2])
+                    CSOIL1_luc[:, b2, b1, t] += (dt
                             * (cveg_0 + D_cveg)[:, b2]
                             * (1 - np.exp(-mu_0[:, b2] * tau_shift))
                             * (p_AGB[:, b2] * p_HWP0[:, b2] + (1 - p_AGB[:, b2]))
-                            * SHIFT[t, :, b1, b2]
-                    )
-                    CHWP1_luc[:, b2, b1, t] += (
-                            dt
+                            * SHIFT[t, :, b1, b2])
+                    CHWP1_luc[:, b2, b1, t] += (dt
                             * (cveg_0 + D_cveg)[:, b2]
                             * (1 - np.exp(-mu_0[:, b2] * tau_shift))
                             * p_AGB[:, b2]
                             * p_HWP1[:, b2]
-                            * SHIFT[t, :, b1, b2]
-                    )
-                    CHWP2_luc[:, b2, b1, t] += (
-                            dt
+                            * SHIFT[t, :, b1, b2])
+                    CHWP2_luc[:, b2, b1, t] += (dt
                             * (cveg_0 + D_cveg)[:, b2]
                             * (1 - np.exp(-mu_0[:, b2] * tau_shift))
                             * p_AGB[:, b2]
                             * p_HWP2[:, b2]
-                            * SHIFT[t, :, b1, b2]
-                    )
-                    CHWP3_luc[:, b2, b1, t] += (
-                            dt
+                            * SHIFT[t, :, b1, b2])
+                    CHWP3_luc[:, b2, b1, t] += (dt
                             * (cveg_0 + D_cveg)[:, b2]
                             * (1 - np.exp(-mu_0[:, b2] * tau_shift))
                             * p_AGB[:, b2]
                             * p_HWP3[:, b2]
-                            * SHIFT[t, :, b1, b2]
-                    )
+                            * SHIFT[t, :, b1, b2])
 
             # fluxes
             # book-keeping model
@@ -534,16 +439,12 @@ def OSCAR_lite(
             FMET_luc = k_met * RH1_luc
             RH2_luc = (rho2_0 * (1 + D_k_rho))[:, np.newaxis, :, np.newaxis] * CSOIL2_luc
             EHWP1_luc = np.zeros([nb_regionI, nb_biome, nb_biome, ind_final + 1], dtype=dty)
-            EHWP1_luc[:, :, :, : t + 1] = r_HWP1[np.newaxis, np.newaxis, np.newaxis, t::-1] * CHWP1_luc[:, :, :,
-                                                                                              : t + 1]
+            EHWP1_luc[:, :, :, : t + 1] = r_HWP1[np.newaxis, np.newaxis, np.newaxis, t::-1] * CHWP1_luc[:, :, :, : t + 1]
             EHWP2_luc = np.zeros([nb_regionI, nb_biome, nb_biome, ind_final + 1], dtype=dty)
-            EHWP2_luc[:, :, :, : t + 1] = r_HWP2[np.newaxis, np.newaxis, np.newaxis, t::-1] * CHWP2_luc[:, :, :,
-                                                                                              : t + 1]
+            EHWP2_luc[:, :, :, : t + 1] = r_HWP2[np.newaxis, np.newaxis, np.newaxis, t::-1] * CHWP2_luc[:, :, :, : t + 1]
             EHWP3_luc = np.zeros([nb_regionI, nb_biome, nb_biome, ind_final + 1], dtype=dty)
-            EHWP3_luc[:, :, :, : t + 1] = r_HWP3[np.newaxis, np.newaxis, np.newaxis, t::-1] * CHWP3_luc[:, :, :,
-                                                                                              : t + 1]
-            ELUC = np.sum(
-                np.sum(np.sum(RH1_luc + RH2_luc + EFIRE_luc + EHWP1_luc + EHWP2_luc + EHWP3_luc - NPP_luc, 3), 2), 1)
+            EHWP3_luc[:, :, :, : t + 1] = r_HWP3[np.newaxis, np.newaxis, np.newaxis, t::-1] * CHWP3_luc[:, :, :, : t + 1]
+            ELUC = np.sum(np.sum(np.sum(RH1_luc + RH2_luc + EFIRE_luc + EHWP1_luc + EHWP2_luc + EHWP3_luc - NPP_luc, 3), 2), 1)
 
             # biomass burning
             def biomass_burning_diff(alpha_BB):
@@ -577,12 +478,10 @@ def OSCAR_lite(
             # ---------------
 
             # factors
-            rD_rhoPF = np.exp(w_rhoPF * gamma_rhoPF1 * w_reg_lstPF * fT * D_gst + w_rhoPF * gamma_rhoPF2 * (
-                    w_reg_lstPF * fT * D_gst) ** 2) - 1
+            rD_rhoPF = np.exp(w_rhoPF * gamma_rhoPF1 * w_reg_lstPF * fT * D_gst + w_rhoPF * gamma_rhoPF2 * (w_reg_lstPF * fT * D_gst) ** 2) - 1
 
             # fraction thawed
-            pthaw_bar = -pthaw_min + (1 + pthaw_min) / (1 + ((1 / pthaw_min + 1) ** k_pthaw - 1) * np.exp(
-                -gamma_pthaw * k_pthaw * w_reg_lstPF * fT * D_gst)) ** (1 / k_pthaw)
+            pthaw_bar = -pthaw_min + (1 + pthaw_min) / (1 + ((1 / pthaw_min + 1) ** k_pthaw - 1) * np.exp(-gamma_pthaw * k_pthaw * w_reg_lstPF * fT * D_gst)) ** (1 / k_pthaw)
             d_pthaw = f_v_PF(pthaw_bar, pthaw) * (pthaw_bar - pthaw)
             pthaw += dt * d_pthaw
 
@@ -606,16 +505,14 @@ def OSCAR_lite(
             # -------------
 
             # factors
-            D_kOH = f_kOH(D_CH4, D_O3s, fT * D_gst, np.sum(ENOX[t] + D_EBB_NOX), np.sum(ECO[t] + D_EBB_CO),
-                          np.sum(EVOC[t] + D_EBB_VOC))
+            D_kOH = f_kOH(D_CH4, D_O3s, fT * D_gst, np.sum(ENOX[t] + D_EBB_NOX), np.sum(ECO[t] + D_EBB_CO), np .sum(EVOC[t] + D_EBB_VOC))
             D_hv = f_hv(D_N2O_lag, D_EESC, fT * D_gst)
 
             # fluxes
             D_OHSNK_CH4 = -alpha_CH4 / tau_CH4_OH * (CH4_0 * D_kOH + D_CH4 + D_kOH * D_CH4)
             D_HVSNK_CH4 = -alpha_CH4 / tau_CH4_hv * (CH4_0 * D_hv + D_CH4_lag + D_hv * D_CH4_lag)
             D_XSNK_CH4 = -alpha_CH4 * (1 / tau_CH4_soil + 1 / tau_CH4_ocean) * D_CH4
-            D_FOXI_CH4 = -0.001 * (1.0 * np.sum(ECH4[t]) + np.sum(D_EBB_CH4) + np.sum(
-                D_EWET) + D_OHSNK_CH4 + D_HVSNK_CH4 + D_XSNK_CH4)
+            D_FOXI_CH4 = -0.001 * (1.0 * np.sum(ECH4[t]) + np.sum(D_EBB_CH4) + np.sum(D_EWET) + D_OHSNK_CH4 + D_HVSNK_CH4 + D_XSNK_CH4)
             D_HVSNK_N2O = -alpha_N2O / tau_N2O_hv * (N2O_0 * D_hv + D_N2O_lag + D_hv * D_N2O_lag)
             D_OHSNK_HFC = -alpha_HFC / tau_HFC_OH * (HFC_0 * D_kOH + D_HFC + D_kOH * D_HFC)
             D_OHSNK_PFC = -alpha_PFC / tau_PFC_OH * (PFC_0 * D_kOH + D_PFC + D_kOH * D_PFC)
@@ -634,21 +531,14 @@ def OSCAR_lite(
             D_O3t += chi_O3t_VOC * np.sum(w_reg_VOC * np.sum(p_reg4 * (EVOC[t] + D_EBB_VOC)[:, np.newaxis], 0))
             D_EESC = np.sum(f_fracrel(tau_lag) * (n_Cl + alpha_Br * n_Br) * D_ODS_lag)
             D_O3s = chi_O3s_EESC * D_EESC + chi_O3s_N2O * D_N2O_lag * (1 - D_EESC / EESC_x) + Gamma_O3s * fT * D_gst
-            D_SO4 = alpha_SO4 * tau_SO2 * np.sum(w_reg_SO2 * np.sum(p_reg4 * (ESO2[t] + D_EBB_SO2)[:, np.newaxis],
-                                                                    0)) + alpha_SO4 * tau_DMS * 0 + Gamma_SO4 * fT * \
-                    D_gst
-            D_POA = tau_OMff * alpha_POM * np.sum(
-                w_reg_OC * np.sum(p_reg4 * (EOC[t])[:, np.newaxis], 0)) + tau_OMbb * alpha_POM * np.sum(
-                D_EBB_OC) + Gamma_POA * fT * D_gst
-            D_BC = tau_BCff * np.sum(w_reg_BC * np.sum(p_reg4 * (EBC[t])[:, np.newaxis], 0)) + tau_BCbb * np.sum(
-                D_EBB_BC) + Gamma_BC * fT * D_gst
-            D_NO3 = alpha_NO3 * tau_NOX * np.sum(ENOX[t] + D_EBB_NOX) + alpha_NO3 * tau_NH3 * np.sum(
-                ENH3[t] + D_EBB_NH3) + Gamma_NO3 * fT * D_gst
+            D_SO4 = alpha_SO4 * tau_SO2 * np.sum(w_reg_SO2 * np.sum(p_reg4 * (ESO2[t] + D_EBB_SO2)[:, np.newaxis], 0)) + alpha_SO4 * tau_DMS * 0 + Gamma_SO4 * fT * D_gst
+            D_POA = tau_OMff * alpha_POM * np.sum(w_reg_OC * np.sum(p_reg4 * (EOC[t])[:, np.newaxis], 0)) + tau_OMbb * alpha_POM * np.sum(D_EBB_OC) + Gamma_POA * fT * D_gst
+            D_BC = tau_BCff * np.sum(w_reg_BC * np.sum(p_reg4 * (EBC[t])[:, np.newaxis], 0)) + tau_BCbb * np.sum(D_EBB_BC) + Gamma_BC * fT * D_gst
+            D_NO3 = alpha_NO3 * tau_NOX * np.sum(ENOX[t] + D_EBB_NOX) + alpha_NO3 * tau_NH3 * np.sum(ENH3[t] + D_EBB_NH3) + Gamma_NO3 * fT * D_gst
             D_SOA = tau_VOC * np.sum(EVOC[t] + D_EBB_VOC) + tau_BVOC * 0 + Gamma_SOA * fT * D_gst
             D_DUST = 0 * (tau_DUST * 0 + Gamma_DUST * fT * D_gst)
             D_SALT = 0 * (tau_SALT * 0 + Gamma_SALT * fT * D_gst)
-            D_AERh = solub_SO4 * D_SO4 + solub_POA * D_POA + solub_BC * D_BC + solub_NO3 * D_NO3 + solub_SOA * D_SOA \
-                     + solub_DUST * D_DUST + solub_SALT * D_SALT
+            D_AERh = solub_SO4 * D_SO4 + solub_POA * D_POA + solub_BC * D_BC + solub_NO3 * D_NO3 + solub_SOA * D_SOA + solub_DUST * D_DUST + solub_SALT * D_SALT
 
             # --------------
             # 5. ATMOSPHERE
@@ -656,8 +546,7 @@ def OSCAR_lite(
 
             # stocks
             D_CO2 += dt * (1 / alpha_CO2) * (np.sum(EFF[t]) + np.sum(ELUC) + LSNK + OSNK + D_FOXI_CH4 + np.sum(EPF_CO2))
-            D_CH4 += dt * (1 / alpha_CH4) * (np.sum(ECH4[t]) + np.sum(D_EBB_CH4) + np.sum(D_EWET) + np.sum(
-                EPF_CH4) + D_OHSNK_CH4 + D_HVSNK_CH4 + D_XSNK_CH4)
+            D_CH4 += dt * (1 / alpha_CH4) * (np.sum(ECH4[t]) + np.sum(D_EBB_CH4) + np.sum(D_EWET) + np.sum(EPF_CH4) + D_OHSNK_CH4 + D_HVSNK_CH4 + D_XSNK_CH4)
             D_N2O += dt * (1 / alpha_N2O) * (np.sum(EN2O[t]) + np.sum(D_EBB_N2O) + D_HVSNK_N2O)
             D_HFC += dt * (1 / alpha_HFC) * (np.sum(EHFC[t], 0) + D_OHSNK_HFC + D_HVSNK_HFC + D_XSNK_HFC)
             D_PFC += dt * (1 / alpha_PFC) * (np.sum(EPFC[t], 0) + D_OHSNK_PFC + D_HVSNK_PFC + D_XSNK_PFC)
@@ -727,19 +616,10 @@ def OSCAR_lite(
                 RF_LCC = RF_LCC_force[t]
 
             # totals
-            RF = RF_CO2 + RF_CH4 + RF_H2Os + RF_N2O + RF_halo + RF_O3t + RF_O3s + RF_SO4 + RF_POA + RF_BC + RF_NO3 + \
-                 RF_SOA + RF_DUST + RF_SALT + RF_cloud + RF_BCsnow + RF_LCC + \
-                 RFcon[t] + RFvolc[t] + RFsolar[t]
-            RF_warm = RF_CO2 + RF_CH4 + RF_H2Os + RF_N2O + RF_halo + RF_O3t + RF_O3s + RF_SO4 + RF_POA + RF_BC + \
-                      RF_NO3 + RF_SOA + RF_DUST + RF_SALT + RF_cloud + warmeff_BCsnow * RF_BCsnow + warmeff_LCC * \
-                      RF_LCC + \
-                      RFcon[t] + warmeff_volc * RFvolc[t] + RFsolar[t]
-            RF_atm = p_atm_CO2 * RF_CO2 + p_atm_noCO2 * (
-                    RF_CH4 + RF_N2O + RF_halo) + p_atm_O3t * RF_O3t + p_atm_strat * (
-                             RF_O3s + RF_H2Os) + p_atm_scatter * (
-                             RF_SO4 + RF_POA + RF_NO3 + RF_SOA + RF_DUST + RF_SALT + RFvolc[
-                         t]) + p_atm_absorb * RF_BC + p_atm_cloud * (RF_cloud + RFcon[t]) + p_atm_alb * (
-                             RF_BCsnow + RF_LCC) + p_atm_solar * RFsolar[t]
+            RF = RF_CO2 + RF_CH4 + RF_H2Os + RF_N2O + RF_halo + RF_O3t + RF_O3s + RF_SO4 + RF_POA + RF_BC + RF_NO3 + RF_SOA + RF_DUST + RF_SALT + RF_cloud + RF_BCsnow + RF_LCC + RFcon[t] + RFvolc[t] + RFsolar[t]
+            RF_warm = RF_CO2 + RF_CH4 + RF_H2Os + RF_N2O + RF_halo + RF_O3t + RF_O3s + RF_SO4 + RF_POA + RF_BC + RF_NO3 + RF_SOA + RF_DUST + RF_SALT + RF_cloud + warmeff_BCsnow * RF_BCsnow + warmeff_LCC * RF_LCC + RFcon[t] + warmeff_volc * RFvolc[t] + RFsolar[t]
+            RF_atm = p_atm_CO2 * RF_CO2 + p_atm_noCO2 * (RF_CH4 + RF_N2O + RF_halo) + p_atm_O3t * RF_O3t + p_atm_strat * (RF_O3s + RF_H2Os) + p_atm_scatter * (RF_SO4 + RF_POA + RF_NO3 + RF_SOA + RF_DUST + RF_SALT + RFvolc[
+                         t]) + p_atm_absorb * RF_BC + p_atm_cloud * (RF_cloud + RFcon[t]) + p_atm_alb * (RF_BCsnow + RF_LCC) + p_atm_solar * RFsolar[t]
 
             # FORCE
             if force_RF:
@@ -830,9 +710,7 @@ def OSCAR_lite(
     from ..plot import plot_AER, plot_CH4, plot_clim, plot_CO2, plot_N2O, plot_O3
 
     if plot == "all" or plot == "CO2" or "CO2" in plot:
-        plot_CO2(D_CO2_t, OSNK_t, LSNK_t, ELUC_t, EFF, D_AREA_t, D_npp_t, D_efire_t, D_fmort_t, D_rh1_t, D_fmet_t,
-                 D_rh2_t, D_FIN_t, D_FOUT_t, D_FCIRC_t, EFIRE_luc_t, FMORT_luc_t, RH1_luc_t, RH2_luc_t, EHWP1_luc_t,
-                 EHWP2_luc_t, EHWP3_luc_t)
+        plot_CO2(D_CO2_t, OSNK_t, LSNK_t, ELUC_t, EFF, D_AREA_t, D_npp_t, D_efire_t, D_fmort_t, D_rh1_t, D_fmet_t, D_rh2_t, D_FIN_t, D_FOUT_t, D_FCIRC_t, EFIRE_luc_t, FMORT_luc_t, RH1_luc_t, RH2_luc_t, EHWP1_luc_t, EHWP2_luc_t, EHWP3_luc_t)
         plt.savefig("results/plot-CO2.svg")
     if plot == "all" or plot == "CH4" or "CH4" in plot:
         plot_CH4(D_CH4_t, D_OHSNK_CH4_t, D_HVSNK_CH4_t, D_XSNK_CH4_t, D_EWET_t, D_EBB_CH4_t, ECH4)
@@ -844,13 +722,10 @@ def OSCAR_lite(
         plot_O3(D_O3t_t, D_O3s_t, D_EESC_t, D_N2O_lag_t, D_gst_t)
         plt.savefig("results/plot-03.svg")
     if plot == "all" or plot == "AER" or "AER" in plot:
-        plot_AER(D_SO4_t, D_POA_t, D_BC_t, D_NO3_t, D_SOA_t, D_AERh_t, RF_SO4_t, RF_POA_t, RF_BC_t, RF_NO3_t, RF_SOA_t,
-                 RF_cloud_t)
+        plot_AER(D_SO4_t, D_POA_t, D_BC_t, D_NO3_t, D_SOA_t, D_AERh_t, RF_SO4_t, RF_POA_t, RF_BC_t, RF_NO3_t, RF_SOA_t, RF_cloud_t)
         plt.savefig("results/plot-AER.svg")
     if plot == "all" or plot == "clim" or "clim" in plot:
-        plot_clim(RF_t, D_gst_t, D_gyp_t, RF_CO2_t, RF_CH4_t, RF_H2Os_t, RF_N2O_t, RF_halo_t, RF_O3t_t, RF_O3s_t,
-                  RF_SO4_t, RF_POA_t, RF_BC_t, RF_NO3_t, RF_SOA_t, RF_cloud_t, RF_BCsnow_t, RF_LCC_t, RFcon, RFvolc,
-                  RFsolar)
+        plot_clim(RF_t, D_gst_t, D_gyp_t, RF_CO2_t, RF_CH4_t, RF_H2Os_t, RF_N2O_t, RF_halo_t, RF_O3t_t, RF_O3s_t, RF_SO4_t, RF_POA_t, RF_BC_t, RF_NO3_t, RF_SOA_t, RF_cloud_t, RF_BCsnow_t, RF_LCC_t, RFcon, RFvolc, RFsolar)
         plt.savefig("results/plot-clim.svg")
 
     # ===========

@@ -2,9 +2,11 @@ import numpy as np
 
 from .a1_carbon import CO2_0, CO2_cmip5
 from ..oscar_data import nb_regionI, regionI_index, nb_biome, biome_index
-from ...config import dty, mod_LSNKcover, mod_OHSNKtau, mod_OHSNKtrans, mod_OHSNKfct, \
-    mod_EWETpreind, mod_AWETtrans, mod_EPFmethane
+from ...config import dty, mod_LSNKcover, mod_OHSNKtau, mod_OHSNKtrans, mod_OHSNKfct, mod_EWETpreind, mod_AWETtrans, mod_EPFmethane
 from ...data import load_data, load_header
+from ... import historical
+
+CH4_0 = historical.CH4_0
 
 ##################################################
 #   2. METHANE
@@ -16,38 +18,6 @@ from ...data import load_data, load_header
 
 # conversion of CH4 from {ppb} to {TgC}
 alpha_CH4 = 0.1765 * np.array([12.0], dtype=dty)
-
-# historic CH4 from IPCC-AR5 {ppb}
-# from [IPCC WG1, 2013] annexe 2
-CH4_ipcc = np.ones([311 + 1], dtype=dty) * np.nan
-TMP = load_data("data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1750-2011.CH4.csv")
-CH4_ipcc[50:] = TMP[:, 0]
-CH4_0 = np.array([CH4_ipcc[50]], dtype=dty)
-
-# historic CH4 from CMIP5 {ppb}
-# from [Meinshausen et al., 2011]
-CH4_cmip5 = np.ones([305 + 1], dtype=dty) * np.nan
-TMP = load_data("data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.CH4.csv")
-CH4_cmip5[65:] = TMP[:, 0]
-
-# historic CH4 from AGAGE {ppb}
-# from [Prinn et al., 2013] updated from the website
-CH4_agage = np.ones([313 + 1], dtype=dty) * np.nan
-TMP = load_data("data/HistAtmo_AGAGE/#DATA.HistAtmo_AGAGE.1987-2013.CH4_global.csv")
-CH4_agage[287:] = TMP[:, 0]
-
-# historic CH4 from Law Dome ice cores {ppm}
-# from [Etheridge et al., 1998] and [MacFarling Meure et al., 2006]
-CH4_lawdome = load_data("data/HistAtmo_NOAA-NCDC/#DATA.HistAtmo_NOAA-NCDC.(IceCores).CH4_lawdome.csv", start=1)
-
-# load RCP concentrations {ppb}
-# from [Meinshausen et al., 2011]
-CH4_rcp = np.ones([800 + 1, 6], dtype=dty) * np.nan
-n = -1
-for rcp in ["rcp26", "rcp45", "rcp60", "rcp85", "rcp45to26", "rcp60to45"]:
-    n += 1
-    TMP = load_data(f"data/Scenario_ECP/#DATA.Scenario_ECP.2000-2500.{rcp}_CH4.csv")
-    CH4_rcp[300:, n] = TMP[:, 0]
 
 # ==============
 # 2.2. CHEMISTRY
@@ -99,6 +69,8 @@ elif mod_OHSNKtau == "TM5":
     tau_CH4_OH = np.array([9.9], dtype=dty) * 11.2 / 9.7
 elif mod_OHSNKtau == "UM-CAM":
     tau_CH4_OH = np.array([14.0], dtype=dty) * 11.2 / 9.7
+else:
+    raise RuntimeError
 
 # arbitrary rescaling (down) of OH lifetime
 scale_OH = 0.80
@@ -185,7 +157,7 @@ elif mod_OHSNKfct == "lin":
         chi_OH_CO = np.array([-1.05e-4], dtype=dty) * 28 / 12.0
         chi_OH_VOC = np.array([-3.14e-4], dtype=dty)
 
-    # constant parameters for OH sink function {.}&{.}&{K}&{DU}
+# constant parameters for OH sink function {.}&{.}&{K}&{DU}
 # from [Holmes et al., 2013] (supp.)
 k_Tatm = 0.94  # +/- 0.1
 k_Qatm = 1.5  # +/- 0.1
@@ -205,132 +177,87 @@ EVOC_oh = 39.0 + 220.0 + 175.0
 if mod_OHSNKfct == "log":
 
     def f_kOH(D_CH4, D_O3s, D_gst, ENOX, ECO, EVOC):
-        D_kOH = (
-                np.exp(
-                    chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
-                    + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
-                    + chi_OH_NOX * np.log(1 + ENOX / ENOX_oh)
-                    + chi_OH_CO * np.log(1 + ECO / ECO_oh)
-                    + chi_OH_VOC * np.log(1 + EVOC / EVOC_oh)
-                    + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
-                    + chi_OH_Qatm * np.log(1 + k_Qatm * (
-                            np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))
-                )
-                - 1
-        )
+        D_kOH = (np.exp(chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
+                + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
+                + chi_OH_NOX * np.log(1 + ENOX / ENOX_oh)
+                + chi_OH_CO * np.log(1 + ECO / ECO_oh)
+                + chi_OH_VOC * np.log(1 + EVOC / EVOC_oh)
+                + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
+                + chi_OH_Qatm * np.log(1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1)))
+            - 1)
         return np.array(D_kOH, dtype=dty)
 
 
     def df_kOH_dCH4(D_CH4, D_O3s, D_gst, ENOX, ECO, EVOC):
-        D_kOH = (
-                chi_OH_CH4
-                / (CH4_0 + D_CH4)
-                * np.exp(
-            chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
-            + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
-            + chi_OH_NOX * np.log(1 + ENOX / ENOX_oh)
-            + chi_OH_CO * np.log(1 + ECO / ECO_oh)
-            + chi_OH_VOC * np.log(1 + EVOC / EVOC_oh)
-            + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
-            + chi_OH_Qatm * np.log(
-                1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))
-        )
-        )
+        D_kOH = (chi_OH_CH4 / (CH4_0 + D_CH4)
+            * np.exp(chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
+                + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
+                + chi_OH_NOX * np.log(1 + ENOX / ENOX_oh)
+                + chi_OH_CO * np.log(1 + ECO / ECO_oh)
+                + chi_OH_VOC * np.log(1 + EVOC / EVOC_oh)
+                + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
+                + chi_OH_Qatm * np.log(1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))))
         return np.array(D_kOH, dtype=dty)
 
 
     def df_kOH_dO3s(D_CH4, D_O3s, D_gst, ENOX, ECO, EVOC):
-        D_kOH = (
-                chi_OH_O3
-                / (O3s_0 + D_O3s)
-                * np.exp(
-            chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
-            + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
-            + chi_OH_NOX * np.log(1 + ENOX / ENOX_oh)
-            + chi_OH_CO * np.log(1 + ECO / ECO_oh)
-            + chi_OH_VOC * np.log(1 + EVOC / EVOC_oh)
-            + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
-            + chi_OH_Qatm * np.log(
-                1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))
-        )
-        )
+        D_kOH = (chi_OH_O3 / (O3s_0 + D_O3s)
+            * np.exp(chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
+                + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
+                + chi_OH_NOX * np.log(1 + ENOX / ENOX_oh)
+                + chi_OH_CO * np.log(1 + ECO / ECO_oh)
+                + chi_OH_VOC * np.log(1 + EVOC / EVOC_oh)
+                + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
+                + chi_OH_Qatm * np.log(1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))))
         return np.array(D_kOH, dtype=dty)
 
 
     def df_kOH_dgst(D_CH4, D_O3s, D_gst, ENOX, ECO, EVOC):
-        D_kOH = (
-                chi_OH_Tatm
-                * k_Qatm
-                * k_svp
-                * k_Tatm
-                / (Tatm_0 + T_svp)
-                * np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp))
-                / (1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))
-                * np.exp(
-            chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
-            + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
-            + chi_OH_NOX * np.log(1 + ENOX / ENOX_oh)
-            + chi_OH_CO * np.log(1 + ECO / ECO_oh)
-            + chi_OH_VOC * np.log(1 + EVOC / EVOC_oh)
-            + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
-            + chi_OH_Qatm * np.log(
-                1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))
-        )
-        )
+        D_kOH = (chi_OH_Tatm * k_Qatm * k_svp * k_Tatm / (Tatm_0 + T_svp) * np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp))
+            / (1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))
+            * np.exp(chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
+                + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
+                + chi_OH_NOX * np.log(1 + ENOX / ENOX_oh)
+                + chi_OH_CO * np.log(1 + ECO / ECO_oh)
+                + chi_OH_VOC * np.log(1 + EVOC / EVOC_oh)
+                + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
+                + chi_OH_Qatm * np.log(1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))))
         return np.array(D_kOH, dtype=dty)
 
 
     def df_kOH_dENOX(D_CH4, D_O3s, D_gst, ENOX, ECO, EVOC):
-        D_kOH = (
-                chi_OH_NOX
-                / (ENOX_oh + ENOX)
-                * np.exp(
-            chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
-            + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
-            + chi_OH_NOX * np.log(1 + ENOX / ENOX_oh)
-            + chi_OH_CO * np.log(1 + ECO / ECO_oh)
-            + chi_OH_VOC * np.log(1 + EVOC / EVOC_oh)
-            + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
-            + chi_OH_Qatm * np.log(
-                1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))
-        )
-        )
+        D_kOH = (chi_OH_NOX / (ENOX_oh + ENOX)
+            * np.exp(chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
+                + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
+                + chi_OH_NOX * np.log(1 + ENOX / ENOX_oh)
+                + chi_OH_CO * np.log(1 + ECO / ECO_oh)
+                + chi_OH_VOC * np.log(1 + EVOC / EVOC_oh)
+                + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
+                + chi_OH_Qatm * np.log(1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))))
         return np.array(D_kOH, dtype=dty)
 
 
     def df_kOH_dECO(D_CH4, D_O3s, D_gst, ENOX, ECO, EVOC):
-        D_kOH = (
-                chi_OH_CO
-                / (ECO_oh + ECO)
-                * np.exp(
-            chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
-            + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
-            + chi_OH_NOX * np.log(1 + ENOX / ENOX_oh)
-            + chi_OH_CO * np.log(1 + ECO / ECO_oh)
-            + chi_OH_VOC * np.log(1 + EVOC / EVOC_oh)
-            + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
-            + chi_OH_Qatm * np.log(
-                1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))
-        )
-        )
+        D_kOH = (chi_OH_CO / (ECO_oh + ECO)
+            * np.exp(chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
+                + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
+                + chi_OH_NOX * np.log(1 + ENOX / ENOX_oh)
+                + chi_OH_CO * np.log(1 + ECO / ECO_oh)
+                + chi_OH_VOC * np.log(1 + EVOC / EVOC_oh)
+                + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
+                + chi_OH_Qatm * np.log(1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))))
         return np.array(D_kOH, dtype=dty)
 
 
     def df_kOH_dEVOC(D_CH4, D_O3s, D_gst, ENOX, ECO, EVOC):
-        D_kOH = (
-                chi_OH_VOC
-                / (EVOC_oh + EVOC)
-                * np.exp(
-            chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
-            + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
-            + chi_OH_NOX * np.log(1 + ENOX / ENOX_oh)
-            + chi_OH_CO * np.log(1 + ECO / ECO_oh)
-            + chi_OH_VOC * np.log(1 + EVOC / EVOC_oh)
-            + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
-            + chi_OH_Qatm * np.log(
-                1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))
-        )
-        )
+        D_kOH = (chi_OH_VOC / (EVOC_oh + EVOC)
+            * np.exp(chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
+                + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
+                + chi_OH_NOX * np.log(1 + ENOX / ENOX_oh)
+                + chi_OH_CO * np.log(1 + ECO / ECO_oh)
+                + chi_OH_VOC * np.log(1 + EVOC / EVOC_oh)
+                + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
+                + chi_OH_Qatm * np.log(1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))))
         return np.array(D_kOH, dtype=dty)
 
 
@@ -343,131 +270,91 @@ if mod_OHSNKfct == "log":
         df_6 = df_kOH_dEVOC(D_CH4, D_O3s, D_gst, ENOX, ECO, EVOC) * EVOC
         df_tot = df_1 + df_2 + df_3 + df_4 + df_5 + df_6
         return [
-            np.nan_to_num(df_1 / df_tot),
-            np.nan_to_num(df_2 / df_tot),
-            np.nan_to_num(df_3 / df_tot),
-            np.nan_to_num(df_4 / df_tot),
-            np.nan_to_num(df_5 / df_tot),
-            np.nan_to_num(df_6 / df_tot), ]
+            np.nan_to_num(df_1 / df_tot), np.nan_to_num(df_2 / df_tot), np.nan_to_num(df_3 / df_tot), np.nan_to_num(df_4 / df_tot), np.nan_to_num(df_5 / df_tot), np.nan_to_num(df_6 / df_tot)
+        ]
 
 
 elif mod_OHSNKfct == "lin":
 
     def f_kOH(D_CH4, D_O3s, D_gst, ENOX, ECO, EVOC):
-        D_kOH = (
-                np.exp(
-                    chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
-                    + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
-                    + chi_OH_NOX * ENOX
-                    + chi_OH_CO * ECO
-                    + chi_OH_VOC * EVOC
-                    + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
-                    + chi_OH_Qatm * np.log(1 + k_Qatm * (
-                            np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))
-                )
-                - 1
-        )
+        D_kOH = (np.exp(chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
+                + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
+                + chi_OH_NOX * ENOX
+                + chi_OH_CO * ECO
+                + chi_OH_VOC * EVOC
+                + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
+                + chi_OH_Qatm * np.log(1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))) - 1)
         return np.array(D_kOH, dtype=dty)
 
 
     def df_kOH_dCH4(D_CH4, D_O3s, D_gst, ENOX, ECO, EVOC):
-        D_kOH = (
-                chi_OH_CH4
-                / (CH4_0 + D_CH4)
-                * np.exp(
-            chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
-            + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
-            + chi_OH_NOX * ENOX
-            + chi_OH_CO * ECO
-            + chi_OH_VOC * EVOC
-            + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
-            + chi_OH_Qatm * np.log(
-                1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))
-        )
-        )
+        D_kOH = (chi_OH_CH4 / (CH4_0 + D_CH4)
+            * np.exp(chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
+                + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
+                + chi_OH_NOX * ENOX
+                + chi_OH_CO * ECO
+                + chi_OH_VOC * EVOC
+                + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
+                + chi_OH_Qatm * np.log(1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))))
         return np.array(D_kOH, dtype=dty)
 
 
     def df_kOH_dO3s(D_CH4, D_O3s, D_gst, ENOX, ECO, EVOC):
-        D_kOH = (
-                chi_OH_O3
-                / (O3s_0 + D_O3s)
-                * np.exp(
-            chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
-            + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
-            + chi_OH_NOX * ENOX
-            + chi_OH_CO * ECO
-            + chi_OH_VOC * EVOC
-            + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
-            + chi_OH_Qatm * np.log(
-                1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))
-        )
-        )
+        D_kOH = (chi_OH_O3 / (O3s_0 + D_O3s)
+            * np.exp(chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
+                + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
+                + chi_OH_NOX * ENOX
+                + chi_OH_CO * ECO
+                + chi_OH_VOC * EVOC
+                + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
+                + chi_OH_Qatm * np.log(1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))))
         return np.array(D_kOH, dtype=dty)
 
 
     def df_kOH_dgst(D_CH4, D_O3s, D_gst, ENOX, ECO, EVOC):
-        D_kOH = (
-                chi_OH_Tatm
-                * k_Qatm
-                * k_svp
-                * k_Tatm
-                / (Tatm_0 + T_svp)
-                * np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp))
-                / (1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))
-                * np.exp(
-            chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
-            + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
-            + chi_OH_NOX * ENOX
-            + chi_OH_CO * ECO
-            + chi_OH_VOC * EVOC
-            + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
-            + chi_OH_Qatm * np.log(
-                1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))
-        )
-        )
+        D_kOH = (chi_OH_Tatm * k_Qatm * k_svp * k_Tatm / (Tatm_0 + T_svp)
+            * np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp))
+            / (1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))
+            * np.exp(chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
+                + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
+                + chi_OH_NOX * ENOX
+                + chi_OH_CO * ECO
+                + chi_OH_VOC * EVOC
+                + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
+                + chi_OH_Qatm * np.log(1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))))
         return np.array(D_kOH, dtype=dty)
 
 
     def df_kOH_dENOX(D_CH4, D_O3s, D_gst, ENOX, ECO, EVOC):
-        D_kOH = chi_OH_NOX * np.exp(
-            chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
+        D_kOH = chi_OH_NOX * np.exp(chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
             + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
             + chi_OH_NOX * ENOX
             + chi_OH_CO * ECO
             + chi_OH_VOC * EVOC
             + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
-            + chi_OH_Qatm * np.log(
-                1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))
-        )
+            + chi_OH_Qatm * np.log(1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1)))
         return np.array(D_kOH, dtype=dty)
 
 
     def df_kOH_dECO(D_CH4, D_O3s, D_gst, ENOX, ECO, EVOC):
-        D_kOH = chi_OH_CO * np.exp(
-            chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
+        D_kOH = chi_OH_CO * np.exp(chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
             + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
             + chi_OH_NOX * ENOX
             + chi_OH_CO * ECO
             + chi_OH_VOC * EVOC
             + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
-            + chi_OH_Qatm * np.log(
-                1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))
-        )
+            + chi_OH_Qatm * np.log(1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1)))
         return np.array(D_kOH, dtype=dty)
 
 
     def df_kOH_dEVOC(D_CH4, D_O3s, D_gst, ENOX, ECO, EVOC):
-        D_kOH = chi_OH_VOC * np.exp(
-            chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
+        D_kOH = chi_OH_VOC * np.exp(chi_OH_CH4 * np.log(1 + D_CH4 / CH4_0)
             + chi_OH_O3 * np.log(1 + D_O3s / O3s_0)
             + chi_OH_NOX * ENOX
             + chi_OH_CO * ECO
             + chi_OH_VOC * EVOC
             + chi_OH_Tatm * np.log(1 + k_Tatm * D_gst / Tatm_0)
-            + chi_OH_Qatm * np.log(
-                1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1))
-        )
+            + chi_OH_Qatm * np.log(1 + k_Qatm * (np.exp(k_svp * k_Tatm * D_gst / (Tatm_0 + T_svp)) - 1)))
         return np.array(D_kOH, dtype=dty)
 
 
@@ -480,12 +367,8 @@ elif mod_OHSNKfct == "lin":
         df_6 = df_kOH_dEVOC(D_CH4, D_O3s, D_gst, ENOX, ECO, EVOC) * EVOC
         df_tot = df_1 + df_2 + df_3 + df_4 + df_5 + df_6
         return [
-            np.nan_to_num(df_1 / df_tot),
-            np.nan_to_num(df_2 / df_tot),
-            np.nan_to_num(df_3 / df_tot),
-            np.nan_to_num(df_4 / df_tot),
-            np.nan_to_num(df_5 / df_tot),
-            np.nan_to_num(df_6 / df_tot), ]
+            np.nan_to_num(df_1 / df_tot), np.nan_to_num(df_2 / df_tot), np.nan_to_num(df_3 / df_tot), np.nan_to_num(df_4 / df_tot), np.nan_to_num(df_5 / df_tot), np.nan_to_num(df_6 / df_tot)
+        ]
 
 # =========
 # 2.3. LAND
@@ -502,20 +385,7 @@ bio = ["des", "for", "shr", "gra", "cro", "pas"]
 # preindustrial partition of wetlands
 mod_LSNKcover_save = mod_LSNKcover
 cover_options = [
-    "ESA-CCI",
-    "MODIS",
-    "Ramankutty1999",
-    "Levavasseur2012",
-    "mean-TRENDYv2",
-    "CLM-45",
-    "JSBACH",
-    "JULES",
-    "LPJ",
-    "LPJ-GUESS",
-    "LPX-Bern",
-    "OCN",
-    "ORCHIDEE",
-    "VISIT",
+    "ESA-CCI", "MODIS", "Ramankutty1999", "Levavasseur2012", "mean-TRENDYv2", "CLM-45", "JSBACH", "JULES", "LPJ", "LPJ-GUESS", "LPX-Bern", "OCN", "ORCHIDEE", "VISIT",
 ]
 AREA_wet = np.zeros([nb_regionI, nb_biome], dtype=dty)
 if mod_EWETpreind != "":
@@ -534,8 +404,7 @@ AREA_wet0 = np.zeros([nb_regionI], dtype=dty)
 ECH4_wet0 = np.zeros([nb_regionI], dtype=dty)
 for VAR, arr in [("AREA", AREA_wet0), ("ECH4", ECH4_wet0)]:
     if mod_EWETpreind != "":
-        TMP = load_data(f"data/Wetlands_WETCHIMP/#DATA.Wetlands_{mod_EWETpreind}.1910s_114reg1_(1exp).{VAR}.csv",
-                        start=1)
+        TMP = load_data(f"data/Wetlands_WETCHIMP/#DATA.Wetlands_{mod_EWETpreind}.1910s_114reg1_(1exp).{VAR}.csv", start=1)
         for i in range(1, 114 + 1):
             arr[regionI_index[i]] += TMP[i - 1, 0]
 

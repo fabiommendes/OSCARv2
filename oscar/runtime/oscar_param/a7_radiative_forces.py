@@ -4,65 +4,15 @@ from .a1_carbon import CO2_0
 from .a2_methane import CH4_0
 from .a3_nitrous_oxide import N2O_0
 from ..oscar_data import nb_regionI, nb_biome, regionI_index, biome_index
-from ...config import dty, mod_O3Tradeff, mod_SO4radeff, mod_POAradeff, mod_BCradeff, \
-    mod_NO3radeff, mod_SOAradeff, mod_BCadjust, mod_CLOUDsolub, mod_CLOUDerf, \
-    mod_CLOUDpreind, mod_ALBBCrf, mod_ALBBCreg, mod_ALBBCwarm, mod_ALBLCalb, \
-    mod_ALBLCflux, mod_ALBLCcover, mod_ALBLCwarm, mod_O3Sradeff
+from ...config import dty, mod_O3Tradeff, mod_SO4radeff, mod_POAradeff, mod_BCradeff, mod_NO3radeff, mod_SOAradeff, mod_BCadjust, mod_CLOUDsolub, mod_CLOUDerf, mod_CLOUDpreind, mod_ALBBCrf, mod_ALBBCreg, mod_ALBBCwarm, mod_ALBLCalb, mod_ALBLCflux, mod_ALBLCcover, mod_ALBLCwarm, mod_O3Sradeff
 from ...data import load_data, load_header, load_data_and_header
 
 ##################################################
 #   7. RADIATIVE FORCING
 ##################################################
 
-# ====================
-# 7.A. Reconstructions
-# ====================
 
-# historic RF from IPCC-AR5 {W/m2}
-# from [IPCC WG1, 2013] annexe 2
-RF_ipcc = np.zeros([311 + 1], dtype=dty)
-RF_ipcc[:50] = np.nan
 
-RF_WMGHG_ipcc = RF_ipcc.copy()
-RF_O3_ipcc = RF_ipcc.copy()
-RF_AER_ipcc = RF_ipcc.copy()
-RF_Alb_ipcc = RF_ipcc.copy()
-
-TMP = load_data("data/Historic_IPCC-AR5/#DATA.Historic_IPCC-AR5.1750-2011_(11for).RF.csv", start=1)
-path = "data/Historic_IPCC-AR5/#DATA.Historic_IPCC-AR5.1750-2011_(11for).RF.csv"
-lgd = load_header(path)
-
-for x in range(len(lgd)):
-    if lgd[x] in ["CO2", "GHG Other", "H2O (Strat)"]:
-        RF_WMGHG_ipcc[51:] += TMP[1:, x]
-        RF_ipcc[51:] += TMP[1:, x]
-    elif lgd[x] in ["O3 (Trop)", "O3 (Strat)"]:
-        RF_O3_ipcc[51:] += TMP[1:, x]
-        RF_ipcc[51:] += TMP[1:, x]
-    elif lgd[x] in ["Aerosol (Total)"]:
-        RF_AER_ipcc[51:] += TMP[1:, x]
-        RF_ipcc[51:] += TMP[1:, x]
-    elif lgd[x] in ["LUC", "BC Snow"]:
-        RF_Alb_ipcc[51:] += TMP[1:, x]
-        RF_ipcc[51:] += TMP[1:, x]
-    elif lgd[x] in ["Volcano"]:
-        RF_ipcc[51:] += TMP[1:, x] - np.mean(TMP[1:, x])
-    else:
-        RF_ipcc[51:] += TMP[1:, x]
-
-# historic RF from CMIP5 {W/m2}
-# from [Meinshausen et al., 2011]
-RF_cmip5 = np.zeros([305 + 1], dtype=dty)
-RF_cmip5[:65] = np.nan
-
-path = "data/Historic_CMIP5/#DATA.Historic_CMIP5.1765-2005_(19for).RF.csv"
-TMP, lgd = load_data_and_header(path)
-
-for x in range(len(lgd)):
-    if lgd[x] == "VOLC":
-        RF_cmip5[66:] += TMP[1:, x] - np.mean(TMP[1:, x])
-    else:
-        RF_cmip5[66:] += TMP[1:, x]
 
 # load RCP radiative forcing {W/m2}
 # from [Meinshausen et al., 2011]
@@ -108,40 +58,22 @@ def f_RF_N2O(D_N2O):
 
 
 def f_RF_overlap(D_CH4, D_N2O):
-    RF = 0.47 * np.log(
-        1
+    RF = 0.47 * np.log(1
         + 2.01e-5 * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 0.75
-        + 5.31e-15 * (CH4_0 + D_CH4) * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 1.52
-    )
-    RF -= 0.47 * np.log(1 + 2.01e-5 * (CH4_0 * N2O_0) ** 0.75 + 5.31e-15 * CH4_0 * (
-            CH4_0 * N2O_0) ** 1.52)
+        + 5.31e-15 * (CH4_0 + D_CH4) * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 1.52)
+    RF -= 0.47 * np.log(1 + 2.01e-5 * (CH4_0 * N2O_0) ** 0.75 + 5.31e-15 * CH4_0 * (CH4_0 * N2O_0) ** 1.52)
     return np.array(RF, dtype=dty)
 
 
 def df_RF_overlap_dCH4(D_CH4, D_N2O):
-    RF = 0.47 * (
-            2.01e-5 * 0.75 * (CH4_0 + D_CH4) ** (0.75 - 1) * (N2O_0 + D_N2O) ** (0.75)
-            + 5.31e-15 * (1.52 + 1) * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 1.52
-    )
-    RF /= (
-            1
-            + 2.01e-5 * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 0.75
-            + 5.31e-15 * (CH4_0 + D_CH4) * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 1.52
-    )
+    RF = 0.47 * (2.01e-5 * 0.75 * (CH4_0 + D_CH4) ** (0.75 - 1) * (N2O_0 + D_N2O) ** (0.75) + 5.31e-15 * (1.52 + 1) * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 1.52)
+    RF /= (1 + 2.01e-5 * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 0.75 + 5.31e-15 * (CH4_0 + D_CH4) * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 1.52)
     return np.array(RF, dtype=dty)
 
 
 def df_RF_overlap_dN2O(D_CH4, D_N2O):
-    RF = 0.47 * (
-            2.01e-5 * 0.75 * (CH4_0 + D_CH4) ** (0.75) * (N2O_0 + D_N2O) ** (0.75 - 1)
-            + 5.31e-15 * 1.52 * (CH4_0 + D_CH4) ** (1.52 + 1) * (N2O_0 + D_N2O) ** (
-                    1.52 - 1)
-    )
-    RF /= (
-            1
-            + 2.01e-5 * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 0.75
-            + 5.31e-15 * (CH4_0 + D_CH4) * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 1.52
-    )
+    RF = 0.47 * (2.01e-5 * 0.75 * (CH4_0 + D_CH4) ** (0.75) * (N2O_0 + D_N2O) ** (0.75 - 1) + 5.31e-15 * 1.52 * (CH4_0 + D_CH4) ** (1.52 + 1) * (N2O_0 + D_N2O) ** (1.52 - 1))
+    RF /= (1 + 2.01e-5 * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 0.75 + 5.31e-15 * (CH4_0 + D_CH4) * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 1.52)
     return np.array(RF, dtype=dty)
 
 
@@ -154,14 +86,9 @@ def df_RF_overlap(D_CH4, D_N2O):
 
 # radiative efficiency of halogenated compounds {{W/m2}/ppt}
 # from IPCC-AR5 [Myrhe et al., 2013] (table 8.A.1)
-radeff_HFC = 1e-3 * np.array(
-    [0.18, 0.11, 0.23, 0.16, 0.16, 0.10, 0.26, 0.24, 0.24, 0.22, 0.42], dtype=dty)
-radeff_PFC = 1e-3 * np.array([0.57, 0.20, 0.09, 0.25, 0.28, 0.32, 0.36, 0.41, 0.44, 0.50],
-                             dtype=dty)
-radeff_ODS = 1e-3 * np.array(
-    [0.26, 0.32, 0.30, 0.31, 0.20, 0.17, 0.07, 0.21, 0.16, 0.19, 0.29, 0.27, 0.30, 0.31,
-     0.004, 0.01], dtype=dty
-)
+radeff_HFC = 1e-3 * np.array([0.18, 0.11, 0.23, 0.16, 0.16, 0.10, 0.26, 0.24, 0.24, 0.22, 0.42], dtype=dty)
+radeff_PFC = 1e-3 * np.array([0.57, 0.20, 0.09, 0.25, 0.28, 0.32, 0.36, 0.41, 0.44, 0.50], dtype=dty)
+radeff_ODS = 1e-3 * np.array([0.26, 0.32, 0.30, 0.31, 0.20, 0.17, 0.07, 0.21, 0.16, 0.19, 0.29, 0.27, 0.30, 0.31, 0.004, 0.01], dtype=dty)
 
 # ==========
 # 7.2. OZONE
@@ -209,6 +136,8 @@ elif mod_O3Tradeff == "UM-CAM":
     radeff_O3t = np.array([0.376 / 8.7], dtype=dty)
 elif mod_O3Tradeff == "TM5":
     radeff_O3t = np.array([0.422 / 10.0], dtype=dty)
+else:
+    raise RuntimeError
 
 # radiative efficiency of stratospheric O3 {{W/m2}/DU}
 # from IPCC-AR4 [Forster et al., 2007]
@@ -225,6 +154,8 @@ elif mod_O3Sradeff == "NCAR-MACCM":
     radeff_O3s = np.array([-0.019 / -12.7], dtype=dty)
 elif mod_O3Sradeff == "CHASER":
     radeff_O3s = np.array([-0.126 / -14.1], dtype=dty)
+else:
+    raise RuntimeError
 
 # =============
 # 7.3. AEROSOLS
@@ -268,6 +199,8 @@ elif mod_SO4radeff == "OsloCTM2":
     radeff_SO4 = 1e12 / 510_072e9 * np.array([-192], dtype=dty)
 elif mod_SO4radeff == "SPRINTARS":
     radeff_SO4 = 1e12 / 510_072e9 * np.array([-172], dtype=dty)
+else:
+    raise RuntimeError
 
 # radiative efficiency of primary organic aerosols {{W/m2}/Tg}
 # from AeroCom2 [Myhre et al., 2013] (table 6)
@@ -303,6 +236,8 @@ elif mod_POAradeff == "OsloCTM2":
     radeff_POA = 1e12 / 510_072e9 * np.array([-165], dtype=dty)
 elif mod_POAradeff == "SPRINTARS":
     radeff_POA = 1e12 / 510_072e9 * np.array([-102], dtype=dty)
+else:
+    raise RuntimeError
 
 # radiative efficiency of black carbon aerosols {{W/m2}/Tg}
 # from AeroCom2 [Myhre et al., 2013] (table 5)
@@ -338,6 +273,8 @@ elif mod_BCradeff == "OsloCTM2":
     radeff_BC = 1e12 / 510_072e9 * np.array([2161], dtype=dty)
 elif mod_BCradeff == "SPRINTARS":
     radeff_BC = 1e12 / 510_072e9 * np.array([1322], dtype=dty)
+else:
+    raise RuntimeError
 
 # radiative efficiency of nitrate aerosols {{W/m2}/Tg}
 # from AeroCom2 [Myhre et al., 2013] (table 8)
@@ -359,6 +296,8 @@ elif mod_NO3radeff == "NCAR-CAM-35":
     radeff_NO3 = 1e12 / 510_072e9 * np.array([-91], dtype=dty)
 elif mod_NO3radeff == "OsloCTM2":
     radeff_NO3 = 1e12 / 510_072e9 * np.array([-173], dtype=dty)
+else:
+    raise RuntimeError
 
 # radiative efficiency of secondary organic aerosols {{W/m2}/Tg}
 # from AeroCom2 [Myhre et al., 2013] (table 7)
@@ -374,6 +313,8 @@ elif mod_SOAradeff == "MPIHAM":
     radeff_SOA = 1e12 / 510_072e9 * np.array([-139], dtype=dty)
 elif mod_SOAradeff == "OsloCTM2":
     radeff_SOA = 1e12 / 510_072e9 * np.array([-161], dtype=dty)
+else:
+    raise RuntimeError
 
 # radiative efficiency of natural aerosols {{W/m2}/Tg}
 # set to zero in this version
@@ -399,6 +340,8 @@ elif mod_BCadjust == "ECHAM5":
     k_BC_adjust = np.array([0.05], dtype=dty) * (-0.1 / 0.6) / -0.111
 elif mod_BCadjust == "ECMWF":
     k_BC_adjust = np.array([0.12], dtype=dty) * (-0.1 / 0.6) / -0.111
+else:
+    raise RuntimeError
 
 # solubility of aerosols for the aerosol-cloud interaction
 # from [Hansen et al., 2005]
@@ -419,6 +362,8 @@ elif mod_CLOUDsolub == "Lamarque2011":
     solub_SOA = np.array([1.0], dtype=dty)
     solub_DUST = np.array([0.12], dtype=dty)
     solub_SALT = np.array([0.05], dtype=dty)
+else:
+    raise RuntimeError
 
 # ERF over 1850-2000 for the aerosol-cloud interaction
 # from ACCMIP [Shindell et al., 2013] (table 7)
@@ -439,6 +384,8 @@ elif mod_CLOUDerf == "MIROC-CHEM":
     RF_ref1 = np.array([-1.12], dtype=dty) * -0.45 / -0.84
 elif mod_CLOUDerf == "NCAR-CAM-51":
     RF_ref1 = np.array([-1.22], dtype=dty) * -0.45 / -0.84
+else:
+    raise RuntimeError
 
 # soluble aerosol load for the aerosol-cloud interaction
 # load pre-processed ACCMIP data
@@ -465,6 +412,8 @@ elif mod_CLOUDpreind == "high":
     AERh_0 = AER_ref0 * np.exp(0 * (1.42 - 1.30) / Phi_0)
 elif mod_CLOUDpreind == "low":
     AERh_0 = AER_ref0 * np.exp(2 * (1.42 - 1.30) / Phi_0)
+else:
+    raise RuntimeError
 
 # ----------------
 # 7.3.3. Volcanoes
@@ -494,41 +443,29 @@ p_reg9[np.isnan(p_reg9) | np.isinf(p_reg9)] = 0
 # regional effect coefficient {.}
 # from [Reddy and Boucher, 2007] (table 1)
 if mod_ALBBCreg == "Reddy2007":
-    w_reg_BCsnow = np.array(
-        [1, 1 / 6.0, 11 / 11.0, 1 / 10.0, 63 / 12.0, 2 / 3.0, 2 / 13.0, 17 / 43.0,
-         1 / 1.0, 2 / 1.0], dtype=dty
-    )
+    w_reg_BCsnow = np.array([1, 1 / 6.0, 11 / 11.0, 1 / 10.0, 63 / 12.0, 2 / 3.0, 2 / 13.0, 17 / 43.0, 1 / 1.0, 2 / 1.0], dtype=dty)
 
 # global normalized radiative effect {{W/m2}/{Tg/yr}}
 # from ACCMIP [Lee et al., 2013] (tab. 3 & fig. 15)
 # rescaled to the best guess of IPCC AR5 [Boucher et al., 2013] (using table 7.1a)
 if mod_ALBBCrf == "mean-ACCMIP":
-    radeff_BCsnow = np.array([0.0146 / (7.9 - 3.2)], dtype=dty) * (0.04 / 4.8) / (
-            0.0146 / (7.9 - 3.2))
+    radeff_BCsnow = np.array([0.0146 / (7.9 - 3.2)], dtype=dty) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2))
 elif mod_ALBBCrf == "CICERO-OsloCTM2":
-    radeff_BCsnow = np.array([0.0131 / (7.8 - 3.1)], dtype=dty) * (0.04 / 4.8) / (
-            0.0146 / (7.9 - 3.2))
+    radeff_BCsnow = np.array([0.0131 / (7.8 - 3.1)], dtype=dty) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2))
 elif mod_ALBBCrf == "GFDL-AM3":
-    radeff_BCsnow = np.array([0.0130 / (7.8 - 3.1)], dtype=dty) * (0.04 / 4.8) / (
-            0.0146 / (7.9 - 3.2))
+    radeff_BCsnow = np.array([0.0130 / (7.8 - 3.1)], dtype=dty) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2))
 elif mod_ALBBCrf == "GISS-E2-R":
-    radeff_BCsnow = np.array([0.0142 / (8.8 - 4.0)], dtype=dty) * (0.04 / 4.8) / (
-            0.0146 / (7.9 - 3.2))
+    radeff_BCsnow = np.array([0.0142 / (8.8 - 4.0)], dtype=dty) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2))
 elif mod_ALBBCrf == "GISS-E2-R-TOMAS":
-    radeff_BCsnow = np.array([0.0175 / (7.8 - 3.1)], dtype=dty) * (0.04 / 4.8) / (
-            0.0146 / (7.9 - 3.2))
+    radeff_BCsnow = np.array([0.0175 / (7.8 - 3.1)], dtype=dty) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2))
 elif mod_ALBBCrf == "HadGEM2":
-    radeff_BCsnow = np.array([0.0133 / (7.8 - 3.1)], dtype=dty) * (0.04 / 4.8) / (
-            0.0146 / (7.9 - 3.2))
+    radeff_BCsnow = np.array([0.0133 / (7.8 - 3.1)], dtype=dty) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2))
 elif mod_ALBBCrf == "MIROC-CHEM":
-    radeff_BCsnow = np.array([0.0173 / (7.7 - 3.0)], dtype=dty) * (0.04 / 4.8) / (
-            0.0146 / (7.9 - 3.2))
+    radeff_BCsnow = np.array([0.0173 / (7.7 - 3.0)], dtype=dty) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2))
 elif mod_ALBBCrf == "NCAR-CAM-35":
-    radeff_BCsnow = np.array([0.0143 / (7.8 - 3.1)], dtype=dty) * (0.04 / 4.8) / (
-            0.0146 / (7.9 - 3.2))
+    radeff_BCsnow = np.array([0.0143 / (7.8 - 3.1)], dtype=dty) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2))
 elif mod_ALBBCrf == "NCAR-CAM-51":
-    radeff_BCsnow = np.array([0.0141 / (7.8 - 3.1)], dtype=dty) * (0.04 / 4.8) / (
-            0.0146 / (7.9 - 3.2))
+    radeff_BCsnow = np.array([0.0141 / (7.8 - 3.1)], dtype=dty) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2))
 
 # warming efficacy of black carbon on snow {.}
 # from IPCC AR5 [Boucher et al., 2013] (sect. 7.5.2.3)
@@ -563,13 +500,9 @@ alpha_alb[np.isnan(alpha_alb) | np.isinf(alpha_alb)] = 0
 # set pasture albedo
 if np.sum(alpha_alb[:, biome_index["pas"]]) == 0:
     for i in range(1, 114 + 1):
-        alpha_alb[regionI_index[i], biome_index["pas"]] += (
-                0.6 * TMP[i - 1, bio.index("gra")] * TMP2[i - 1, bio.index("gra")]
-                + 0.4 * TMP[i - 1, bio.index("des")] * TMP2[i - 1, bio.index("des")]
-        )
-        RSDS_alb[regionI_index[i], biome_index["pas"]] += (
-                0.6 * TMP2[i - 1, bio.index("gra")] + 0.4 * TMP2[i - 1, bio.index("des")]
-        )
+        alpha_alb[regionI_index[i], biome_index["pas"]] += (0.6 * TMP[i - 1, bio.index("gra")] * TMP2[i - 1, bio.index("gra")]
+                + 0.4 * TMP[i - 1, bio.index("des")] * TMP2[i - 1, bio.index("des")])
+        RSDS_alb[regionI_index[i], biome_index["pas"]] += (0.6 * TMP2[i - 1, bio.index("gra")] + 0.4 * TMP2[i - 1, bio.index("des")])
     alpha_alb[:, biome_index["pas"]] /= RSDS_alb[:, biome_index["pas"]]
     alpha_alb[np.isnan(alpha_alb) | np.isinf(alpha_alb)] = 0
 
@@ -602,3 +535,5 @@ elif mod_ALBLCwarm == "Davin2010":
     warmeff_LCC = np.array([0.78], dtype=dty)
 elif mod_ALBLCwarm == "Jones2013":
     warmeff_LCC = np.array([0.79], dtype=dty)
+else:
+    raise RuntimeError

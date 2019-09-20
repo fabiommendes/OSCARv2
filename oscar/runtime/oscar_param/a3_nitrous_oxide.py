@@ -1,9 +1,13 @@
 import numpy as np
 from scipy.optimize import fmin
 
-from ..oscar_data import nb_ODS, ODS
+from oscar.constants import ODS
 from ...config import dty, mod_HVSNKtau, mod_HVSNKtrans, mod_HVSNKcirc
-from ...data import load_data, load_data_and_header
+from ...data import load_data
+from ... import historical
+
+N2O_0 = historical.N2O_0
+nb_ODS = len(ODS)
 
 ##################################################
 #   3. NITROUS OXIDE
@@ -16,42 +20,6 @@ from ...data import load_data, load_data_and_header
 # conversion of N2O from {ppb} to {TgN}
 alpha_N2O = 0.1765 * np.array([28.0], dtype=dty)
 
-# historic N2O from IPCC-AR5 {ppb}
-# from [IPCC WG1, 2013] annexe 2
-N2O_ipcc = np.ones([311 + 1], dtype=dty) * np.nan
-path = "data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1750-2011.N2O.csv"
-TMP = load_data(path)
-N2O_ipcc[50:] = TMP[:, 0]
-N2O_0 = np.array([N2O_ipcc[50]], dtype=dty)
-
-# historic N2O from CMIP5 {ppb}
-# from [Meinshausen et al., 2011]
-N2O_cmip5 = np.ones([305 + 1], dtype=dty) * np.nan
-path = "data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.N2O.csv"
-TMP = load_data(path)
-N2O_cmip5[65:] = TMP[:, 0]
-
-# historic N2O from AGAGE {ppb}
-# from [Prinn et al., 2013] updated from the website
-N2O_agage = np.ones([313 + 1], dtype=dty) * np.nan
-path = "data/HistAtmo_AGAGE/#DATA.HistAtmo_AGAGE.1979-2013.N2O_global.csv"
-TMP = load_data(path)
-N2O_agage[279:] = TMP[:, 0]
-
-# historic N2O from Law Dome ice cores {ppm}
-# from [MacFarling Meure et al., 2006]
-path = "data/HistAtmo_NOAA-NCDC/#DATA.HistAtmo_NOAA-NCDC.(IceCores).N2O_lawdome.csv"
-N2O_lawdome = load_data(path, start=1)
-
-# load RCP concentrations {ppb}
-# from [Meinshausen et al., 2011]
-N2O_rcp = np.ones([800 + 1, 6], dtype=dty) * np.nan
-n = -1
-for rcp in ["rcp26", "rcp45", "rcp60", "rcp85", "rcp45to26", "rcp60to45"]:
-    n += 1
-    path = f"data/Scenario_ECP/#DATA.Scenario_ECP.2000-2500.{rcp}_N2O.csv"
-    TMP = load_data(path)
-    N2O_rcp[300:, n] = TMP[:, 0]
 
 # ==============
 # 3.2. CHEMISTRY
@@ -104,10 +72,8 @@ EESC_hv0[ODS.index("CH3Cl")] = 480.0
 
 #  fractional releases from [Newman et al., 2007]
 for arr in [EESC_hv, EESC_hv0]:
-    arr *= np.array([0.47, 0.23, 0.29, 0.12, 0.05, 0.56, 0.67, 0.13, 0.08, 0.01, 0.62, 0.62, 0.28, 0.65, 0.60, 0.44],
-                    dtype=dty)
-    arr *= np.array([3, 2, 3, 2, 1, 4, 3, 1, 2, 1, 1 + 60 * 1, 0 + 60 * 2, 0 + 60 * 1, 0 + 60 * 2, 0 + 60 * 1, 1],
-                    dtype=dty)
+    arr *= np.array([0.47, 0.23, 0.29, 0.12, 0.05, 0.56, 0.67, 0.13, 0.08, 0.01, 0.62, 0.62, 0.28, 0.65, 0.60, 0.44], dtype=dty)
+    arr *= np.array([3, 2, 3, 2, 1, 4, 3, 1, 2, 1, 1 + 60 * 1, 0 + 60 * 2, 0 + 60 * 1, 0 + 60 * 2, 0 + 60 * 1, 1], dtype=dty)
 
 EESC_hv = np.sum(EESC_hv)
 EESC_hv0 = np.sum(EESC_hv0)
@@ -142,57 +108,29 @@ elif mod_HVSNKtrans == "Prather2012":
 # adapted from [Prather et al., 2015]
 def f_hv(D_N2O, D_EESC, D_gst):
     from .a5_ozone import EESC_0
-    D_hv = (
-            np.exp(
-                chi_hv_N2O * np.log(1 + D_N2O / N2O_0)
-                + chi_hv_EESC * np.log(1 + D_EESC / EESC_0)
-                - chi_hv_age * np.log(1 + gamma_age * D_gst)
-            )
-            - 1
-    )
+
+    D_hv = np.exp(chi_hv_N2O * np.log(1 + D_N2O / N2O_0) + chi_hv_EESC * np.log(1 + D_EESC / EESC_0) - chi_hv_age * np.log(1 + gamma_age * D_gst))- 1
     return np.array(D_hv, dtype=dty)
 
 
 def df_hv_dN2O(D_N2O, D_EESC, D_gst):
     from .a5_ozone import EESC_0
-    D_hv = (
-            chi_hv_N2O
-            / (N2O_0 + D_N2O)
-            * np.exp(
-        chi_hv_N2O * np.log(1 + D_N2O / N2O_0)
-        + chi_hv_EESC * np.log(1 + D_EESC / EESC_0)
-        - chi_hv_age * np.log(1 + gamma_age * D_gst)
-    )
-    )
+
+    D_hv = chi_hv_N2O / (N2O_0 + D_N2O) * np.exp(chi_hv_N2O * np.log(1 + D_N2O / N2O_0) + chi_hv_EESC * np.log(1 + D_EESC / EESC_0) - chi_hv_age * np.log(1 + gamma_age * D_gst))
     return np.array(D_hv, dtype=dty)
 
 
 def df_hv_dEESC(D_N2O, D_EESC, D_gst):
     from .a5_ozone import EESC_0
-    D_hv = (
-            chi_hv_EESC
-            / (EESC_0 + D_EESC)
-            * np.exp(
-        chi_hv_N2O * np.log(1 + D_N2O / N2O_0)
-        + chi_hv_EESC * np.log(1 + D_EESC / EESC_0)
-        - chi_hv_age * np.log(1 + gamma_age * D_gst)
-    )
-    )
+
+    D_hv = chi_hv_EESC / (EESC_0 + D_EESC)  * np.exp(chi_hv_N2O * np.log(1 + D_N2O / N2O_0) + chi_hv_EESC * np.log(1 + D_EESC / EESC_0) - chi_hv_age * np.log(1 + gamma_age * D_gst))
     return np.array(D_hv, dtype=dty)
 
 
 def df_hv_dgst(D_N2O, D_EESC, D_gst):
     from .a5_ozone import EESC_0
-    D_hv = (
-            chi_hv_age
-            * gamma_age
-            / (1 + gamma_age * D_gst)
-            * np.exp(
-        chi_hv_N2O * np.log(1 + D_N2O / N2O_0)
-        + chi_hv_EESC * np.log(1 + D_EESC / EESC_0)
-        - chi_hv_age * np.log(1 + gamma_age * D_gst)
-    )
-    )
+
+    D_hv = chi_hv_age * gamma_age / (1 + gamma_age * D_gst)  * np.exp(chi_hv_N2O * np.log(1 + D_N2O / N2O_0) + chi_hv_EESC * np.log(1 + D_EESC / EESC_0) - chi_hv_age * np.log(1 + gamma_age * D_gst))
     return np.array(D_hv, dtype=dty)
 
 
@@ -201,8 +139,7 @@ def df_hv(D_N2O, D_EESC, D_gst):
     df_2 = df_hv_dEESC(D_N2O, D_EESC, D_gst) * D_EESC
     df_3 = df_hv_dgst(D_N2O, D_EESC, D_gst) * D_gst
     df_tot = df_1 + df_2 + df_3
-    return [np.nan_to_num(df_1 / df_tot), np.nan_to_num(df_2 / df_tot),
-            np.nan_to_num(df_3 / df_tot)]
+    return [np.nan_to_num(df_1 / df_tot), np.nan_to_num(df_2 / df_tot), np.nan_to_num(df_3 / df_tot)]
 
 
 # --------------

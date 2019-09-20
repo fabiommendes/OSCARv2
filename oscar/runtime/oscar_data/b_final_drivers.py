@@ -8,34 +8,7 @@ from .a6_radiative_forces import RFcon, RFvolc, RFsolar
 from ...config import PI_1750, mod_sector, ind_final, ind_attrib
 
 var_map = {
-    "EFF": EFF,
-    "ECH4": ECH4,
-    "EN2O": EN2O,
-    "LUC": LUC,
-    "HARV": HARV,
-    "SHIFT": SHIFT,
-    "EHFC": EHFC,
-    "EPFC": EPFC,
-    "EODS": EODS,
-    "ENOX": ENOX,
-    "ECO": ECO,
-    "EVOC": EVOC,
-    "ESO2": ESO2,
-    "ENH3": ENH3,
-    "EOC": EOC,
-    "EBC": EBC,
-    "RFcon": RFcon,
-    "RFvolc": RFvolc,
-    "RFsolar": RFsolar,
-    "ECH4_0": ECH4_0,
-    "EN2O_0": EN2O_0,
-    "ENOX_0": ENOX_0,
-    "ECO_0": ECO_0,
-    "EVOC_0": EVOC_0,
-    "ESO2_0": ESO2_0,
-    "ENH3_0": ENH3_0,
-    "EOC_0": EOC_0,
-    "EBC_0": EBC_0,
+    "EFF": EFF, "ECH4": ECH4, "EN2O": EN2O, "LUC": LUC, "HARV": HARV, "SHIFT": SHIFT, "EHFC": EHFC, "EPFC": EPFC, "EODS": EODS, "ENOX": ENOX, "ECO": ECO, "EVOC": EVOC, "ESO2": ESO2, "ENH3": ENH3, "EOC": EOC, "EBC": EBC, "RFcon": RFcon, "RFvolc": RFvolc, "RFsolar": RFsolar, "ECH4_0": ECH4_0, "EN2O_0": EN2O_0, "ENOX_0": ENOX_0, "ECO_0": ECO_0, "EVOC_0": EVOC_0, "ESO2_0": ESO2_0, "ENH3_0": ENH3_0, "EOC_0": EOC_0, "EBC_0": EBC_0,
 }
 
 # ==================
@@ -44,15 +17,7 @@ var_map = {
 
 # reference emissions for preindustrial
 for VAR, VAR_0 in [
-    (ECH4, ECH4_0),
-    (EN2O, EN2O_0),
-    (ENOX, ENOX_0),
-    (ECO, ECO_0),
-    (EVOC, EVOC_0),
-    (ESO2, ESO2_0),
-    (ENH3, ENH3_0),
-    (EOC, EOC_0),
-    (EBC, EBC_0),
+    (ECH4, ECH4_0), (EN2O, EN2O_0), (ENOX, ENOX_0), (ECO, ECO_0), (EVOC, EVOC_0), (ESO2, ESO2_0), (ENH3, ENH3_0), (EOC, EOC_0), (EBC, EBC_0),
 ]:
     VAR[:, ...] -= VAR_0[np.newaxis, ...]
 
@@ -136,13 +101,7 @@ if PI_1750:
 
 # timeframed sectoral attribution
 if (mod_sector == "Time") & (300 < ind_final <= 310):
-    for VAR in (
-            EFF, ECH4, EN2O,
-            LUC, HARV, SHIFT,
-            EHFC, EPFC, EODS,
-            ENOX, ECO, EVOC, ESO2, ENH3, EOC, EBC,
-            RFcon, RFvolc, RFsolar,
-    ):
+    for VAR in (EFF, ECH4, EN2O, LUC, HARV, SHIFT, EHFC, EPFC, EODS, ENOX, ECO, EVOC, ESO2, ENH3, EOC, EBC, RFcon, RFvolc, RFsolar, ):
         VAR[150:200, :, :, 1, :, ...] = VAR[150:200, :, :, 0, :, ...]
         VAR[200:210, :, :, 2, :, ...] = VAR[200:210, :, :, 0, :, ...]
         VAR[210:220, :, :, 3, :, ...] = VAR[210:220, :, :, 0, :, ...]
@@ -166,13 +125,7 @@ if (mod_sector == "Time") & (300 < ind_final <= 310):
         VAR[150:, :, :, 0, :, ...] = 0
 
 elif (mod_sector == "TimeRCP") & (ind_final == 400):
-    for VAR in (
-            EFF, ECH4, EN2O,
-            LUC, HARV, SHIFT,
-            EHFC, EPFC, EODS,
-            ENOX, ECO, EVOC, ESO2, ENH3, EOC, EBC,
-            RFcon, RFvolc, RFsolar,
-    ):
+    for VAR in (EFF, ECH4, EN2O, LUC, HARV, SHIFT, EHFC, EPFC, EODS, ENOX, ECO, EVOC, ESO2, ENH3, EOC, EBC, RFcon, RFvolc, RFsolar, ):
         VAR[311:316, :, 1, :, ...] = VAR[311:316, :, 0, :, ...]
         VAR[316:321, :, 2, :, ...] = VAR[316:321, :, 0, :, ...]
         VAR[321:326, :, 3, :, ...] = VAR[321:326, :, 0, :, ...]

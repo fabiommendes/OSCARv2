@@ -1,9 +1,7 @@
 import numpy as np
 from ...data import load_data
 from scipy.optimize import fmin
-from ...config import dty, mod_POAconv, mod_SO4regsat, mod_POAregsat, mod_BCregsat, \
-    mod_POAload, mod_BCload, mod_NO3load, mod_SOAload, mod_DUSTload, mod_SALTload, \
-    mod_SO4load
+from ...config import dty, mod_POAconv, mod_SO4regsat, mod_POAregsat, mod_BCregsat, mod_POAload, mod_BCload, mod_NO3load, mod_SOAload, mod_DUSTload, mod_SALTload, mod_SO4load
 
 ##################################################
 #   6. AEROSOLS
@@ -101,12 +99,7 @@ else:
 
 # period of ACCMIP/CMIP5 simulations per simulation
 prd = {
-    "ctrl": "251yr",
-    "hist": "1850-2005",
-    "rcp26": "2006-2100",
-    "rcp45": "2006-2100",
-    "rcp60": "2006-2100",
-    "rcp85": "2006-2100",
+    "ctrl": "251yr", "hist": "1850-2005", "rcp26": "2006-2100", "rcp45": "2006-2100", "rcp60": "2006-2100", "rcp85": "2006-2100",
 }
 
 
@@ -388,10 +381,7 @@ diff = SO4_allS - np.mean(SO4_allS[:10])
 
 
 def err(var):
-    conc = np.abs(var[0]) * alpha_SO4 * (ESO2_allS - np.mean(ESO2_allS[:10])) + np.abs(
-        var[1]) * alpha_SO4 * (
-                   EDMS_allS - np.mean(EDMS_allS[:10])
-           )
+    conc = np.abs(var[0]) * alpha_SO4 * (ESO2_allS - np.mean(ESO2_allS[:10])) + np.abs(var[1]) * alpha_SO4 * (EDMS_allS - np.mean(EDMS_allS[:10]))
     clim = var[2] * (tas_allS - np.mean(tas_allS[:10]))
     return np.sum((diff - (conc + clim)) ** 2)
 
@@ -405,9 +395,7 @@ diff = POA_allP - np.mean(POA_allP[:10])
 
 
 def err(var):
-    conc = np.abs(var[0]) * (EOM_allP - np.mean(EOM_allP[:10])) + np.abs(var[1]) * (
-            EOMBB_allP - np.mean(EOMBB_allP[:10])
-    )
+    conc = np.abs(var[0]) * (EOM_allP - np.mean(EOM_allP[:10])) + np.abs(var[1]) * (EOMBB_allP - np.mean(EOMBB_allP[:10]))
     clim = var[2] * (tas_allP - np.mean(tas_allP[:10]))
     return np.sum((diff - (conc + clim)) ** 2)
 
@@ -421,9 +409,7 @@ diff = BC_allB - np.mean(BC_allB[:10])
 
 
 def err(var):
-    conc = np.abs(var[0]) * (EBC_allB - np.mean(EBC_allB[:10])) + np.abs(var[1]) * (
-            EBCBB_allB - np.mean(EBCBB_allB[:10])
-    )
+    conc = np.abs(var[0]) * (EBC_allB - np.mean(EBC_allB[:10])) + np.abs(var[1]) * (EBCBB_allB - np.mean(EBCBB_allB[:10]))
     clim = var[2] * (tas_allB - np.mean(tas_allB[:10]))
     return np.sum((diff - (conc + clim)) ** 2)
 
@@ -438,10 +424,7 @@ if not mod_NO3load in ["Bellouin2011", "Hauglustaine2014"]:
 
 
     def err(var):
-        conc = np.abs(var[0]) * alpha_NO3 * (
-                ENOX_allN - np.mean(ENOX_allN[:10])) + np.abs(var[1]) * alpha_NO3 * (
-                       ENH3_allN - np.mean(ENH3_allN[:10])
-               )
+        conc = np.abs(var[0]) * alpha_NO3 * (ENOX_allN - np.mean(ENOX_allN[:10])) + np.abs(var[1]) * alpha_NO3 * (ENH3_allN - np.mean(ENH3_allN[:10]))
         clim = var[2] * (tas2_allN - np.mean(tas2_allN[:10]))
         return np.sum((diff - (conc + clim)) ** 2)
 
@@ -456,9 +439,7 @@ if mod_SOAload != "":
 
 
     def err(var):
-        conc = np.abs(var[0]) * (EVOC_allQ - np.mean(EVOC_allQ[:10])) + np.abs(var[1]) * (
-                EBVOC_allQ - np.mean(EBVOC_allQ[:10])
-        )
+        conc = np.abs(var[0]) * (EVOC_allQ - np.mean(EVOC_allQ[:10])) + np.abs(var[1]) * (EBVOC_allQ - np.mean(EBVOC_allQ[:10]))
         clim = var[2] * (tas2_allQ - np.mean(tas2_allQ[:10]))
         return np.sum((diff - (conc + clim)) ** 2)
 
@@ -500,44 +481,28 @@ tau_SALT = np.abs(tau_SALT)
 # load data for nitrate aerosols
 # from HadGEM2 [Bellouin et al., 2011] (also RCP and CMIP5 data)
 if mod_NO3load == "Bellouin2011":
-    ENOX_nitrate = np.array([5.7, 37.4, 18.4, 16.3, 16.6, 23.8, 18.4, 16.3, 16.6, 23.8],
-                            dtype=dty)
-    ENH3_nitrate = np.array([16.6, 41.4, 67.2, 49.2, 63.0, 70.0, 67.2, 49.2, 63.0, 70.0],
-                            dtype=dty)
-    tas_nitrate = np.array(
-        [13.55, 14.07, 15.39, 16.46, 17.07, 18.66, 13.55, 13.55, 13.55, 13.55], dtype=dty)
-    NO3_nitrate = np.array([0.05, 0.34, 0.56, 0.29, 0.41, 0.52, 0.63, 0.36, 0.50, 0.68],
-                           dtype=dty)
+    ENOX_nitrate = np.array([5.7, 37.4, 18.4, 16.3, 16.6, 23.8, 18.4, 16.3, 16.6, 23.8], dtype=dty)
+    ENH3_nitrate = np.array([16.6, 41.4, 67.2, 49.2, 63.0, 70.0, 67.2, 49.2, 63.0, 70.0], dtype=dty)
+    tas_nitrate = np.array([13.55, 14.07, 15.39, 16.46, 17.07, 18.66, 13.55, 13.55, 13.55, 13.55], dtype=dty)
+    NO3_nitrate = np.array([0.05, 0.34, 0.56, 0.29, 0.41, 0.52, 0.63, 0.36, 0.50, 0.68], dtype=dty)
+
 # from LMDz4-INCA3 [Hauglustaine et al., 2014] (tables 1,5)
 elif mod_NO3load == "Hauglustaine2014":
-    ENOX_nitrate = np.array(
-        [10, 36, 29, 26, 14, 32, 26, 14, 30, 27, 13, 38, 30, 21, 21, 14], dtype=dty)
-    ENH3_nitrate = np.array(
-        [21, 29, 41, 46, 58, 35, 36, 33, 36, 43, 51, 42, 48, 57, 33, 57], dtype=dty)
-    tas_nitrate = np.array(
-        [0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00,
-         0.00, 0.00, 0.00], dtype=dty
-    )
+    ENOX_nitrate = np.array([10, 36, 29, 26, 14, 32, 26, 14, 30, 27, 13, 38, 30, 21, 21, 14], dtype=dty)
+    ENH3_nitrate = np.array([21, 29, 41, 46, 58, 35, 36, 33, 36, 43, 51, 42, 48, 57, 33, 57], dtype=dty)
+    tas_nitrate = np.array([0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00], dtype=dty)
     # NO3_nitrate = np.array([0.23,0.48,0.46,0.47,0.37,0.48,0.46,0.42,0.47,0.48,0.40,0.54,0.52,0.52,0.47,0.43], dtype=dty) # HNO3 and NO3-
-    NO3_nitrate = np.array(
-        [0.09, 0.18, 0.21, 0.23, 0.21, 0.2, 0.2, 0.18, 0.19, 0.21, 0.21, 0.23, 0.24, 0.25,
-         0.2, 0.22], dtype=dty
-    )  # NO3- only
+    NO3_nitrate = np.array([0.09, 0.18, 0.21, 0.23, 0.21, 0.2, 0.2, 0.18, 0.19, 0.21, 0.21, 0.23, 0.24, 0.25, 0.2, 0.22], dtype=dty)  # NO3- only
 
 # fit of parameters (defined in previous section)
 diff = NO3_nitrate - NO3_nitrate[0]
 
-
 def err(var):
-    conc = np.abs(var[0]) * alpha_NO3 * (ENOX_nitrate - ENOX_nitrate[0]) + np.abs(
-        var[1]) * alpha_NO3 * (
-                   ENH3_nitrate - ENH3_nitrate[0]
-           )
+    conc = np.abs(var[0]) * alpha_NO3 * (ENOX_nitrate - ENOX_nitrate[0]) + np.abs(var[1]) * alpha_NO3 * (ENH3_nitrate - ENH3_nitrate[0])
     clim = var[2] * (tas_nitrate - tas_nitrate[0])
     if mod_NO3load == "Hauglustaine2014":
         clim = 0 * clim
     return np.sum((diff - (conc + clim)) ** 2)
-
 
 [tau_NOX[0], tau_NH3[0], Gamma_NO3[0]] = fmin(err, [0.01, 0.01, 0], disp=False)
 tau_NOX = np.abs(tau_NOX)

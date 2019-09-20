@@ -1,9 +1,6 @@
 import numpy as np
 
-from ...config import mod_regionI, mod_regionJ, mod_sector, ind_final, \
-    mod_kindFF, mod_kindLUC, mod_kindGHG, \
-    mod_kindCHI, mod_kindAER, mod_kindRF, mod_kindGE, mod_biomeSHR, mod_biomeURB, \
-    mod_biomeV3, dty
+from ...config import mod_regionI, mod_regionJ, mod_sector, ind_final, mod_kindFF, mod_kindLUC, mod_kindGHG, mod_kindCHI, mod_kindAER, mod_kindRF, mod_kindGE, mod_biomeSHR, mod_biomeURB, mod_biomeV3
 
 # ============
 # A.1. Regions
@@ -21,132 +18,35 @@ for X in ["I", "J"]:
         region_name = region
         region_color = ["#0000FF", "#660099", "#006600", "#FF6600"]
     elif mod_region == "SRES11":
-        region = ["NAM", "WEU", "PAO", "EEU", "FSU", "CPA", "SAS", "PAS", "MEA", "LAM",
-                  "AFR"]
-        region_name = [
-            "North America",
-            "Western Europe",
-            "Pacific OECD",
-            "Central and Eastern Europe",
-            "Former Soviet Union",
-            "Centrally Planned Asia",
-            "South Asia",
-            "Pacific Asia",
-            "Middle East and North Africa",
-            "Latin America and the Caribbean",
-            "Sub-Saharan Africa", ]
-        region_color = [
-            "#000099",
-            "#0000FF",
-            "#00FFFF",
-            "#660099",
-            "#FF0099",
-            "#006600",
-            "#00FF00",
-            "#33FF33",
-            "#FFFF00",
-            "#FF6600",
-            "#FF0000", ]
+        region = ["NAM", "WEU", "PAO", "EEU", "FSU", "CPA", "SAS", "PAS", "MEA", "LAM", "AFR"]
+        region_name = ["North America", "Western Europe", "Pacific OECD", "Central and Eastern Europe", "Former Soviet Union", "Centrally Planned Asia", "South Asia", "Pacific Asia", "Middle East and North Africa", "Latin America and the Caribbean", "Sub-Saharan Africa"]
+        region_color = ["#000099", "#0000FF", "#00FFFF", "#660099", "#FF0099", "#006600", "#00FF00", "#33FF33", "#FFFF00", "#FF6600", "#FF0000"]
     elif mod_region == "RECCAP*":
         region = ["L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8", "L9", "L10", "LX"]
-        region_name = [
-            "Africa",
-            "Arctic",
-            "Oceania",
-            "China",
-            "S.E. Asia",
-            "S. Asia",
-            "Europe",
-            "N. America",
-            "Russia",
-            "S. America",
-            "Rest", ]
+        region_name = ["Africa", "Arctic", "Oceania", "China", "S.E. Asia", "S. Asia", "Europe", "N. America", "Russia", "S. America", "Rest"]
         region_color = ["", "", "", "", "", "", "", "", "", "", ""]
     elif mod_region == "Raupach*":
         region = ["USA", "EU", "Japan", "D1", "FSU", "China", "India", "D2", "D3"]
         region_name = region
-        region_color = [
-            "#FF0000",
-            "#FF6600",
-            "#FFFF00",
-            "#00FF00",
-            "#00FFFF",
-            "#0000FF",
-            "#FF0099",
-            "#660066",
-            "#000000", ]
+        region_color = ["#FF0000", "#FF6600", "#FFFF00", "#00FF00", "#00FFFF", "#0000FF", "#FF0099", "#660066", "#000000"]
     elif mod_region == "Houghton":
-        region = [
-            "N. Am.",
-            "S. & C. Am.",
-            "Europe",
-            "N. Afr. & M. East",
-            "Trop. Afr.",
-            "FSU",
-            "China",
-            "S. & S.E. Asia",
-            "Pacific Dvp.", ]
-        region_name = [
-            "North America",
-            "South & Central America",
-            "Europe",
-            "North Africa & Middle East",
-            "Tropical Africa",
-            "Former Soviet Union",
-            "China region",
-            "South & South-East Asia",
-            "Pacific Developed region", ]
-        region_color = [
-            "#FF0000",
-            "#FFFF33",
-            "#00FF00",
-            "#00FFFF",
-            "#0000FF",
-            "#FF00FF",
-            "#009999",
-            "#FF6600",
-            "#990066", ]
+        region = ["N. Am.", "S. & C. Am.", "Europe", "N. Afr. & M. East", "Trop. Afr.", "FSU", "China", "S. & S.E. Asia", "Pacific Dvp."]
+        region_name = ["North America", "South & Central America", "Europe", "North Africa & Middle East", "Tropical Africa", "Former Soviet Union", "China region", "South & South-East Asia", "Pacific Developed region"]
+        region_color = ["#FF0000", "#FFFF33", "#00FF00", "#00FFFF", "#0000FF", "#FF00FF", "#009999", "#FF6600", "#990066"]
     elif mod_region == "IMACLIM":
-        region = [
-            "USA",
-            "Canada",
-            "Europe",
-            "OECD Pacific",
-            "CEI",
-            "China",
-            "India",
-            "Brazil",
-            "Middle East",
-            "Africa",
-            "Rest of Asia",
-            "Rest of LAM", ]
+        region = ["USA", "Canada", "Europe", "OECD Pacific", "CEI", "China", "India", "Brazil", "Middle East", "Africa", "Rest of Asia", "Rest of LAM"]
         region_name = region
         region_color = ["", "", "", "", "", "", "", "", "", "", "", ""]
     elif mod_region == "Kyoto":
         region = ["B", "nB"]
-        region_name = ["Annex B", "non- Annex B"]
+        region_name = ["Annex B", "non-Annex B"]
         region_color = ["#006600", "#CCCC99"]
     elif mod_region == "RCP5":
         region = ["ASIA", "LAM", "MAF", "OECD90", "REF"]
-        region_name = [
-            "Asia region",
-            "Latin America",
-            "Middle-East & Africa",
-            "OECD countries in 1990",
-            "Reforming countries", ]
+        region_name = ["Asia region", "Latin America", "Middle-East & Africa", "OECD countries in 1990", "Reforming countries"]
         region_color = ["", "", "", "", ""]
     elif mod_region == "RCP10*":
-        region = [
-            "China +",
-            "India +",
-            "Rest of Asia",
-            "Latin America",
-            "Middle East",
-            "Africa",
-            "Western Europe",
-            "Northern America",
-            "Pacific OECD",
-            "Reforming Economies", ]
+        region = ["China +", "India +", "Rest of Asia", "Latin America", "Middle East", "Africa", "Western Europe", "Northern America", "Pacific OECD", "Reforming Economies"]
         region_name = region
         region_color = ["", "", "", "", "", "", "", "", "", ""]
     else:
@@ -156,7 +56,7 @@ for X in ["I", "J"]:
 
     region_index = {}
     path = "data/Regions_GTAP/#DATA.Regions_GTAP.csv"
-    TMP = np.array(load_data(path, dtype=object, use='csv')[:,2:])
+    TMP = np.array(load_data(path, dtype=object, use='csv')[:, 2:])
     for n in range(1, len(TMP)):
         if mod_region in list(TMP[0]):
             region_index[int(TMP[n, 0])] = int(TMP[n, list(TMP[0]).index(mod_region)])
@@ -184,13 +84,10 @@ for X in ["I", "J"]:
 
 
 if (mod_sector == "Time") & (300 < ind_final <= 310):
-    sector = (
-            ["<1850", "1850-1899", "1900-1909", "1910-1919", "1920-1929", "1930-1939",
-             "1940-1949", "1950-1959"]
+    sector = (["<1850", "1850-1899", "1900-1909", "1910-1919", "1920-1929", "1930-1939", "1940-1949", "1950-1959"]
             + [str(t) + "-" + str(t + 4) for t in range(1960, 1990, 5)]
             + [str(t) + "-" + str(t + 1) for t in range(1990, 2000, 2)]
-            + [str(t) for t in range(2000, 1700 + ind_final + 1)]
-    )
+            + [str(t) for t in range(2000, 1700 + ind_final + 1)])
     sector_name = sector
     sector_color = ["0.5" for n in range(len(sector))]
 elif (mod_sector == "TimeRCP") & (ind_final == 400):
@@ -230,8 +127,7 @@ else:
     kLUC = 1  # max(0) + 1?
 
 if mod_kindFF == "CDIAC":
-    kindFF_index = {"sol": kFF, "liq": kFF + 1, "gas": kFF + 2, "cem": kFF + 3,
-                    "fla": kFF + 4}
+    kindFF_index = {"sol": kFF, "liq": kFF + 1, "gas": kFF + 2, "cem": kFF + 3, "fla": kFF + 4}
 else:
     kindFF_index = {"sol": kFF, "liq": kFF, "gas": kFF, "cem": kFF, "fla": kFF}
 
@@ -271,8 +167,7 @@ else:
     kCHI = max(kFF, kLUC) + 1
 
 if mod_kindGHG == "RCP":
-    kindGHG_index = {"CH4": kGHG, "N2O": kGHG + 1, "HFC": kGHG + 2, "PFC": kGHG + 2,
-                     "ODS": kGHG + 2}
+    kindGHG_index = {"CH4": kGHG, "N2O": kGHG + 1, "HFC": kGHG + 2, "PFC": kGHG + 2, "ODS": kGHG + 2}
 else:
     kindGHG_index = {"CH4": kGHG, "N2O": kGHG, "HFC": kGHG, "PFC": kGHG, "ODS": kGHG}
 
@@ -284,8 +179,7 @@ if mod_kindCHI == "one":
     kAER = kCHI + 1
 elif mod_kindCHI == "all":
     kind += ["NOx", "CO", "NMVOC"]
-    kind_name += ["Nitrogen Oxides", "Carbon Monoxide",
-                  "Non-Methane Volatile Organic Compounds"]
+    kind_name += ["Nitrogen Oxides", "Carbon Monoxide", "Non-Methane Volatile Organic Compounds"]
     kind_color += ["#66FF66", "#009999", "#006600"]
     kAER = kCHI + 3
 else:
@@ -347,8 +241,7 @@ else:
 # Geoengineering
 if mod_kindGE == "PUP":
     kind += ["AFO", "CCS", "ALB", "AER"]
-    kind_name += ["Aforestation", "Carbon Capture and Storage", "Surface Albedo",
-                  "Sulfate Aerosols"]
+    kind_name += ["Aforestation", "Carbon Capture and Storage", "Surface Albedo", "Sulfate Aerosols"]
     kind_color += ["", "", "", ""]
 else:
     kGE = 0
@@ -361,38 +254,32 @@ nb_kind = len(kind)
 
 if (mod_biomeSHR == "w/FOR") & (mod_biomeURB == "w/DES"):
     biome = ["DES+", "FOR+", "GRA", "CRO", "PAS"]
-    biome_name = ["Desert & Urban", "Forest & Shrubland", "Grassland", "Cropland",
-                  "Pasture"]
+    biome_name = ["Desert & Urban", "Forest & Shrubland", "Grassland", "Cropland", "Pasture"]
     biome_color = ["", "", "", "", ""]
     biome_index = {"des": 0, "for": 1, "shr": 1, "gra": 2, "cro": 3, "pas": 4, "urb": 0}
 elif (mod_biomeSHR == "w/FOR") & (mod_biomeURB == "URB"):
     biome = ["DES", "FOR+", "GRA", "CRO", "PAS", "URB"]
-    biome_name = ["Desert", "Forest & Shrubland", "Grassland", "Cropland", "Pasture",
-                  "Urban"]
+    biome_name = ["Desert", "Forest & Shrubland", "Grassland", "Cropland", "Pasture", "Urban"]
     biome_color = ["", "", "", "", "", ""]
     biome_index = {"des": 0, "for": 1, "shr": 1, "gra": 2, "cro": 3, "pas": 4, "urb": 5}
 elif (mod_biomeSHR == "w/GRA") & (mod_biomeURB == "w/DES"):
     biome = ["DES+", "FOR", "GRA+", "CRO", "PAS"]
-    biome_name = ["Desert & Urban", "Forest", "Grassland & Shrubland", "Cropland",
-                  "Pasture"]
+    biome_name = ["Desert & Urban", "Forest", "Grassland & Shrubland", "Cropland", "Pasture"]
     biome_color = ["", "", "", "", ""]
     biome_index = {"des": 0, "for": 1, "shr": 2, "gra": 2, "cro": 3, "pas": 4, "urb": 0}
 elif (mod_biomeSHR == "w/GRA") & (mod_biomeURB == "URB"):
     biome = ["DES", "FOR", "GRA+", "CRO", "PAS", "URB"]
-    biome_name = ["Desert", "Forest", "Grassland & Shrubland", "Cropland", "Pasture",
-                  "Urban"]
+    biome_name = ["Desert", "Forest", "Grassland & Shrubland", "Cropland", "Pasture", "Urban"]
     biome_color = ["", "", "", "", "", ""]
     biome_index = {"des": 0, "for": 1, "shr": 2, "gra": 2, "cro": 3, "pas": 4, "urb": 5}
 elif (mod_biomeSHR == "SHR") & (mod_biomeURB == "w/DES"):
     biome = ["DES+", "FOR", "SHR", "GRA", "CRO", "PAS"]
-    biome_name = ["Desert & Urban", "Forest", "Shrubland", "Grassland", "Cropland",
-                  "Pasture"]
+    biome_name = ["Desert & Urban", "Forest", "Shrubland", "Grassland", "Cropland", "Pasture"]
     biome_color = ["", "", "", "", "", ""]
     biome_index = {"des": 0, "for": 1, "shr": 2, "gra": 3, "cro": 4, "pas": 5, "urb": 0}
 elif (mod_biomeSHR == "SHR") & (mod_biomeURB == "URB"):
     biome = ["DES", "FOR", "SHR", "GRA", "CRO", "PAS", "URB"]
-    biome_name = ["Desert", "Forest", "Shrubland", "Grassland", "Cropland", "Pasture",
-                  "Urban"]
+    biome_name = ["Desert", "Forest", "Shrubland", "Grassland", "Cropland", "Pasture", "Urban"]
     biome_color = ["", "", "", "", "", "", ""]
     biome_index = {"des": 0, "for": 1, "shr": 2, "gra": 3, "cro": 4, "pas": 5, "urb": 6}
 else:
@@ -409,44 +296,3 @@ if mod_biomeV3:
     biome_index = {"des": 1, "for": 0, "shr": 1, "gra": 1, "cro": 2, "pas": 3, "urb": 4}
 
 nb_biome = len(biome)
-
-# =========
-# A.5. Halo
-# =========
-
-HFC = [
-    "HFC23",
-    "HFC32",
-    "HFC125",
-    "HFC134a",
-    "HFC143a",
-    "HFC152a",
-    "HFC227ea",
-    "HFC236fa",
-    "HFC245fa",
-    "HFC365mfc",
-    "HFC4310mee",
-]
-PFC = ["SF6", "NF3", "CF4", "C2F6", "C3F8", "cC4F8", "C4F10", "C5F12", "C6F14", "C7F16"]
-ODS = [
-    "CFC11",
-    "CFC12",
-    "CFC113",
-    "CFC114",
-    "CFC115",
-    "CCl4",
-    "CH3CCl3",
-    "HCFC22",
-    "HCFC141b",
-    "HCFC142b",
-    "Halon1211",
-    "Halon1202",
-    "Halon1301",
-    "Halon2402",
-    "CH3Br",
-    "CH3Cl",
-]
-
-nb_HFC = len(HFC)
-nb_PFC = len(PFC)
-nb_ODS = len(ODS)

@@ -31,16 +31,6 @@ ind_final = 310
 # starting year of attribution
 ind_attrib = 0
 
-# [deprecated]
-attrib_DRIVERS = "producers"
-# [deprecated]
-attrib_FEEDBACKS = "emitters"
-# [deprecated]
-attrib_ELUCdelta = "causal"
-# [deprecated]
-attrib_ELUCampli = "causal"
-
-# SRES4 | SRES11 | RECCAP* | Raupach* | Houghton | IMACLIM | Kyoto | RCP5 | RCP10*
 mod_regionI = "Houghton"
 # SRES4 | SRES11 | RECCAP* | Raupach* | Houghton | IMACLIM | Kyoto | RCP5 | RCP10*
 mod_regionJ = "RCP5"
@@ -327,17 +317,7 @@ mod_SLR = ""
 ##################################################
 
 if scen_ALL != "":
-    scen_LULCC = (
-        scen_EFF
-    ) = (
-        scen_ECH4
-    ) = (
-        scen_EN2O
-    ) = (
-        scen_Ehalo
-    ) = (
-        scen_ENOX
-    ) = scen_ECO = scen_EVOC = scen_ESO2 = scen_ENH3 = scen_EOC = scen_EBC = scen_RFant = scen_RFnat = scen_ALL
+    scen_LULCC = (scen_EFF) = (scen_ECH4) = (scen_EN2O) = (scen_Ehalo) = (scen_ENOX) = scen_ECO = scen_EVOC = scen_ESO2 = scen_ENH3 = scen_EOC = scen_EBC = scen_RFant = scen_RFnat = scen_ALL
     if scen_RFant[:3] == "RCP":
         scen_RFant = "cst"
     if scen_RFnat[:3] == "RCP":

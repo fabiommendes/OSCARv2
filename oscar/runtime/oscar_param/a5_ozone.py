@@ -1,12 +1,15 @@
 import numpy as np
 from scipy.optimize import fmin
 
-from .a4_halogenated import ODS_0
+
 from .a3_nitrous_oxide import tau_lag
-from ..oscar_data import nb_regionI, regionI_index, nb_ODS, ODS
-from ...config import dty, mod_O3Tregsat, mod_O3Temis, mod_O3Tclim, mod_O3Sfracrel, \
-    mod_O3Strans, mod_O3Snitrous
+from ..oscar_data import nb_regionI, regionI_index
+from ...constants import ODS
+from ...historical import ODS_0
+from ...config import dty, mod_O3Tregsat, mod_O3Temis, mod_O3Tclim, mod_O3Sfracrel, mod_O3Strans, mod_O3Snitrous
 from ...data import load_data_and_header, load_data
+
+nb_ODS = len(ODS)
 
 ##################################################
 #   5. OZONE
@@ -33,185 +36,101 @@ p_reg4[np.isnan(p_reg4) | np.isinf(p_reg4)] = 0
 # regional weight of ozone precursors {.}
 # from HTAP experiments [Fry et al., 2013] (table S5) & [Fiore et al., 2013] (table S1)
 if mod_O3Tregsat == "mean-HTAP":
-    w_reg_NOX = (
-            np.array([-3.31, -1.32, -0.67, -0.91, -0.41], dtype=dty)
+    w_reg_NOX = (np.array([-3.31, -1.32, -0.67, -0.91, -0.41], dtype=dty)
             / np.array([27.5, 8.7, 8.4, 7.0, 3.3], dtype=dty)
-            / -0.2
-    )
-    w_reg_CO = (
-            np.array([-1.52, -0.42, -0.27, -0.52, -0.31], dtype=dty) / np.array(
-        [461, 123, 88, 151, 98], dtype=dty) / -0.2
-    )
-    w_reg_VOC = (
-            np.array([-2.53, -0.36, -0.42, -0.36, -2.53], dtype=dty)
+            / -0.2)
+    w_reg_CO = (np.array([-1.52, -0.42, -0.27, -0.52, -0.31], dtype=dty) / np.array([461, 123, 88, 151, 98], dtype=dty) / -0.2)
+    w_reg_VOC = (np.array([-2.53, -0.36, -0.42, -0.36, -2.53], dtype=dty)
             / np.array([191.8, 67.8, 39.1, 49.8, 35.2], dtype=dty)
-            / -0.2
-    )
+            / -0.2)
 elif mod_O3Tregsat == "CAMCHEM":
-    w_reg_NOX = (
-            np.array([-1.91, -0.62, -0.44, -0.55, -0.30], dtype=dty)
+    w_reg_NOX = (np.array([-1.91, -0.62, -0.44, -0.55, -0.30], dtype=dty)
             / np.array([27.6, 8.2, 9.2, 6.8, 3.4], dtype=dty)
-            / -0.2
-    )
-    w_reg_CO = (
-            np.array([-1.49, -0.36, -0.22, -0.58, -0.33], dtype=dty) / np.array(
-        [626, 154, 106, 221, 145], dtype=dty) / -0.2
-    )
-    w_reg_VOC = (
-            np.array([-1.25, -0.29, -0.59, -0.21, -0.16], dtype=dty)
+            / -0.2)
+    w_reg_CO = (np.array([-1.49, -0.36, -0.22, -0.58, -0.33], dtype=dty) / np.array([626, 154, 106, 221, 145], dtype=dty) / -0.2)
+    w_reg_VOC = (np.array([-1.25, -0.29, -0.59, -0.21, -0.16], dtype=dty)
             / np.array([245.2, 92.4, 60.6, 55.5, 36.7], dtype=dty)
-            / -0.2
-    )
+            / -0.2)
 elif mod_O3Tregsat == "FRSGCUCI":
-    w_reg_NOX = (
-            np.array([-1.58, -0.50, -0.22, -0.62, -0.24], dtype=dty)
+    w_reg_NOX = (np.array([-1.58, -0.50, -0.22, -0.62, -0.24], dtype=dty)
             / np.array([27.1, 8.8, 8.4, 6.9, 3.0], dtype=dty)
-            / -0.2
-    )
-    w_reg_CO = (
-            np.array([-1.54, -0.47, -0.28, -0.49, -0.30], dtype=dty) / np.array(
-        [408, 131, 74, 129, 74], dtype=dty) / -0.2
-    )
-    w_reg_VOC = (
-            np.array([-2.42, -0.60, -0.78, -0.68, -0.36], dtype=dty)
+            / -0.2)
+    w_reg_CO = (np.array([-1.54, -0.47, -0.28, -0.49, -0.30], dtype=dty) / np.array([408, 131, 74, 129, 74], dtype=dty) / -0.2)
+    w_reg_VOC = (np.array([-2.42, -0.60, -0.78, -0.68, -0.36], dtype=dty)
             / np.array([175.1, 57.3, 33.5, 50.5, 33.8], dtype=dty)
-            / -0.2
-    )
+            / -0.2)
 elif mod_O3Tregsat == "GISS-modelE":
-    w_reg_NOX = (
-            np.array([-2.84, -1.14, -0.55, -0.71, -0.44], dtype=dty)
+    w_reg_NOX = (np.array([-2.84, -1.14, -0.55, -0.71, -0.44], dtype=dty)
             / np.array([31.4, 8.9, 8.6, 10.8, 3.1], dtype=dty)
-            / -0.2
-    )
-    w_reg_CO = (
-            np.array([-2.23, -0.61, -0.36, -0.90, -0.36], dtype=dty) / np.array(
-        [417, 111, 69, 170, 67], dtype=dty) / -0.2
-    )
-    w_reg_VOC = (
-            np.array([-0.41, -0.08, -0.08, -0.14, -0.11], dtype=dty)
+            / -0.2)
+    w_reg_CO = (np.array([-2.23, -0.61, -0.36, -0.90, -0.36], dtype=dty) / np.array([417, 111, 69, 170, 67], dtype=dty) / -0.2)
+    w_reg_VOC = (np.array([-0.41, -0.08, -0.08, -0.14, -0.11], dtype=dty)
             / np.array([111.7, 29.0, 26.9, 31.7, 24.1], dtype=dty)
-            / -0.2
-    )
+            / -0.2)
 elif mod_O3Tregsat == "GMI":
-    w_reg_NOX = (
-            np.array([-2.61, -0.96, -0.54, -0.75, -0.36], dtype=dty)
+    w_reg_NOX = (np.array([-2.61, -0.96, -0.54, -0.75, -0.36], dtype=dty)
             / np.array([24.4, 8.0, 7.5, 5.8, 3.1], dtype=dty)
-            / -0.2
-    )
-    w_reg_CO = (
-            np.array([-2.19, -0.52, -0.38, -0.87, -0.42], dtype=dty) / np.array(
-        [528, 134, 101, 194, 99], dtype=dty) / -0.2
-    )
-    w_reg_VOC = (
-            np.array([-1.08, -0.31, -0.15, -0.38, -0.24], dtype=dty)
+            / -0.2)
+    w_reg_CO = (np.array([-2.19, -0.52, -0.38, -0.87, -0.42], dtype=dty) / np.array([528, 134, 101, 194, 99], dtype=dty) / -0.2)
+    w_reg_VOC = (np.array([-1.08, -0.31, -0.15, -0.38, -0.24], dtype=dty)
             / np.array([165.7, 60.1, 32.0, 42.0, 31.6], dtype=dty)
-            / -0.2
-    )
+            / -0.2)
 elif mod_O3Tregsat == "INCA":
-    w_reg_NOX = (
-            np.array([-3.08, -1.13, -0.56, -0.67, -0.72], dtype=dty)
+    w_reg_NOX = (np.array([-3.08, -1.13, -0.56, -0.67, -0.72], dtype=dty)
             / np.array([26.9, 8.6, 7.3, 7.2, 3.8], dtype=dty)
-            / -0.2
-    )
-    w_reg_CO = (
-            np.array([-0.91, -0.18, -0.17, -0.33, -0.23], dtype=dty) / np.array(
-        [376, 74, 67, 127, 108], dtype=dty) / -0.2
-    )
-    w_reg_VOC = (
-            np.array([-1.05, -0.40, -0.35, -0.30, 0.00], dtype=dty)
+            / -0.2)
+    w_reg_CO = (np.array([-0.91, -0.18, -0.17, -0.33, -0.23], dtype=dty) / np.array([376, 74, 67, 127, 108], dtype=dty) / -0.2)
+    w_reg_VOC = (np.array([-1.05, -0.40, -0.35, -0.30, 0.00], dtype=dty)
             / np.array([279.1, 100.1, 56.7, 77.0, 45.3], dtype=dty)
-            / -0.2
-    )
+            / -0.2)
 elif mod_O3Tregsat == "LLNL-IMPACT":
-    w_reg_NOX = (
-            np.array([-1.99, -0.82, -0.36, -0.50, -0.31], dtype=dty)
+    w_reg_NOX = (np.array([-1.99, -0.82, -0.36, -0.50, -0.31], dtype=dty)
             / np.array([30.0, 8.8, 9.7, 7.3, 4.2], dtype=dty)
-            / -0.2
-    )
-    w_reg_CO = (
-            np.array([-1.41, -0.31, -0.24, -0.40, -0.46], dtype=dty) / np.array(
-        [518, 130, 111, 153, 124], dtype=dty) / -0.2
-    )
-    w_reg_VOC = (
-            np.array([-0.22, -0.05, -0.10, -0.04, -0.03], dtype=dty)
+            / -0.2)
+    w_reg_CO = (np.array([-1.41, -0.31, -0.24, -0.40, -0.46], dtype=dty) / np.array([518, 130, 111, 153, 124], dtype=dty) / -0.2)
+    w_reg_VOC = (np.array([-0.22, -0.05, -0.10, -0.04, -0.03], dtype=dty)
             / np.array([143.4, 53.2, 23.3, 36.2, 30.7], dtype=dty)
-            / -0.2
-    )
+            / -0.2)
 elif mod_O3Tregsat == "MOZART-GFDL":
-    w_reg_NOX = (
-            np.array([-3.00, -1.18, -0.57, -0.81, -0.44], dtype=dty)
+    w_reg_NOX = (np.array([-3.00, -1.18, -0.57, -0.81, -0.44], dtype=dty)
             / np.array([25.8, 9.4, 8.6, 5.2, 2.6], dtype=dty)
-            / -0.2
-    )
-    w_reg_CO = (
-            np.array([-1.29, -0.34, -0.35, -0.36, -0.24], dtype=dty) / np.array(
-        [493, 124, 130, 134, 105], dtype=dty) / -0.2
-    )
-    w_reg_VOC = (
-            np.array([-0.84, -0.19, -0.28, -0.20, -0.17], dtype=dty)
+            / -0.2)
+    w_reg_CO = (np.array([-1.29, -0.34, -0.35, -0.36, -0.24], dtype=dty) / np.array([493, 124, 130, 134, 105], dtype=dty) / -0.2)
+    w_reg_VOC = (np.array([-0.84, -0.19, -0.28, -0.20, -0.17], dtype=dty)
             / np.array([186.8, 68.7, 32.4, 48.9, 36.8], dtype=dty)
-            / -0.2
-    )
+            / -0.2)
 elif mod_O3Tregsat == "MOZECH":
-    w_reg_NOX = (
-            np.array([-2.24, -0.81, -0.58, -0.50, -0.35], dtype=dty)
+    w_reg_NOX = (np.array([-2.24, -0.81, -0.58, -0.50, -0.35], dtype=dty)
             / np.array([26.9, 8.9, 7.4, 7.0, 3.6], dtype=dty)
-            / -0.2
-    )
-    w_reg_CO = (
-            np.array([-1.61, -0.46, -0.31, -0.48, -0.36], dtype=dty) / np.array(
-        [470, 107, 85, 154, 124], dtype=dty) / -0.2
-    )
-    w_reg_VOC = (
-            np.array([-1.94, -0.69, -0.55, -0.45, -0.25], dtype=dty)
+            / -0.2)
+    w_reg_CO = (np.array([-1.61, -0.46, -0.31, -0.48, -0.36], dtype=dty) / np.array([470, 107, 85, 154, 124], dtype=dty) / -0.2)
+    w_reg_VOC = (np.array([-1.94, -0.69, -0.55, -0.45, -0.25], dtype=dty)
             / np.array([250.6, 107.0, 44.7, 62.0, 36.9], dtype=dty)
-            / -0.2
-    )
+            / -0.2)
 elif mod_O3Tregsat == "STOC-HadAM3":
-    w_reg_NOX = (
-            np.array([-1.43, -0.59, -0.27, -0.46, -0.11], dtype=dty)
+    w_reg_NOX = (np.array([-1.43, -0.59, -0.27, -0.46, -0.11], dtype=dty)
             / np.array([27.9, 9.0, 8.6, 7.1, 3.2], dtype=dty)
-            / -0.2
-    )
-    w_reg_CO = (
-            np.array([-1.29, -0.39, -0.25, -0.40, -0.25], dtype=dty) / np.array(
-        [406, 129, 74, 127, 76], dtype=dty) / -0.2
-    )
-    w_reg_VOC = (
-            np.array([-1.76, -0.40, -0.64, -0.45, -0.27], dtype=dty)
+            / -0.2)
+    w_reg_CO = (np.array([-1.29, -0.39, -0.25, -0.40, -0.25], dtype=dty) / np.array([406, 129, 74, 127, 76], dtype=dty) / -0.2)
+    w_reg_VOC = (np.array([-1.76, -0.40, -0.64, -0.45, -0.27], dtype=dty)
             / np.array([216.9, 70.9, 52.2, 50.0, 43.8], dtype=dty)
-            / -0.2
-    )
+            / -0.2)
 elif mod_O3Tregsat == "TM5-JRC":
-    w_reg_NOX = (
-            np.array([-3.80, -1.32, -0.72, -0.98, -0.78], dtype=dty)
+    w_reg_NOX = (np.array([-3.80, -1.32, -0.72, -0.98, -0.78], dtype=dty)
             / np.array([26.6, 8.7, 8.5, 6.4, 3.0], dtype=dty)
-            / -0.2
-    )
-    w_reg_CO = (
-            np.array([-1.34, -0.54, -0.16, -0.42, -0.22], dtype=dty) / np.array(
-        [399, 127, 75, 123, 74], dtype=dty) / -0.2
-    )
-    w_reg_VOC = (
-            np.array([-1.91, -0.56, -0.49, -0.58, -0.28], dtype=dty)
+            / -0.2)
+    w_reg_CO = (np.array([-1.34, -0.54, -0.16, -0.42, -0.22], dtype=dty) / np.array([399, 127, 75, 123, 74], dtype=dty) / -0.2)
+    w_reg_VOC = (np.array([-1.91, -0.56, -0.49, -0.58, -0.28], dtype=dty)
             / np.array([164.3, 50.3, 34.6, 47.0, 32.4], dtype=dty)
-            / -0.2
-    )
+            / -0.2)
 elif mod_O3Tregsat == "UM-CAM":
-    w_reg_NOX = (
-            np.array([-2.53, -0.94, -0.50, -0.68, -0.41], dtype=dty)
+    w_reg_NOX = (np.array([-2.53, -0.94, -0.50, -0.68, -0.41], dtype=dty)
             / np.array([27.9, 8.9, 8.7, 7.0, 3.3], dtype=dty)
-            / -0.2
-    )
-    w_reg_CO = (
-            np.array([-1.42, -0.41, -0.28, -0.44, -0.29], dtype=dty) / np.array(
-        [428, 137, 81, 131, 79], dtype=dty) / -0.2
-    )
-    w_reg_VOC = (
-            np.array([-1.91, -0.38, -0.64, -0.58, -0.31], dtype=dty)
+            / -0.2)
+    w_reg_CO = (np.array([-1.42, -0.41, -0.28, -0.44, -0.29], dtype=dty) / np.array([428, 137, 81, 131, 79], dtype=dty) / -0.2)
+    w_reg_VOC = (np.array([-1.91, -0.38, -0.64, -0.58, -0.31], dtype=dty)
             / np.array([171.1, 56.4, 32.7, 47.4, 34.6], dtype=dty)
-            / -0.2
-    )
+            / -0.2)
 elif mod_O3Tregsat == "":
     w_reg_NOX = np.array([1, 1, 1, 1, 1], dtype=dty)
     w_reg_CO = np.array([1, 1, 1, 1, 1], dtype=dty)
@@ -244,28 +163,16 @@ if mod_O3Temis != "mean-OxComp":
 # to be used with formula by [Ehhalt et al., 2001]
 if mod_O3Temis != "mean-OxComp":
     # sensitivity of tropospheric O3 to atmospheric CH4 {DU/.}
-    chi_O3t_CH4 = np.array(
-        [(O3t_ozoe[2] - O3t_ozoe[1]) / np.log(CH4_ozoe[2] / CH4_ozoe[1])], dtype=dty)
+    chi_O3t_CH4 = np.array([(O3t_ozoe[2] - O3t_ozoe[1]) / np.log(CH4_ozoe[2] / CH4_ozoe[1])], dtype=dty)
     # sensitivity of tropospheric O3 to ozoesions of ozone precursors {DU/{TgC/yr}}&{DU/{Tg/yr}}&{DU/{TgN/yr}}
-    chi_O3t_CO = np.array([(O3t_ozoe[3] - O3t_ozoe[1]) / (ECO_ozoe[3] - ECO_ozoe[1])],
-                          dtype=dty)
-    chi_O3t_VOC = np.array([(O3t_ozoe[4] - O3t_ozoe[1]) / (EVOC_ozoe[4] - EVOC_ozoe[1])],
-                           dtype=dty)
-    chi_O3t_NOX = np.array([(O3t_ozoe[5] - O3t_ozoe[1]) / (ENOX_ozoe[5] - ENOX_ozoe[1])],
-                           dtype=dty)
+    chi_O3t_CO = np.array([(O3t_ozoe[3] - O3t_ozoe[1]) / (ECO_ozoe[3] - ECO_ozoe[1])], dtype=dty)
+    chi_O3t_VOC = np.array([(O3t_ozoe[4] - O3t_ozoe[1]) / (EVOC_ozoe[4] - EVOC_ozoe[1])], dtype=dty)
+    chi_O3t_NOX = np.array([(O3t_ozoe[5] - O3t_ozoe[1]) / (ENOX_ozoe[5] - ENOX_ozoe[1])], dtype=dty)
     # normalization of the non-linearity
-    chi_O3t_CH4 *= (O3t_ozoe[1] - O3t_ozoe[0]) / (
-            4 * O3t_ozoe[1] - O3t_ozoe[2] - O3t_ozoe[3] - O3t_ozoe[4] - O3t_ozoe[5]
-    )
-    chi_O3t_CO *= (O3t_ozoe[1] - O3t_ozoe[0]) / (
-            4 * O3t_ozoe[1] - O3t_ozoe[2] - O3t_ozoe[3] - O3t_ozoe[4] - O3t_ozoe[5]
-    )
-    chi_O3t_VOC *= (O3t_ozoe[1] - O3t_ozoe[0]) / (
-            4 * O3t_ozoe[1] - O3t_ozoe[2] - O3t_ozoe[3] - O3t_ozoe[4] - O3t_ozoe[5]
-    )
-    chi_O3t_NOX *= (O3t_ozoe[1] - O3t_ozoe[0]) / (
-            4 * O3t_ozoe[1] - O3t_ozoe[2] - O3t_ozoe[3] - O3t_ozoe[4] - O3t_ozoe[5]
-    )
+    chi_O3t_CH4 *= (O3t_ozoe[1] - O3t_ozoe[0]) / (4 * O3t_ozoe[1] - O3t_ozoe[2] - O3t_ozoe[3] - O3t_ozoe[4] - O3t_ozoe[5])
+    chi_O3t_CO *= (O3t_ozoe[1] - O3t_ozoe[0]) / (4 * O3t_ozoe[1] - O3t_ozoe[2] - O3t_ozoe[3] - O3t_ozoe[4] - O3t_ozoe[5])
+    chi_O3t_VOC *= (O3t_ozoe[1] - O3t_ozoe[0]) / (4 * O3t_ozoe[1] - O3t_ozoe[2] - O3t_ozoe[3] - O3t_ozoe[4] - O3t_ozoe[5])
+    chi_O3t_NOX *= (O3t_ozoe[1] - O3t_ozoe[0]) / (4 * O3t_ozoe[1] - O3t_ozoe[2] - O3t_ozoe[3] - O3t_ozoe[4] - O3t_ozoe[5])
 
 # taken from the TAR [Ehhalt et al., 2001]
 elif mod_O3Temis == "mean-OxComp":
@@ -313,130 +220,76 @@ if mod_O3Sfracrel in ["Newman2006"]:
 
     def f_fracrel(tau):
         fracrel = np.zeros([nb_ODS], dtype=dty)
-        fracrel[ODS.index(
-            "CFC11")] = 6.53976e-02 * tau + 4.18938e-02 * tau ** 2 + -3.68985e-03 * tau ** 3
-        fracrel[ODS.index(
-            "CFC12")] = 4.06080e-02 * tau + 6.74585e-04 * tau ** 2 + 3.70165e-03 * tau ** 3
-        fracrel[ODS.index("CFC113")] = (
-                                               5.36055e-02 * tau + 7.16185e-08 * tau ** 2) * np.exp(
-            tau / 4.95237e00)
-        fracrel[ODS.index("CFC114")] = (
-                                               2.01017e-02 * tau + -4.67409e-08 * tau ** 2) * np.exp(
-            tau / 4.28272e00)
-        fracrel[ODS.index("CFC115")] = (
-                                               3.55000e-03 * tau + 7.67310e-04 * tau ** 2) * np.exp(
-            tau / 4.33197e00)
-        fracrel[ODS.index("CCl4")] = (
-                                             8.50117e-02 * tau + 8.33504e-02 * tau ** 2) * np.exp(
-            -tau / 5.12976e00)
-        fracrel[ODS.index("CH3CCl3")] = (
-                                                1.63270e-01 * tau + 1.12119e-01 * tau ** 2) * np.exp(
-            -tau / 3.74978e00)
-        fracrel[ODS.index(
-            "HCFC22")] = 3.02660e-02 * tau + 2.49148e-04 * tau ** 2 + 1.38022e-03 * tau ** 3
-        fracrel[ODS.index("HCFC141b")] = (
-                                                 2.89263e-03 * tau + 1.14686e-08 * tau ** 2) * np.exp(
-            tau / 1.36374e00)
-        fracrel[ODS.index("HCFC142b")] = (
-                                                 1.22909e-05 * tau + 1.06509e-04 * tau ** 2) * np.exp(
-            tau / 1.23520e00)
-        fracrel[ODS.index("Halon1211")] = (
-                                                  -1.51872e-02 * tau + 1.68718e-01 * tau ** 2) * np.exp(
-            -tau / 3.43897e00)
-        fracrel[ODS.index("Halon1202")] = (
-                                                  -1.51872e-02 * tau + 1.68718e-01 * tau ** 2) * np.exp(
-            -tau / 3.43897e00)
-        fracrel[ODS.index("Halon1301")] = (
-                                                  5.46396e-02 * tau + 3.03982e-08 * tau ** 2) * np.exp(
-            tau / 5.63826e00)
-        fracrel[ODS.index(
-            "Halon2402")] = 2.25980e-01 * tau + 2.23266e-04 * tau ** 2 + -1.13882e-03 * tau ** 3
-        fracrel[ODS.index("CH3Br")] = (
-                                              7.60148e-02 * tau + 1.12771e-01 * tau ** 2) * np.exp(
-            -tau / 4.09494e00)
-        fracrel[ODS.index(
-            "CH3Cl")] = 1.39444e-01 * tau + 1.46219e-04 * tau ** 2 + 8.40557e-04 * tau ** 3
+        fracrel[ODS.index("CFC11")] = 6.53976e-02 * tau + 4.18938e-02 * tau ** 2 + -3.68985e-03 * tau ** 3
+        fracrel[ODS.index("CFC12")] = 4.06080e-02 * tau + 6.74585e-04 * tau ** 2 + 3.70165e-03 * tau ** 3
+        fracrel[ODS.index("CFC113")] = (5.36055e-02 * tau + 7.16185e-08 * tau ** 2) * np.exp(tau / 4.95237e00)
+        fracrel[ODS.index("CFC114")] = (2.01017e-02 * tau + -4.67409e-08 * tau ** 2) * np.exp(tau / 4.28272e00)
+        fracrel[ODS.index("CFC115")] = (3.55000e-03 * tau + 7.67310e-04 * tau ** 2) * np.exp(tau / 4.33197e00)
+        fracrel[ODS.index("CCl4")] = (8.50117e-02 * tau + 8.33504e-02 * tau ** 2) * np.exp(-tau / 5.12976e00)
+        fracrel[ODS.index("CH3CCl3")] = (1.63270e-01 * tau + 1.12119e-01 * tau ** 2) * np.exp(-tau / 3.74978e00)
+        fracrel[ODS.index("HCFC22")] = 3.02660e-02 * tau + 2.49148e-04 * tau ** 2 + 1.38022e-03 * tau ** 3
+        fracrel[ODS.index("HCFC141b")] = (2.89263e-03 * tau + 1.14686e-08 * tau ** 2) * np.exp(tau / 1.36374e00)
+        fracrel[ODS.index("HCFC142b")] = (1.22909e-05 * tau + 1.06509e-04 * tau ** 2) * np.exp(tau / 1.23520e00)
+        fracrel[ODS.index("Halon1211")] = (-1.51872e-02 * tau + 1.68718e-01 * tau ** 2) * np.exp(-tau / 3.43897e00)
+        fracrel[ODS.index("Halon1202")] = (-1.51872e-02 * tau + 1.68718e-01 * tau ** 2) * np.exp(-tau / 3.43897e00)
+        fracrel[ODS.index("Halon1301")] = (5.46396e-02 * tau + 3.03982e-08 * tau ** 2) * np.exp(tau / 5.63826e00)
+        fracrel[ODS.index("Halon2402")] = 2.25980e-01 * tau + 2.23266e-04 * tau ** 2 + -1.13882e-03 * tau ** 3
+        fracrel[ODS.index("CH3Br")] = (7.60148e-02 * tau + 1.12771e-01 * tau ** 2) * np.exp(-tau / 4.09494e00)
+        fracrel[ODS.index("CH3Cl")] = 1.39444e-01 * tau + 1.46219e-04 * tau ** 2 + 8.40557e-04 * tau ** 3
         return fracrel
 
 
     def df_fracrel_dtau(tau):
         fracrel = np.zeros([nb_ODS], dtype=dty)
-        fracrel[ODS.index(
-            "CFC11")] = 6.53976e-02 + 2 * 4.18938e-02 * tau + 3 * -3.68985e-03 * tau ** 2
-        fracrel[ODS.index(
-            "CFC12")] = 4.06080e-02 + 2 * 6.74585e-04 * tau + 3 * 3.70165e-03 * tau ** 2
-        fracrel[ODS.index("CFC113")] = (
-                                               5.36055e-02
+        fracrel[ODS.index("CFC11")] = 6.53976e-02 + 2 * 4.18938e-02 * tau + 3 * -3.68985e-03 * tau ** 2
+        fracrel[ODS.index("CFC12")] = 4.06080e-02 + 2 * 6.74585e-04 * tau + 3 * 3.70165e-03 * tau ** 2
+        fracrel[ODS.index("CFC113")] = (5.36055e-02
                                                + 2 * 7.16185e-08 * tau
                                                + (5.36055e-02 / 4.95237e00) * tau
-                                               + (7.16185e-08 / 4.95237e00) * tau ** 2
-                                       ) * np.exp(tau / 4.95237e00)
-        fracrel[ODS.index("CFC114")] = (
-                                               2.01017e-02
+                                               + (7.16185e-08 / 4.95237e00) * tau ** 2) * np.exp(tau / 4.95237e00)
+        fracrel[ODS.index("CFC114")] = (2.01017e-02
                                                + 2 * -4.67409e-08 * tau
                                                + (2.01017e-02 / 4.28272e00) * tau
-                                               + (-4.67409e-08 / 4.28272e00) * tau ** 2
-                                       ) * np.exp(tau / 4.28272e00)
-        fracrel[ODS.index("CFC115")] = (
-                                               3.55000e-03
+                                               + (-4.67409e-08 / 4.28272e00) * tau ** 2) * np.exp(tau / 4.28272e00)
+        fracrel[ODS.index("CFC115")] = (3.55000e-03
                                                + 2 * 7.67310e-04 * tau
                                                + (3.55000e-03 / 4.33197e00) * tau
-                                               + (7.67310e-04 / 4.33197e00) * tau ** 2
-                                       ) * np.exp(tau / 4.33197e00)
-        fracrel[ODS.index("CCl4")] = (
-                                             8.50117e-02
+                                               + (7.67310e-04 / 4.33197e00) * tau ** 2) * np.exp(tau / 4.33197e00)
+        fracrel[ODS.index("CCl4")] = (8.50117e-02
                                              + 2 * 8.33504e-02 * tau
                                              - (8.50117e-02 / 5.12976e00) * tau
-                                             - (8.33504e-02 / 5.12976e00) * tau ** 2
-                                     ) * np.exp(-tau / 5.12976e00)
-        fracrel[ODS.index("CH3CCl3")] = (
-                                                1.63270e-01
+                                             - (8.33504e-02 / 5.12976e00) * tau ** 2) * np.exp(-tau / 5.12976e00)
+        fracrel[ODS.index("CH3CCl3")] = (1.63270e-01
                                                 + 2 * 1.12119e-01 * tau
                                                 - (1.63270e-01 / 3.74978e00) * tau
-                                                - (1.12119e-01 / 3.74978e00) * tau ** 2
-                                        ) * np.exp(-tau / 3.74978e00)
-        fracrel[ODS.index(
-            "HCFC22")] = 3.02660e-02 + 2 * 2.49148e-04 * tau + 3 * 1.38022e-03 * tau ** 2
-        fracrel[ODS.index("HCFC141b")] = (
-                                                 2.89263e-03
+                                                - (1.12119e-01 / 3.74978e00) * tau ** 2) * np.exp(-tau / 3.74978e00)
+        fracrel[ODS.index("HCFC22")] = 3.02660e-02 + 2 * 2.49148e-04 * tau + 3 * 1.38022e-03 * tau ** 2
+        fracrel[ODS.index("HCFC141b")] = (2.89263e-03
                                                  + 2 * 1.14686e-08 * tau
                                                  + (2.89263e-03 / 1.36374e00) * tau
-                                                 + (1.14686e-08 / 1.36374e00) * tau ** 2
-                                         ) * np.exp(tau / 1.36374e00)
-        fracrel[ODS.index("HCFC142b")] = (
-                                                 1.22909e-05
+                                                 + (1.14686e-08 / 1.36374e00) * tau ** 2) * np.exp(tau / 1.36374e00)
+        fracrel[ODS.index("HCFC142b")] = (1.22909e-05
                                                  + 2 * 1.06509e-04 * tau
                                                  + (1.22909e-05 / 1.23520e00) * tau
-                                                 + (1.06509e-04 / 1.23520e00) * tau ** 2
-                                         ) * np.exp(tau / 1.23520e00)
-        fracrel[ODS.index("Halon1211")] = (
-                                                  -1.51872e-02
+                                                 + (1.06509e-04 / 1.23520e00) * tau ** 2) * np.exp(tau / 1.23520e00)
+        fracrel[ODS.index("Halon1211")] = (-1.51872e-02
                                                   + 2 * 1.68718e-01 * tau
                                                   - (-1.51872e-02 / 3.43897e00) * tau
-                                                  - (1.68718e-01 / 3.43897e00) * tau ** 2
-                                          ) * np.exp(-tau / 3.43897e00)
-        fracrel[ODS.index("Halon1202")] = (
-                                                  -1.51872e-02
+                                                  - (1.68718e-01 / 3.43897e00) * tau ** 2) * np.exp(-tau / 3.43897e00)
+        fracrel[ODS.index("Halon1202")] = (-1.51872e-02
                                                   + 2 * 1.68718e-01 * tau
                                                   - (-1.51872e-02 / 3.43897e00) * tau
-                                                  - (1.68718e-01 / 3.43897e00) * tau ** 2
-                                          ) * np.exp(-tau / 3.43897e00)
-        fracrel[ODS.index("Halon1301")] = (
-                                                  5.46396e-02
+                                                  - (1.68718e-01 / 3.43897e00) * tau ** 2) * np.exp(-tau / 3.43897e00)
+        fracrel[ODS.index("Halon1301")] = (5.46396e-02
                                                   + 2 * 3.03982e-08 * tau
                                                   + (5.46396e-02 / 5.63826e00) * tau
-                                                  + (3.03982e-08 / 5.63826e00) * tau ** 2
-                                          ) * np.exp(tau / 5.63826e00)
-        fracrel[ODS.index(
-            "Halon2402")] = 2.25980e-01 + 2 * 2.23266e-04 * tau + 3 * -1.13882e-03 * tau ** 2
-        fracrel[ODS.index("CH3Br")] = (
-                                              7.60148e-02
+                                                  + (3.03982e-08 / 5.63826e00) * tau ** 2) * np.exp(tau / 5.63826e00)
+        fracrel[ODS.index("Halon2402")] = 2.25980e-01 + 2 * 2.23266e-04 * tau + 3 * -1.13882e-03 * tau ** 2
+        fracrel[ODS.index("CH3Br")] = (7.60148e-02
                                               + 2 * 1.12771e-01 * tau
                                               + (7.60148e-02 / 4.09494e00) * tau
-                                              + (1.12771e-01 / 4.09494e00) * tau ** 2
-                                      ) * np.exp(-tau / 4.09494e00)
-        fracrel[ODS.index(
-            "CH3Cl")] = 1.39444e-01 + 2 * 1.46219e-04 * tau + 3 * 8.40557e-04 * tau ** 2
+                                              + (1.12771e-01 / 4.09494e00) * tau ** 2) * np.exp(-tau / 4.09494e00)
+        fracrel[ODS.index("CH3Cl")] = 1.39444e-01 + 2 * 1.46219e-04 * tau + 3 * 8.40557e-04 * tau ** 2
         return fracrel
 
     # alternative values (mid-latitudes) from [Laube et al., 2013]
@@ -448,14 +301,8 @@ elif mod_O3Sfracrel in ["Laube2013"]:
         fracrel[ODS.index("CFC11")] = -0.0173 + 0.098_666 * tau + 0.008_169_55 * tau ** 2
         fracrel[ODS.index("CFC12")] = -0.0154 + 0.046_244 * tau + 0.007_073_56 * tau ** 2
         fracrel[ODS.index("CFC113")] = -0.0059 + 0.049_669 * tau + 0.008_624_13 * tau ** 2
-        fracrel[ODS.index("CFC114")] = (
-                                               2.01017e-02 * tau + -4.67409e-08 * tau ** 2) * np.exp(
-            tau / 4.28272e00
-        )  # not given
-        fracrel[ODS.index("CFC115")] = (
-                                               3.55000e-03 * tau + 7.67310e-04 * tau ** 2) * np.exp(
-            tau / 4.33197e00
-        )  # not given
+        fracrel[ODS.index("CFC114")] = (2.01017e-02 * tau + -4.67409e-08 * tau ** 2) * np.exp(tau / 4.28272e00)  # not given
+        fracrel[ODS.index("CFC115")] = (3.55000e-03 * tau + 7.67310e-04 * tau ** 2) * np.exp(tau / 4.33197e00)  # not given
         fracrel[ODS.index("CCl4")] = -0.0139 + 0.131_338 * tau + 0.004_648_06 * tau ** 2
         fracrel[
             ODS.index("CH3CCl3")] = -0.0227 + 0.254_820 * tau + -0.015_059_46 * tau ** 2
@@ -466,21 +313,12 @@ elif mod_O3Sfracrel in ["Laube2013"]:
             ODS.index("HCFC142b")] = -0.0032 + 0.010_130 * tau + 0.002_331_85 * tau ** 2
         fracrel[
             ODS.index("Halon1211")] = -0.0535 + 0.204_371 * tau + -0.004_646_44 * tau ** 2
-        fracrel[ODS.index("Halon1202")] = (
-                                                  -1.51872e-02 * tau + 1.68718e-01 * tau ** 2) * np.exp(
-            -tau / 3.43897e00
-        )  # not given
+        fracrel[ODS.index("Halon1202")] = (-1.51872e-02 * tau + 1.68718e-01 * tau ** 2) * np.exp(-tau / 3.43897e00)  # not given
         fracrel[
             ODS.index("Halon1301")] = -0.0185 + 0.061_608 * tau + 0.010_518_28 * tau ** 2
-        fracrel[ODS.index("Halon2402")] = (
-                2.25980e-01 * tau + 2.23266e-04 * tau ** 2 + -1.13882e-03 * tau ** 3
-        )  # not given
-        fracrel[ODS.index("CH3Br")] = (
-                                              7.60148e-02 * tau + 1.12771e-01 * tau ** 2) * np.exp(
-            -tau / 4.09494e00
-        )  # not given
-        fracrel[ODS.index(
-            "CH3Cl")] = 1.39444e-01 * tau + 1.46219e-04 * tau ** 2 + 8.40557e-04 * tau ** 3  # not given
+        fracrel[ODS.index("Halon2402")] = (2.25980e-01 * tau + 2.23266e-04 * tau ** 2 + -1.13882e-03 * tau ** 3)  # not given
+        fracrel[ODS.index("CH3Br")] = (7.60148e-02 * tau + 1.12771e-01 * tau ** 2) * np.exp(-tau / 4.09494e00)  # not given
+        fracrel[ODS.index("CH3Cl")] = 1.39444e-01 * tau + 1.46219e-04 * tau ** 2 + 8.40557e-04 * tau ** 3  # not given
         return fracrel
 
 
@@ -489,49 +327,31 @@ elif mod_O3Sfracrel in ["Laube2013"]:
         fracrel[ODS.index("CFC11")] = 0.098_666 + 2 * 0.008_169_55 * tau
         fracrel[ODS.index("CFC12")] = 0.046_244 + 2 * 0.007_073_56 * tau
         fracrel[ODS.index("CFC113")] = 0.049_669 + 2 * 0.008_624_13 * tau
-        fracrel[ODS.index("CFC114")] = (
-                                               2.01017e-02
+        fracrel[ODS.index("CFC114")] = (2.01017e-02
                                                + 2 * -4.67409e-08 * tau
                                                + (2.01017e-02 / 4.28272e00) * tau
-                                               + (-4.67409e-08 / 4.28272e00) * tau ** 2
-                                       ) * np.exp(
-            tau / 4.28272e00
-        )  # not given
-        fracrel[ODS.index("CFC115")] = (
-                                               3.55000e-03
+                                               + (-4.67409e-08 / 4.28272e00) * tau ** 2) * np.exp(tau / 4.28272e00)  # not given
+        fracrel[ODS.index("CFC115")] = (3.55000e-03
                                                + 2 * 7.67310e-04 * tau
                                                + (3.55000e-03 / 4.33197e00) * tau
-                                               + (7.67310e-04 / 4.33197e00) * tau ** 2
-                                       ) * np.exp(
-            tau / 4.33197e00
-        )  # not given
+                                               + (7.67310e-04 / 4.33197e00) * tau ** 2) * np.exp(tau / 4.33197e00)  # not given
         fracrel[ODS.index("CCl4")] = 0.131_338 + 2 * 0.004_648_06 * tau
         fracrel[ODS.index("CH3CCl3")] = 0.254_820 + 2 * -0.015_059_46 * tau
         fracrel[ODS.index("HCFC22")] = 0.021_203 + 2 * 0.002_294_34 * tau
         fracrel[ODS.index("HCFC141b")] = 0.050_362 + 2 * 0.009_399_38 * tau
         fracrel[ODS.index("HCFC142b")] = 0.010_130 + 2 * 0.002_331_85 * tau
         fracrel[ODS.index("Halon1211")] = 0.204_371 + 2 * -0.004_646_44 * tau
-        fracrel[ODS.index("Halon1202")] = (
-                                                  -1.51872e-02
+        fracrel[ODS.index("Halon1202")] = (-1.51872e-02
                                                   + 2 * 1.68718e-01 * tau
                                                   - (-1.51872e-02 / 3.43897e00) * tau
-                                                  - (1.68718e-01 / 3.43897e00) * tau ** 2
-                                          ) * np.exp(
-            -tau / 3.43897e00
-        )  # not given
+                                                  - (1.68718e-01 / 3.43897e00) * tau ** 2) * np.exp(-tau / 3.43897e00)  # not given
         fracrel[ODS.index("Halon1301")] = 0.061_608 + 2 * 0.010_518_28 * tau
-        fracrel[ODS.index(
-            "Halon2402")] = 2.25980e-01 + 2 * 2.23266e-04 * tau + 3 * -1.13882e-03 * tau ** 2  # not given
-        fracrel[ODS.index("CH3Br")] = (
-                                              7.60148e-02
+        fracrel[ODS.index("Halon2402")] = 2.25980e-01 + 2 * 2.23266e-04 * tau + 3 * -1.13882e-03 * tau ** 2  # not given
+        fracrel[ODS.index("CH3Br")] = (7.60148e-02
                                               + 2 * 1.12771e-01 * tau
                                               + (7.60148e-02 / 4.09494e00) * tau
-                                              + (1.12771e-01 / 4.09494e00) * tau ** 2
-                                      ) * np.exp(
-            -tau / 4.09494e00
-        )  # not given
-        fracrel[ODS.index(
-            "CH3Cl")] = 1.39444e-01 + 2 * 1.46219e-04 * tau + 3 * 8.40557e-04 * tau ** 2  # not given
+                                              + (1.12771e-01 / 4.09494e00) * tau ** 2) * np.exp(-tau / 4.09494e00)  # not given
+        fracrel[ODS.index("CH3Cl")] = 1.39444e-01 + 2 * 1.46219e-04 * tau + 3 * 8.40557e-04 * tau ** 2  # not given
         return fracrel
 
     # others values for EESC {.}

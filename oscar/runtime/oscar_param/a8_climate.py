@@ -3,13 +3,13 @@ import os
 import numpy as np
 from scipy.optimize import fmin
 
-from .a1_carbon import CO2_0
 from .a7_radiative_forces import f_RF_CO2
 from ..oscar_data import nb_regionI, regionI_index, load_data_and_header
-from ...config import dty, mod_TEMPresp, mod_PRECradfact, mod_TEMPpattern, mod_ACIDsurf, \
-    mod_PRECpattern, mod_PRECresp
+from ...config import dty, mod_TEMPresp, mod_PRECradfact, mod_TEMPpattern, mod_ACIDsurf, mod_PRECpattern, mod_PRECresp
 from ...data import load_data
+from ... import historical
 
+CO2_0 = historical.CO2_0
 
 ##################################################
 #   8. CLIMATE
@@ -57,32 +57,7 @@ gst_had[150:] = TMP[:, 0]
 
 # length of CMIP5 simulations per model
 lng = {
-    "mean-CMIP5": 140,
-    "ACCESS-10": 150,
-    "ACCESS-13": 151,
-    "BCC-CSM-11": 150,
-    "BCC-CSM-11m": 150,
-    "CanESM2": 150,
-    "CCSM4": 151,
-    "CNRM-CM5": 150,
-    "CNRM-CM5-2": 140,
-    "CSIRO-Mk360": 150,
-    "GFDL-CM3": 150,
-    "GFDL-ESM2G": 300,
-    "GFDL-ESM2M": 300,
-    "GISS-E2-H": 151,
-    "GISS-E2-R": 151,
-    "HadGEM2-ES": 151,
-    "IPSL-CM5A-LR": 260,
-    "IPSL-CM5A-MR": 140,
-    "IPSL-CM5B-LR": 160,
-    "MIROC5": 151,
-    "MIROC-ESM": 150,
-    "MPI-ESM-LR": 150,
-    "MPI-ESM-MR": 150,
-    "MPI-ESM-P": 150,
-    "MRI-CGCM3": 150,
-    "NorESM1-M": 150,
+    "mean-CMIP5": 140, "ACCESS-10": 150, "ACCESS-13": 151, "BCC-CSM-11": 150, "BCC-CSM-11m": 150, "CanESM2": 150, "CCSM4": 151, "CNRM-CM5": 150, "CNRM-CM5-2": 140, "CSIRO-Mk360": 150, "GFDL-CM3": 150, "GFDL-ESM2G": 300, "GFDL-ESM2M": 300, "GISS-E2-H": 151, "GISS-E2-R": 151, "HadGEM2-ES": 151, "IPSL-CM5A-LR": 260, "IPSL-CM5A-MR": 140, "IPSL-CM5B-LR": 160, "MIROC5": 151, "MIROC-ESM": 150, "MPI-ESM-LR": 150, "MPI-ESM-MR": 150, "MPI-ESM-P": 150, "MRI-CGCM3": 150, "NorESM1-M": 150,
 }
 
 
@@ -144,11 +119,9 @@ diff = gst_quadT - np.mean(gst_ctrlT, 0)
 
 
 def err(var):
-    clim = T4x * (
-            1
+    clim = T4x * (1
             - var[2] * np.exp(-np.arange(0.5, lng[mod_TEMPresp] + 0.5, 1) / var[0])
-            - (1 - var[2]) * np.exp(-np.arange(0.5, lng[mod_TEMPresp] + 0.5, 1) / var[1])
-    )
+            - (1 - var[2]) * np.exp(-np.arange(0.5, lng[mod_TEMPresp] + 0.5, 1) / var[1]))
     return np.sum((diff - clim) ** 2)
 
 
@@ -266,40 +239,10 @@ D_OHC_nodc[255:] = TMP[:, 0]
 
 # length of CMIP5 simulations per model or simulation
 lng = {
-    "mean-CMIP5": 140,
-    "ACCESS-10": 150,
-    "ACCESS-13": 151,
-    "BCC-CSM-11": 150,
-    "BCC-CSM-11m": 150,
-    "CanESM2": 150,
-    "CCSM4": 151,
-    "CNRM-CM5": 150,
-    "CNRM-CM5-2": 140,
-    "CSIRO-Mk360": 150,
-    "GFDL-CM3": 150,
-    "GFDL-ESM2G": 300,
-    "GFDL-ESM2M": 300,
-    "GISS-E2-H": 151,
-    "GISS-E2-R": 151,
-    "HadGEM2-ES": 151,
-    "IPSL-CM5A-LR": 260,
-    "IPSL-CM5A-MR": 140,
-    "IPSL-CM5B-LR": 160,
-    "MIROC5": 151,
-    "MIROC-ESM": 150,
-    "MPI-ESM-LR": 150,
-    "MPI-ESM-MR": 150,
-    "MPI-ESM-P": 150,
-    "MRI-CGCM3": 150,
-    "NorESM1-M": 150,
+    "mean-CMIP5": 140, "ACCESS-10": 150, "ACCESS-13": 151, "BCC-CSM-11": 150, "BCC-CSM-11m": 150, "CanESM2": 150, "CCSM4": 151, "CNRM-CM5": 150, "CNRM-CM5-2": 140, "CSIRO-Mk360": 150, "GFDL-CM3": 150, "GFDL-ESM2G": 300, "GFDL-ESM2M": 300, "GISS-E2-H": 151, "GISS-E2-R": 151, "HadGEM2-ES": 151, "IPSL-CM5A-LR": 260, "IPSL-CM5A-MR": 140, "IPSL-CM5B-LR": 160, "MIROC5": 151, "MIROC-ESM": 150, "MPI-ESM-LR": 150, "MPI-ESM-MR": 150, "MPI-ESM-P": 150, "MRI-CGCM3": 150, "NorESM1-M": 150,
 }
 prd = {
-    "ctrl": "251yr",
-    "hist": "1850-2005",
-    "rcp26": "2006-2100",
-    "rcp45": "2006-2100",
-    "rcp60": "2006-2100",
-    "rcp85": "2006-2100",
+    "ctrl": "251yr", "hist": "1850-2005", "rcp26": "2006-2100", "rcp45": "2006-2100", "rcp60": "2006-2100", "rcp85": "2006-2100",
 }
 
 # load pre-processed CMIP5 results for specified model
@@ -370,24 +313,12 @@ def quadTR(var):
 
 def get_TR(var, sim):
     mapping = {
-        ("tos", "rcp26"): tos_rcp26TR,
-        ("gst", "rcp26"): gst_rcp26TR,
-        ("tos", "rcp45"): tos_rcp45TR,
-        ("gst", "rcp45"): gst_rcp45TR,
-        ("tos", "rcp60"): tos_rcp60TR,
-        ("gst", "rcp60"): gst_rcp60TR,
-        ("tos", "rcp85"): tos_rcp85TR,
-        ("gst", "rcp85"): gst_rcp85TR,
-    }
+        ("tos", "rcp26"): tos_rcp26TR, ("gst", "rcp26"): gst_rcp26TR, ("tos", "rcp45"): tos_rcp45TR, ("gst", "rcp45"): gst_rcp45TR, ("tos", "rcp60"): tos_rcp60TR, ("gst", "rcp60"): gst_rcp60TR, ("tos", "rcp85"): tos_rcp85TR, ("gst", "rcp85"): gst_rcp85TR, }
     try:
         return mapping[var, sim]
     except KeyError:
         mapping = {
-            ("tas", "rcp26"): tas_rcp26TR,
-            ("tas", "rcp45"): tas_rcp45TR,
-            ("tas", "rcp60"): tas_rcp60TR,
-            ("tas", "rcp85"): tas_rcp85TR,
-        }
+            ("tas", "rcp26"): tas_rcp26TR, ("tas", "rcp45"): tas_rcp45TR, ("tas", "rcp60"): tas_rcp60TR, ("tas", "rcp85"): tas_rcp85TR, }
         return mapping[var, sim]
 
 
@@ -455,12 +386,9 @@ if mod_ACIDsurf == "Tans2009":
 elif mod_ACIDsurf == "Bernie2010":
 
     def f_pH(D_CO2):
-        D_pH = (
-                -0.00173 * D_CO2
+        D_pH = (-0.00173 * D_CO2
                 + 1.3264e-6 * (2 * CO2_0 * D_CO2 + D_CO2 ** 2)
-                - 4.4943e-10 * (
-                        3 * D_CO2 * CO2_0 ** 2 + 3 * CO2_0 * D_CO2 ** 2 + D_CO2 ** 3)
-        )
+                - 4.4943e-10 * (3 * D_CO2 * CO2_0 ** 2 + 3 * CO2_0 * D_CO2 ** 2 + D_CO2 ** 3))
         return np.array(D_pH, dtype=dty)
 
 
@@ -521,40 +449,10 @@ lst_ghcn /= TMP[:, :]
 
 # length of CMIP5 simulations per model or simulation
 lng = {
-    "mean-CMIP5": 140,
-    "ACCESS-10": 150,
-    "ACCESS-13": 151,
-    "BCC-CSM-11": 150,
-    "BCC-CSM-11m": 150,
-    "CanESM2": 150,
-    "CCSM4": 151,
-    "CNRM-CM5": 150,
-    "CNRM-CM5-2": 140,
-    "CSIRO-Mk360": 150,
-    "GFDL-CM3": 150,
-    "GFDL-ESM2G": 300,
-    "GFDL-ESM2M": 300,
-    "GISS-E2-H": 151,
-    "GISS-E2-R": 151,
-    "HadGEM2-ES": 151,
-    "IPSL-CM5A-LR": 260,
-    "IPSL-CM5A-MR": 140,
-    "IPSL-CM5B-LR": 160,
-    "MIROC5": 151,
-    "MIROC-ESM": 150,
-    "MPI-ESM-LR": 150,
-    "MPI-ESM-MR": 150,
-    "MPI-ESM-P": 150,
-    "MRI-CGCM3": 150,
-    "NorESM1-M": 150,
+    "mean-CMIP5": 140, "ACCESS-10": 150, "ACCESS-13": 151, "BCC-CSM-11": 150, "BCC-CSM-11m": 150, "CanESM2": 150, "CCSM4": 151, "CNRM-CM5": 150, "CNRM-CM5-2": 140, "CSIRO-Mk360": 150, "GFDL-CM3": 150, "GFDL-ESM2G": 300, "GFDL-ESM2M": 300, "GISS-E2-H": 151, "GISS-E2-R": 151, "HadGEM2-ES": 151, "IPSL-CM5A-LR": 260, "IPSL-CM5A-MR": 140, "IPSL-CM5B-LR": 160, "MIROC5": 151, "MIROC-ESM": 150, "MPI-ESM-LR": 150, "MPI-ESM-MR": 150, "MPI-ESM-P": 150, "MRI-CGCM3": 150, "NorESM1-M": 150,
 }
 prd = {
-    "ctrl": "251yr",
-    "hist": "1850-2005",
-    "rcp26": "2006-2100",
-    "rcp45": "2006-2100",
-    "rcp60": "2006-2100",
-    "rcp85": "2006-2100",
+    "ctrl": "251yr", "hist": "1850-2005", "rcp26": "2006-2100", "rcp45": "2006-2100", "rcp60": "2006-2100", "rcp85": "2006-2100",
 }
 
 # load pre-processed CMIP5 results for specified model
@@ -659,8 +557,7 @@ def decadal_means(base):
             arr[t, ...] = np.mean(base[t:t + 10, ...], 0)
         for n in range(nrcp):
             for t in range(95 - 10):
-                arr[(156 - 10) + n * (95 - 10) + t, ...] = np.mean(
-                    base[(156 - 10) + n * (95 - 10) + t:(156 - 10) + n * (95 - 10) + t + 10, ...], 0)
+                arr[(156 - 10) + n * (95 - 10) + t, ...] = np.mean(base[(156 - 10) + n * (95 - 10) + t:(156 - 10) + n * (95 - 10) + t + 10, ...], 0)
     else:
         raise ValueError('invalid module!')
     return arr
@@ -758,15 +655,7 @@ def histPR(var):
 
 def getPR(var, sim):
     return {
-        ("gyp", "rcp26"): gyp_rcp26PR,
-        ("gyp", "rcp45"): gyp_rcp45PR,
-        ("gyp", "rcp60"): gyp_rcp60PR,
-        ("gyp", "rcp85"): gyp_rcp85PR,
-        ("pr", "rcp26"): pr_rcp26PR,
-        ("pr", "rcp45"): pr_rcp45PR,
-        ("pr", "rcp60"): pr_rcp60PR,
-        ("pr", "rcp85"): pr_rcp85PR,
-    }[var, sim]
+        ("gyp", "rcp26"): gyp_rcp26PR, ("gyp", "rcp45"): gyp_rcp45PR, ("gyp", "rcp60"): gyp_rcp60PR, ("gyp", "rcp85"): gyp_rcp85PR, ("pr", "rcp26"): pr_rcp26PR, ("pr", "rcp45"): pr_rcp45PR, ("pr", "rcp60"): pr_rcp60PR, ("pr", "rcp85"): pr_rcp85PR, }[var, sim]
 
 
 def aggregate(VAR):
@@ -803,8 +692,7 @@ def decadal_means(base):
             dec[t, ...] = np.mean(base[t:t + 10, ...], 0)
         for n in range(nrcp):
             for t in range(95 - 10):
-                dec[(156 - 10) + n * (95 - 10) + t, ...] = np.mean(
-                    base[(156 - 10) + n * (95 - 10) + t:(156 - 10) + n * (95 - 10) + t + 10, ...], 0)
+                dec[(156 - 10) + n * (95 - 10) + t, ...] = np.mean(base[(156 - 10) + n * (95 - 10) + t:(156 - 10) + n * (95 - 10) + t + 10, ...], 0)
     else:
         raise ValueError(mod_PRECpattern)
     return dec

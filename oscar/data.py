@@ -5,7 +5,7 @@ from functools import lru_cache
 from .config import dty
 
 
-@lru_cache(512)
+@lru_cache(128)
 def load_data(path, start=None, dtype=dty, use='csv'):
     """
     Return an array with data loaded from given path.
@@ -34,6 +34,7 @@ def load_data(path, start=None, dtype=dty, use='csv'):
     return data
 
 
+@lru_cache(128)
 def load_data_and_header(path):
     """
     Return (header, array) with a list of column names and numeric data loaded

@@ -6,10 +6,11 @@ from scipy.special import gammainc
 
 from ..oscar_data import load_data
 from ..oscar_data import nb_regionI, nb_biome, regionI_index, biome_index
-from ...config import dty, mod_OSNKstruct, mod_OSNKchem, mod_OSNKtrans, PI_1750, \
-    data_LULCC, mod_LSNKcover, ind_final, mod_EHWPspeed, mod_EHWPtau, mod_EHWPbb, \
-    mod_biomeURB, mod_biomeV3, mod_biomeSHR, mod_ELUCagb, mod_EPFmain, mod_EFIREpreind, \
-    mod_LSNKpreind, mod_LSNKnpp, mod_LSNKrho, mod_LSNKtrans, mod_EFIREtrans
+from ...config import dty, mod_OSNKstruct, mod_OSNKchem, mod_OSNKtrans, PI_1750, data_LULCC, mod_LSNKcover, ind_final, mod_EHWPspeed, mod_EHWPtau, mod_EHWPbb, mod_biomeURB, mod_biomeV3, mod_biomeSHR, mod_ELUCagb, mod_EPFmain, mod_EFIREpreind, mod_LSNKpreind, mod_LSNKnpp, mod_LSNKrho, mod_LSNKtrans, mod_EFIREtrans
+from ... import historical
+
+CO2_cmip5 = historical.CO2_cmip5
+CO2_0 = historical.CO2_0
 
 ##################################################
 #   1. CARBON DIOXIDE
@@ -22,74 +23,6 @@ from ...config import dty, mod_OSNKstruct, mod_OSNKchem, mod_OSNKtrans, PI_1750,
 # conversion of CO2 from {ppm} to {GtC}
 alpha_CO2 = 0.1765 * np.array([12.0], dtype=dty)
 
-# historic CO2 from IPCC-AR5 {ppm}
-# from [IPCC WG1, 2013] annexe 2
-CO2_ipcc = np.ones([311 + 1], dtype=dty) * np.nan
-path = "data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1750-2011.CO2.csv"
-TMP = load_data(path)
-CO2_ipcc[50:] = TMP[:, 0]
-CO2_0 = np.array([CO2_ipcc[50]], dtype=dty)
-
-# historic CO2 from CMIP5 {ppm}
-# from [Meinshausen et al., 2011]
-CO2_cmip5 = np.ones([305 + 1], dtype=dty) * np.nan
-path = "data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.CO2.csv"
-TMP = load_data(path)
-CO2_cmip5[65:] = TMP[:, 0]
-
-# historic CO2 from NOAA {ppm}
-# from the website
-CO2_noaa_ml = np.ones([314 + 1], dtype=dty) * np.nan
-path = "data/HistAtmo_NOAA-ESRL/#DATA.HistAtmo_NOAA-ESRL.1959-2014.CO2_maunaloa.csv"
-TMP = load_data(path)
-CO2_noaa_ml[259:] = TMP[:, 0]
-CO2_noaa_gl = np.ones([314 + 1], dtype=dty) * np.nan
-
-path = "data/HistAtmo_NOAA-ESRL/#DATA.HistAtmo_NOAA-ESRL.1980-2014.CO2_global.csv"
-TMP = load_data(path)
-CO2_noaa_gl[280:] = TMP[:, 0]
-
-# historic CO2 from Law Dome ice cores {ppm}
-# from [Etheridge et al., 1996] and [MacFarling Meure et al., 2006]
-path = "data/HistAtmo_NOAA-NCDC/#DATA.HistAtmo_NOAA-NCDC.(IceCores).CO2_lawdome.csv"
-CO2_lawdome = load_data(path, start=1)
-
-# load RCP concentrations {ppm}
-# from [Meinshausen et al., 2011]
-CO2_rcp = np.ones([800 + 1, 6], dtype=dty) * np.nan
-n = -1
-for rcp in ["rcp26", "rcp45", "rcp60", "rcp85", "rcp45to26", "rcp60to45"]:
-    n += 1
-    path = f"data/Scenario_ECP/#DATA.Scenario_ECP.2000-2500.{rcp}_CO2.csv"
-    TMP = load_data(path)
-    CO2_rcp[300:, n] = TMP[:, 0]
-
-# global CO2 historic flux {GtC/yr}
-# from [Le Quere et al., 2015]
-path = "data/Historic_GCP/#DATA.Historic_GCP.1959-2014_(5flx).budget.csv"
-TMP = load_data(path, start=1)
-
-n = 0
-EFF_gcp = np.ones([314 + 1], dtype=dty) * np.nan
-EFF_gcp[259:] = TMP[:, n]
-
-n += 1
-ELUC_gcp = np.ones([314 + 1], dtype=dty) * np.nan
-ELUC_gcp[259:] = TMP[:, n]
-
-n += 1
-d_CO2_gcp = np.ones([314 + 1], dtype=dty) * np.nan
-d_CO2_gcp[259:] = TMP[:, n]
-
-n += 1
-OSNK_gcp = np.ones([314 + 1], dtype=dty) * np.nan
-OSNK_gcp[259:] = TMP[:, n]
-OSNK_gcp *= -1
-
-n += 1
-LSNK_gcp = np.ones([314 + 1], dtype=dty) * np.nan
-LSNK_gcp[259:] = TMP[:, n]
-LSNK_gcp *= -1
 
 # ==========
 # 1.2. OCEAN
@@ -129,33 +62,24 @@ nb_obox = 8
 p_circ = np.zeros([nb_obox], dtype=dty)
 tau_circ = np.ones([nb_obox], dtype=dty) * np.inf
 if mod_OSNKstruct == "HILDA":
-    p_circ[1: 1 + 6] = np.array(
-        [0.24278, 0.13963, 0.089_318, 0.037_820, 0.035_549, 0.022_936], dtype=dty)
+    p_circ[1: 1 + 6] = np.array([0.24278, 0.13963, 0.089_318, 0.037_820, 0.035_549, 0.022_936], dtype=dty)
     p_circ[0] = 1 - np.sum(p_circ[1:])
-    tau_circ[1: 1 + 6] = np.array([1.2679, 5.2528, 18.601, 68.736, 232.30, np.inf],
-                                  dtype=dty)
+    tau_circ[1: 1 + 6] = np.array([1.2679, 5.2528, 18.601, 68.736, 232.30, np.inf], dtype=dty)
     tau_circ[0] = 1 / 3.0
 elif mod_OSNKstruct == "BD-model":
-    p_circ[1: 1 + 7] = np.array(
-        [0.16851, 0.11803, 0.076_817, 0.050_469, 0.010_469, 0.031_528, 0.019_737],
-        dtype=dty)
+    p_circ[1: 1 + 7] = np.array([0.16851, 0.11803, 0.076_817, 0.050_469, 0.010_469, 0.031_528, 0.019_737], dtype=dty)
     p_circ[0] = 1 - np.sum(p_circ[:])
-    tau_circ[1: 1 + 7] = np.array(
-        [1.6388, 4.8702, 14.172, 43.506, 148.77, 215.71, np.inf], dtype=dty)
+    tau_circ[1: 1 + 7] = np.array([1.6388, 4.8702, 14.172, 43.506, 148.77, 215.71, np.inf], dtype=dty)
     tau_circ[0] = 1 / 3.0
 elif mod_OSNKstruct == "2D-model":
-    p_circ[1: 1 + 6] = np.array(
-        [0.067_380, 0.036_608, 0.026_994, 0.026_933, 0.012_456, 0.013_691], dtype=dty)
+    p_circ[1: 1 + 6] = np.array([0.067_380, 0.036_608, 0.026_994, 0.026_933, 0.012_456, 0.013_691], dtype=dty)
     p_circ[0] = 1 - np.sum(p_circ[:])
-    tau_circ[1: 1 + 6] = np.array([10.515, 11.677, 38.946, 107.57, 331.54, np.inf],
-                                  dtype=dty)
+    tau_circ[1: 1 + 6] = np.array([10.515, 11.677, 38.946, 107.57, 331.54, np.inf], dtype=dty)
     tau_circ[0] = 1 / 2.0
 elif mod_OSNKstruct == "3D-model":
-    p_circ[1: 1 + 6] = np.array(
-        [0.70367, 0.24966, 0.066_485, 0.038_344, 0.019_439, 0.014_819], dtype=dty)
+    p_circ[1: 1 + 6] = np.array([0.70367, 0.24966, 0.066_485, 0.038_344, 0.019_439, 0.014_819], dtype=dty)
     p_circ[1] = 1 - np.sum(p_circ[2:])
-    tau_circ[1: 1 + 6] = np.array([0.70177, 2.3488, 15.281, 65.359, 347.55, np.inf],
-                                  dtype=dty)
+    tau_circ[1: 1 + 6] = np.array([0.70177, 2.3488, 15.281, 65.359, 347.55, np.inf], dtype=dty)
 
 # ----------------
 # 1.2.2. Chemistry
@@ -167,7 +91,7 @@ alpha_sol = np.array([1.722e17], dtype=dty)
 alpha_dic = alpha_sol / alpha_CO2 / A_ocean / mld_0
 
 
-# fonction for converting concentration to mass
+# function for converting concentration to mass
 def f_dic(D_CSURF, D_mld):
     D_dic = alpha_dic * D_CSURF / (1 + D_mld / mld_0)
     return np.array(D_dic, dtype=dty)
@@ -183,95 +107,48 @@ def df_dic(D_CSURF, D_mld):
 # emulation of the carbonate chemistry {ppm}
 # after [Lewis and Wallas, 1998] and the CSIRO CTR047
 if mod_OSNKchem == "CO2SysPade":
-
-    dic_0 = (
-            30015.6
-            * (1 - 0.022_653_6 * (sst_0 - 15) + 0.000_167_105 * (sst_0 - 15) ** 2)
-            * (CO2_0 / 380)
-            / (
-                    1
-                    + 13.4574 * (1 - 0.019_829 * (sst_0 - 15) + 0.000_113_872 * (
-                    sst_0 - 15) ** 2) * (CO2_0 / 380)
-                    - 0.243_121 * (1 + 0.000_443_511 * (sst_0 - 15) - 0.000_473_227 * (
-                    sst_0 - 15) ** 2) * (CO2_0 / 380) ** 2
-            )
-    )
+    dic_0 = (30015.6
+        * (1 - 0.022_653_6 * (sst_0 - 15) + 0.000_167_105 * (sst_0 - 15) ** 2)
+        * (CO2_0 / 380)
+        / (1 + 13.4574 * (1 - 0.019_829 * (sst_0 - 15) + 0.000_113_872 * (sst_0 - 15) ** 2) * (CO2_0 / 380)
+            - 0.243_121 * (1 + 0.000_443_511 * (sst_0 - 15) - 0.000_473_227 * (sst_0 - 15) ** 2) * (CO2_0 / 380) ** 2))
     CSURF_0 = p_circ * dic_0 / alpha_dic
 
 
     def f_pCO2(D_dic, D_sst):
-        a0_0 = 30015.6 * (
-                1 - 0.022_653_6 * (sst_0 - 15) + 0.000_167_105 * (sst_0 - 15) ** 2)
-        a1_0 = 13.4574 * (
-                1 - 0.019_829 * (sst_0 - 15) + 0.000_113_872 * (sst_0 - 15) ** 2)
-        a2_0 = -0.243_121 * (
-                1 + 0.000_443_511 * (sst_0 - 15) - 0.000_473_227 * (sst_0 - 15) ** 2)
-        a0 = 30015.6 * (1 - 0.022_653_6 * (sst_0 + D_sst - 15) + 0.000_167_105 * (
-                sst_0 + D_sst - 15) ** 2)
-        a1 = 13.4574 * (1 - 0.019_829 * (sst_0 + D_sst - 15) + 0.000_113_872 * (
-                sst_0 + D_sst - 15) ** 2)
-        a2 = -0.243_121 * (1 + 0.000_443_511 * (sst_0 + D_sst - 15) - 0.000_473_227 * (
-                sst_0 + D_sst - 15) ** 2)
-        D_pCO2 = 380 * (
-                a0 - a1 * (dic_0 + D_dic) - np.sqrt(
-            (a0 - a1 * (dic_0 + D_dic)) ** 2 - 4 * a2 * (dic_0 + D_dic) ** 2)
-        ) / (2 * a2 * (dic_0 + D_dic)) - 380 * (
-                         a0_0 - a1_0 * dic_0 - np.sqrt(
-                     (a0_0 - a1_0 * dic_0) ** 2 - 4 * a2_0 * dic_0 ** 2)
-                 ) / (
-                         2 * a2_0 * dic_0
-                 )
+        a0_0 = 30015.6 * (1 - 0.022_653_6 * (sst_0 - 15) + 0.000_167_105 * (sst_0 - 15) ** 2)
+        a1_0 = 13.4574 * (1 - 0.019_829 * (sst_0 - 15) + 0.000_113_872 * (sst_0 - 15) ** 2)
+        a2_0 = -0.243_121 * (1 + 0.000_443_511 * (sst_0 - 15) - 0.000_473_227 * (sst_0 - 15) ** 2)
+        a0 = 30015.6 * (1 - 0.022_653_6 * (sst_0 + D_sst - 15) + 0.000_167_105 * (sst_0 + D_sst - 15) ** 2)
+        a1 = 13.4574 * (1 - 0.019_829 * (sst_0 + D_sst - 15) + 0.000_113_872 * (sst_0 + D_sst - 15) ** 2)
+        a2 = -0.243_121 * (1 + 0.000_443_511 * (sst_0 + D_sst - 15) - 0.000_473_227 * (sst_0 + D_sst - 15) ** 2)
+        D_pCO2 = 380 * (a0 - a1 * (dic_0 + D_dic) - np.sqrt((a0 - a1 * (dic_0 + D_dic)) ** 2 - 4 * a2 * (dic_0 + D_dic) ** 2)) / (2 * a2 * (dic_0 + D_dic)) - 380 * (a0_0 - a1_0 * dic_0 - np.sqrt((a0_0 - a1_0 * dic_0) ** 2 - 4 * a2_0 * dic_0 ** 2)) / (2 * a2_0 * dic_0)
         return np.array(D_pCO2, dtype=dty)
 
 
     def df_pCO2_ddic(D_dic, D_sst):
-        a0 = 30015.6 * (1 - 0.022_653_6 * (sst_0 + D_sst - 15) + 0.000_167_105 * (
-                sst_0 + D_sst - 15) ** 2)
-        a1 = 13.4574 * (1 - 0.019_829 * (sst_0 + D_sst - 15) + 0.000_113_872 * (
-                sst_0 + D_sst - 15) ** 2)
-        a2 = -0.243_121 * (1 + 0.000_443_511 * (sst_0 + D_sst - 15) - 0.000_473_227 * (
-                sst_0 + D_sst - 15) ** 2)
+        a0 = 30015.6 * (1 - 0.022_653_6 * (sst_0 + D_sst - 15) + 0.000_167_105 * (sst_0 + D_sst - 15) ** 2)
+        a1 = 13.4574 * (1 - 0.019_829 * (sst_0 + D_sst - 15) + 0.000_113_872 * (sst_0 + D_sst - 15) ** 2)
+        a2 = -0.243_121 * (1 + 0.000_443_511 * (sst_0 + D_sst - 15) - 0.000_473_227 * (sst_0 + D_sst - 15) ** 2)
         rac = -np.sqrt((a0 - a1 * (dic_0 + D_dic)) ** 2 - 4 * a2 * (dic_0 + D_dic) ** 2)
-        D_pCO2 = (
-                380
-                * (
-                        (-2 * a0 * a1 * a2 * (dic_0 + D_dic) + (
-                                2 * a2 * a1 ** 2 - 8 * a2 ** 2) * (
-                                 dic_0 + D_dic) ** 2) / rac
-                        - 2 * a0 * a2
-                        - 2 * a2 * rac
-                )
-                / (2 * a2 * (dic_0 + D_dic)) ** 2
-        )
+        D_pCO2 = (380* ((-2 * a0 * a1 * a2 * (dic_0 + D_dic) + (2 * a2 * a1 ** 2 - 8 * a2 ** 2) * (dic_0 + D_dic) ** 2) / rac- 2 * a0 * a2- 2 * a2 * rac) / (2 * a2 * (dic_0 + D_dic)) ** 2)
         return np.array(D_pCO2, dtype=dty)
 
 
     def df_pCO2_dsst(D_dic, D_sst):
-        a0 = 30015.6 * (1 - 0.022_653_6 * (sst_0 + D_sst - 15) + 0.000_167_105 * (
-                sst_0 + D_sst - 15) ** 2)
-        a1 = 13.4574 * (1 - 0.019_829 * (sst_0 + D_sst - 15) + 0.000_113_872 * (
-                sst_0 + D_sst - 15) ** 2)
-        a2 = -0.243_121 * (1 + 0.000_443_511 * (sst_0 + D_sst - 15) - 0.000_473_227 * (
-                sst_0 + D_sst - 15) ** 2)
+        a0 = 30015.6 * (1 - 0.022_653_6 * (sst_0 + D_sst - 15) + 0.000_167_105 * (sst_0 + D_sst - 15) ** 2)
+        a1 = 13.4574 * (1 - 0.019_829 * (sst_0 + D_sst - 15) + 0.000_113_872 * (sst_0 + D_sst - 15) ** 2)
+        a2 = -0.243_121 * (1 + 0.000_443_511 * (sst_0 + D_sst - 15) - 0.000_473_227 * (sst_0 + D_sst - 15) ** 2)
         da0 = 30015.6 * (-0.022_653_6 + 2 * 0.000_167_105 * (sst_0 + D_sst - 15))
         da1 = 13.4574 * (-0.019_829 + 2 * 0.000_113_872 * (sst_0 + D_sst - 15))
         da2 = -0.243_121 * (0.000_443_511 - 2 * 0.000_473_227 * (sst_0 + D_sst - 15))
         rac = -np.sqrt((a0 - a1 * (dic_0 + D_dic)) ** 2 - 4 * a2 * (dic_0 + D_dic) ** 2)
-        D_pCO2 = (
-                380
-                * (
-                        2 * (a2 * da0 - a0 * da2) * (dic_0 + D_dic)
-                        + 2 * (a1 * da2 - da1 * a2) * (dic_0 + D_dic) ** 2
-                        + (
-                                2 * a2 * da0 * a0 * (dic_0 + D_dic)
-                                - 2 * a2 * (a0 * da1 + a1 * da0) * (dic_0 + D_dic) ** 2
-                                + 2 * a2 * (da1 * a1 - 2 * da2) * (dic_0 + D_dic) ** 3
-                        )
-                        / rac
-                        - 2 * da2 * (dic_0 + D_dic) * rac
-                )
-                / (2 * a2 * (dic_0 + D_dic)) ** 2
-        )
+        D_pCO2 = (380
+            * (2 * (a2 * da0 - a0 * da2) * (dic_0 + D_dic)
+            + 2 * (a1 * da2 - da1 * a2) * (dic_0 + D_dic) ** 2
+            + (2 * a2 * da0 * a0 * (dic_0 + D_dic) - 2 * a2 * (a0 * da1 + a1 * da0) * (dic_0 + D_dic) ** 2 + 2 * a2 * (da1 * a1 - 2 * da2) * (dic_0 + D_dic) ** 3) / rac
+            - 2 * da2 * (dic_0 + D_dic) * rac)
+            / (2 * a2 * (dic_0 + D_dic)) ** 2)
         return np.array(D_pCO2, dtype=dty)
 
 
@@ -285,61 +162,40 @@ if mod_OSNKchem == "CO2SysPade":
 # after [Lewis and Wallas, 1998] and the CSIRO CTR047
 elif mod_OSNKchem == "CO2SysPower":
 
-    dic_0 = (
-            2160.156
+    dic_0 = (2160.156
             * (1 - 0.003_450_63 * (sst_0 - 15) - 0.000_025_001_6 * (sst_0 - 15) ** 2)
-            * ((CO2_0 / 380) - 0.318_665 * (
-            1 - 0.001_512_92 * (sst_0 - 15) - 0.000_198_978 * (sst_0 - 15) ** 2))
-            ** (0.059_596_1 * (
-            1 + 0.020_032_8 * (sst_0 - 15) + 0.000_192_084 * (sst_0 - 15) ** 2))
-    )
+            * ((CO2_0 / 380) - 0.318_665 * (1 - 0.001_512_92 * (sst_0 - 15) - 0.000_198_978 * (sst_0 - 15) ** 2))
+            ** (0.059_596_1 * (1 + 0.020_032_8 * (sst_0 - 15) + 0.000_192_084 * (sst_0 - 15) ** 2)))
     CSURF_0 = p_circ * dic_0 / alpha_dic
 
 
     def f_pCO2(D_dic, D_sst):
-        p0_0 = 2160.156 * (
-                1 - 0.003_450_63 * (sst_0 - 15) - 0.000_025_001_6 * (sst_0 - 15) ** 2)
-        p1_0 = 0.059_596_1 * (
-                1 + 0.020_032_8 * (sst_0 - 15) + 0.000_192_084 * (sst_0 - 15) ** 2)
-        p2_0 = 0.318_665 * (
-                1 - 0.001_512_92 * (sst_0 - 15) - 0.000_198_978 * (sst_0 - 15) ** 2)
-        p0 = 2160.156 * (1 - 0.003_450_63 * (sst_0 + D_sst - 15) - 0.000_025_001_6 * (
-                sst_0 + D_sst - 15) ** 2)
-        p1 = 0.059_596_1 * (1 + 0.020_032_8 * (sst_0 + D_sst - 15) + 0.000_192_084 * (
-                sst_0 + D_sst - 15) ** 2)
-        p2 = 0.318_665 * (1 - 0.001_512_92 * (sst_0 + D_sst - 15) - 0.000_198_978 * (
-                sst_0 + D_sst - 15) ** 2)
-        D_pCO2 = 380 * (p2 + ((dic_0 + D_dic) / p0) ** (1 / p1)) - 380 * (
-                p2_0 + (dic_0 / p0_0) ** (1 / p1_0))
+        p0_0 = 2160.156 * (1 - 0.003_450_63 * (sst_0 - 15) - 0.000_025_001_6 * (sst_0 - 15) ** 2)
+        p1_0 = 0.059_596_1 * (1 + 0.020_032_8 * (sst_0 - 15) + 0.000_192_084 * (sst_0 - 15) ** 2)
+        p2_0 = 0.318_665 * (1 - 0.001_512_92 * (sst_0 - 15) - 0.000_198_978 * (sst_0 - 15) ** 2)
+        p0 = 2160.156 * (1 - 0.003_450_63 * (sst_0 + D_sst - 15) - 0.000_025_001_6 * (sst_0 + D_sst - 15) ** 2)
+        p1 = 0.059_596_1 * (1 + 0.020_032_8 * (sst_0 + D_sst - 15) + 0.000_192_084 * (sst_0 + D_sst - 15) ** 2)
+        p2 = 0.318_665 * (1 - 0.001_512_92 * (sst_0 + D_sst - 15) - 0.000_198_978 * (sst_0 + D_sst - 15) ** 2)
+        D_pCO2 = 380 * (p2 + ((dic_0 + D_dic) / p0) ** (1 / p1)) - 380 * (p2_0 + (dic_0 / p0_0) ** (1 / p1_0))
         return np.array(D_pCO2, dtype=dty)
 
 
     def df_pCO2_ddic(D_dic, D_sst):
-        p0 = 2160.156 * (1 - 0.003_450_63 * (sst_0 + D_sst - 15) - 0.000_025_001_6 * (
-                sst_0 + D_sst - 15) ** 2)
-        p1 = 0.059_596_1 * (1 + 0.020_032_8 * (sst_0 + D_sst - 15) + 0.000_192_084 * (
-                sst_0 + D_sst - 15) ** 2)
-        p2 = 0.318_665 * (1 - 0.001_512_92 * (sst_0 + D_sst - 15) - 0.000_198_978 * (
-                sst_0 + D_sst - 15) ** 2)
+        p0 = 2160.156 * (1 - 0.003_450_63 * (sst_0 + D_sst - 15) - 0.000_025_001_6 * (sst_0 + D_sst - 15) ** 2)
+        p1 = 0.059_596_1 * (1 + 0.020_032_8 * (sst_0 + D_sst - 15) + 0.000_192_084 * (sst_0 + D_sst - 15) ** 2)
+        p2 = 0.318_665 * (1 - 0.001_512_92 * (sst_0 + D_sst - 15) - 0.000_198_978 * (sst_0 + D_sst - 15) ** 2)
         D_pCO2 = 380 * (1 / p0 / p1) * ((dic_0 + D_dic) / p0) ** (1 / p1 - 1)
         return np.array(D_pCO2, dtype=dty)
 
 
     def df_pCO2_dsst(D_dic, D_sst):
-        p0 = 2160.156 * (1 - 0.003_450_63 * (sst_0 + D_sst - 15) - 0.000_025_001_6 * (
-                sst_0 + D_sst - 15) ** 2)
-        p1 = 0.059_596_1 * (1 + 0.020_032_8 * (sst_0 + D_sst - 15) + 0.000_192_084 * (
-                sst_0 + D_sst - 15) ** 2)
-        p2 = 0.318_665 * (1 - 0.001_512_92 * (sst_0 + D_sst - 15) - 0.000_198_978 * (
-                sst_0 + D_sst - 15) ** 2)
+        p0 = 2160.156 * (1 - 0.003_450_63 * (sst_0 + D_sst - 15) - 0.000_025_001_6 * (sst_0 + D_sst - 15) ** 2)
+        p1 = 0.059_596_1 * (1 + 0.020_032_8 * (sst_0 + D_sst - 15) + 0.000_192_084 * (sst_0 + D_sst - 15) ** 2)
+        p2 = 0.318_665 * (1 - 0.001_512_92 * (sst_0 + D_sst - 15) - 0.000_198_978 * (sst_0 + D_sst - 15) ** 2)
         dp0 = 2160.156 * (-0.003_450_63 - 2 * 0.000_025_001_6 * (sst_0 + D_sst - 15))
         dp1 = 0.059_596_1 * (0.020_032_8 + 2 * 0.000_192_084 * (sst_0 + D_sst - 15))
         dp2 = 0.318_665 * (-0.001_512_92 - 2 * 0.000_198_978 * (sst_0 + D_sst - 15))
-        D_pCO2 = 380 * (
-                dp2
-                + ((-dp1 / p1 / p1) * np.log((dic_0 + D_dic) / p0) - (dp0 / p0 / p1)) * (
-                        (dic_0 + D_dic) / p0) ** (1 / p1)
-        )
+        D_pCO2 = 380 * (dp2+ ((-dp1 / p1 / p1) * np.log((dic_0 + D_dic) / p0) - (dp0 / p0 / p1)) * ((dic_0 + D_dic) / p0) ** (1 / p1))
         return np.array(D_pCO2, dtype=dty)
 
 
@@ -455,8 +311,7 @@ if mod_OSNKtrans != "":
 
     def err(var):
         carb = 1
-        clim = np.mean(sic_ctrl) * np.exp(
-            1 - np.exp(var[0] * (tos_all - np.mean(tos_ctrl))))
+        clim = np.mean(sic_ctrl) * np.exp(1 - np.exp(var[0] * (tos_all - np.mean(tos_ctrl))))
         return np.sum((obj - carb * clim) ** 2)
 
 
@@ -470,8 +325,7 @@ if mod_OSNKtrans != "":
 
     def err(var):
         carb = 1
-        clim = var[0] * (1 - sic_all) * (dpCO2_all - np.mean(dpCO2_ctrl)) * (
-                1 + var[1] * (tos_all - np.mean(tos_ctrl)))
+        clim = var[0] * (1 - sic_all) * (dpCO2_all - np.mean(dpCO2_ctrl)) * (1 + var[1] * (tos_all - np.mean(tos_ctrl)))
         return np.sum((diff - carb * clim) ** 2)
 
 
@@ -489,6 +343,7 @@ if mod_OSNKtrans != "":
 
 
     [alpha_mld[0], gamma_mld[0]] = fmin(err, [0.5, 0], disp=False)
+
 # amoc
 if mod_OSNKtrans != "":
     ratio = amoc_all / np.mean(amoc_ctrl)
@@ -496,12 +351,12 @@ if mod_OSNKtrans != "":
 
     def err(var):
         carb = 1
-        clim = (1 - var[0]) + var[0] * np.exp(
-            1 - np.exp(var[1] * (tos_all - np.mean(tos_ctrl))))
+        clim = (1 - var[0]) + var[0] * np.exp(1 - np.exp(var[1] * (tos_all - np.mean(tos_ctrl))))
         return np.sum((ratio - carb * clim) ** 2)
 
 
     [alpha_amoc[0], gamma_amoc[0]] = fmin(err, [0.5, 0], disp=False)
+
 # exp
 if mod_OSNKtrans != "":
     diff = FEXP_all - np.mean(FEXP_ctrl)
@@ -536,8 +391,7 @@ Q10_ref = np.array([1.4], dtype=dty)
 if mod_LSNKnpp == "log":
 
     def f_npp(D_CO2, D_lst, D_lyp):
-        D_npp = (1 + beta_npp * np.log(1 + D_CO2 / CO2_0)) * (
-                1 + gamma_nppT * D_lst + gamma_nppP * D_lyp) - 1
+        D_npp = (1 + beta_npp * np.log(1 + D_CO2 / CO2_0)) * (1 + gamma_nppT * D_lst + gamma_nppP * D_lyp) - 1
         return np.array(D_npp, dtype=dty)
 
 
@@ -561,55 +415,37 @@ if mod_LSNKnpp == "log":
         df_2 = df_npp_dlst(D_CO2, D_lst, D_lyp) * D_lst
         df_3 = df_npp_dlyp(D_CO2, D_lst, D_lyp) * D_lyp
         df_tot = df_1 + df_2 + df_3
-        return [np.nan_to_num(df_1 / df_tot), np.nan_to_num(df_2 / df_tot),
-                np.nan_to_num(df_3 / df_tot)]
+        return [np.nan_to_num(df_1 / df_tot), np.nan_to_num(df_2 / df_tot), np.nan_to_num(df_3 / df_tot)]
 
 
 # hyperbolic formulation [Friedlingstein et al., 1995]
 elif mod_LSNKnpp == "hyp":
 
     def f_npp(D_CO2, D_lst, D_lyp):
-        K2 = ((2 * CO2_0 - CO2_comp) - beta_npp0 * (CO2_0 - CO2_comp)) / (
-                (beta_npp0 - 1) * (CO2_0 - CO2_comp) * (2 * CO2_0 - CO2_comp)
-        )
+        K2 = ((2 * CO2_0 - CO2_comp) - beta_npp0 * (CO2_0 - CO2_comp)) / ((beta_npp0 - 1) * (CO2_0 - CO2_comp) * (2 * CO2_0 - CO2_comp))
         K1 = (1 + K2 * (CO2_0 - CO2_comp)) / (CO2_0 - CO2_comp)
-        D_npp = (
-                K1
-                * (CO2_0 + D_CO2 - CO2_comp)
-                / (1 + K2 * (CO2_0 + D_CO2 - CO2_comp))
-                * (1 + gamma_nppT * D_lst + gamma_nppP * D_lyp)
-                - 1
-        )
+        D_npp = K1 * (CO2_0 + D_CO2 - CO2_comp) / (1 + K2 * (CO2_0 + D_CO2 - CO2_comp)) * (1 + gamma_nppT * D_lst + gamma_nppP * D_lyp) - 1
         return np.array(D_npp, dtype=dty)
 
 
     def df_npp_dCO2(D_CO2, D_lst, D_lyp):
-        K2 = ((2 * CO2_0 - CO2_comp) - beta_npp0 * (CO2_0 - CO2_comp)) / (
-                (beta_npp0 - 1) * (CO2_0 - CO2_comp) * (2 * CO2_0 - CO2_comp)
-        )
+        K2 = ((2 * CO2_0 - CO2_comp) - beta_npp0 * (CO2_0 - CO2_comp)) / ((beta_npp0 - 1) * (CO2_0 - CO2_comp) * (2 * CO2_0 - CO2_comp))
         K1 = (1 + K2 * (CO2_0 - CO2_comp)) / (CO2_0 - CO2_comp)
-        D_npp = (1 + gamma_nppT * D_lst + gamma_nppP * D_lyp) * K1 / (
-                1 + K2 * (CO2_0 + D_CO2 - CO2_comp)) ** 2
+        D_npp = (1 + gamma_nppT * D_lst + gamma_nppP * D_lyp) * K1 / (1 + K2 * (CO2_0 + D_CO2 - CO2_comp)) ** 2
         return np.array(D_npp, dtype=dty)
 
 
     def df_npp_dlst(D_CO2, D_lst, D_lyp):
-        K2 = ((2 * CO2_0 - CO2_comp) - beta_npp0 * (CO2_0 - CO2_comp)) / (
-                (beta_npp0 - 1) * (CO2_0 - CO2_comp) * (2 * CO2_0 - CO2_comp)
-        )
+        K2 = ((2 * CO2_0 - CO2_comp) - beta_npp0 * (CO2_0 - CO2_comp)) / ((beta_npp0 - 1) * (CO2_0 - CO2_comp) * (2 * CO2_0 - CO2_comp))
         K1 = (1 + K2 * (CO2_0 - CO2_comp)) / (CO2_0 - CO2_comp)
-        D_npp = gamma_nppT * K1 * (CO2_0 + D_CO2 - CO2_comp) / (
-                1 + K2 * (CO2_0 + D_CO2 - CO2_comp))
+        D_npp = gamma_nppT * K1 * (CO2_0 + D_CO2 - CO2_comp) / (1 + K2 * (CO2_0 + D_CO2 - CO2_comp))
         return np.array(D_npp, dtype=dty)
 
 
     def df_npp_dlyp(D_CO2, D_lst, D_lyp):
-        K2 = ((2 * CO2_0 - CO2_comp) - beta_npp0 * (CO2_0 - CO2_comp)) / (
-                (beta_npp0 - 1) * (CO2_0 - CO2_comp) * (2 * CO2_0 - CO2_comp)
-        )
+        K2 = ((2 * CO2_0 - CO2_comp) - beta_npp0 * (CO2_0 - CO2_comp)) / ((beta_npp0 - 1) * (CO2_0 - CO2_comp) * (2 * CO2_0 - CO2_comp))
         K1 = (1 + K2 * (CO2_0 - CO2_comp)) / (CO2_0 - CO2_comp)
-        D_npp = gamma_nppP * K1 * (CO2_0 + D_CO2 - CO2_comp) / (
-                1 + K2 * (CO2_0 + D_CO2 - CO2_comp))
+        D_npp = gamma_nppP * K1 * (CO2_0 + D_CO2 - CO2_comp) / (1 + K2 * (CO2_0 + D_CO2 - CO2_comp))
         return np.array(D_npp, dtype=dty)
 
 
@@ -618,8 +454,7 @@ elif mod_LSNKnpp == "hyp":
         df_2 = df_npp_dlst(D_CO2, D_lst, D_lyp) * D_lst
         df_3 = df_npp_dlyp(D_CO2, D_lst, D_lyp) * D_lyp
         df_tot = df_1 + df_2 + df_3
-        return [np.nan_to_num(df_1 / df_tot), np.nan_to_num(df_2 / df_tot),
-                np.nan_to_num(df_3 / df_tot)]
+        return [np.nan_to_num(df_1 / df_tot), np.nan_to_num(df_2 / df_tot), np.nan_to_num(df_3 / df_tot)]
 
 # expression of RH function
 # exponential formulation [Tuomi et al., 2008]
@@ -651,21 +486,17 @@ if mod_LSNKrho == "exp":
 elif mod_LSNKrho == "gauss":
 
     def f_rho(D_lst, D_lyp):
-        D_rho = np.exp(
-            gamma_rhoT1 * D_lst + gamma_rhoT2 * D_lst ** 2 + gamma_rhoP * D_lyp) - 1
+        D_rho = np.exp(gamma_rhoT1 * D_lst + gamma_rhoT2 * D_lst ** 2 + gamma_rhoP * D_lyp) - 1
         return np.array(D_rho, dtype=dty)
 
 
     def df_rho_dlst(D_lst, D_lyp):
-        D_rho = (gamma_rhoT1 + 2 * gamma_rhoT2 * D_lst) * np.exp(
-            gamma_rhoT1 * D_lst + gamma_rhoT2 * D_lst ** 2 + gamma_rhoP * D_lyp
-        )
+        D_rho = (gamma_rhoT1 + 2 * gamma_rhoT2 * D_lst) * np.exp(gamma_rhoT1 * D_lst + gamma_rhoT2 * D_lst ** 2 + gamma_rhoP * D_lyp)
         return np.array(D_rho, dtype=dty)
 
 
     def df_rho_dlyp(D_lst, D_lyp):
-        D_rho = gamma_rhoP * np.exp(
-            gamma_rhoT1 * D_lst + gamma_rhoT2 * D_lst ** 2 + gamma_rhoP * D_lyp)
+        D_rho = gamma_rhoP * np.exp(gamma_rhoT1 * D_lst + gamma_rhoT2 * D_lst ** 2 + gamma_rhoP * D_lyp)
         return np.array(D_rho, dtype=dty)
 
 
@@ -713,9 +544,7 @@ if (nb_biome > 1) & (np.sum(AREA_pi[:, bio.index("shr")]) == 0) & (mod_biomeSHR 
     AREA_pi[:, bio.index("shr")] = AREA_pi[:, bio.index("gra")]
 
     for arr in [CSOIL_pi, CLITTER_pi, CVEG_pi, NPP_pi, RH_pi]:
-        arr[:, bio.index("shr")] = \
-            0.85 * arr[:, bio.index("gra")] \
-            + (0.15 * arr[:, bio.index("for")] * AREA_pi[:, bio.index("gra")] / AREA_pi[:, bio.index("for")])
+        arr[:, bio.index("shr")] = 0.85 * arr[:, bio.index("gra")] + (0.15 * arr[:, bio.index("for")] * AREA_pi[:, bio.index("gra")] / AREA_pi[:, bio.index("for")])
     TMP = AREA_pi[:, :, bio.index("for")] == 0
     arr[:, :, bio.index("shr")][TMP] = arr[:, :, bio.index("gra")][TMP]
 
@@ -728,15 +557,12 @@ if (nb_biome > 1) & (np.sum(AREA_pi[:, bio.index("cro")]) == 0):
 if (nb_biome > 1) & (np.sum(AREA_pi[:, bio.index("pas")]) == 0):
     AREA_pi[:, bio.index("pas")] = AREA_pi[:, bio.index("gra")]
     for VAR in [CSOIL_pi, CLITTER_pi, CVEG_pi, NPP_pi, RH_pi]:
-        arr[:, bio.index("pas")] = \
-            0.60 * arr[:, bio.index("gra")] \
-            + 0.40 * arr[:, bio.index("des")] * AREA_pi[:, bio.index("gra")] / AREA_pi[:, bio.index("des")]
+        arr[:, bio.index("pas")] = 0.60 * arr[:, bio.index("gra")] + 0.40 * arr[:, bio.index("des")] * AREA_pi[:, bio.index("gra")] / AREA_pi[:, bio.index("des")]
         TMP = AREA_pi[:, bio.index("des")] == 0
         arr[:, bio.index("pas")][TMP] = arr[:, bio.index("gra")][TMP]
 
 # if no urban in the model
-if (nb_biome > 1) & (np.sum(AREA_pi[:, bio.index("urb")]) == 0) & (
-        (mod_biomeURB == "URB") | mod_biomeV3):
+if (nb_biome > 1) & (np.sum(AREA_pi[:, bio.index("urb")]) == 0) & ((mod_biomeURB == "URB") | mod_biomeV3):
     for VAR in [AREA_pi, CSOIL_pi, CLITTER_pi, CVEG_pi, NPP_pi, RH_pi]:
         arr[:, bio.index("urb")] = arr[:, bio.index("des")]
 
@@ -760,9 +586,7 @@ CBURNT_pi = load_pi_fires("CBURNT")
 # if no shrubs in the model
 if (nb_biome > 1) & (np.sum(CBURNT_pi[:, bio.index("shr")]) == 0) & (mod_biomeSHR == "SHR"):
     CBURNT_pi[:, bio.index("shr")] = CBURNT_pi[:, bio.index("gra")]
-    EFIRE_pi[:, bio.index("shr")] = \
-        0.85 * EFIRE_pi[:, bio.index("gra")] \
-        + 0.15 * EFIRE_pi[:, bio.index("for")] * CBURNT_pi[:, bio.index("gra")] / CBURNT_pi[:, bio.index("for")]
+    EFIRE_pi[:, bio.index("shr")] = 0.85 * EFIRE_pi[:, bio.index("gra")] + 0.15 * EFIRE_pi[:, bio.index("for")] * CBURNT_pi[:, bio.index("gra")] / CBURNT_pi[:, bio.index("for")]
     TMP = CBURNT_pi[:, :, bio.index("for")] == 0
     EFIRE_pi[:, :, bio.index("shr")][TMP] = EFIRE_pi[:, :, bio.index("gra")][TMP]
 
@@ -774,9 +598,7 @@ if (nb_biome > 1) & (np.sum(CBURNT_pi[:, bio.index("cro")]) == 0):
 # if no pastures in the model
 if (nb_biome > 1) & (np.sum(CBURNT_pi[:, bio.index("pas")]) == 0):
     CBURNT_pi[:, bio.index("pas")] = CBURNT_pi[:, bio.index("gra")]
-    EFIRE_pi[:, bio.index("pas")] = \
-        0.60 * EFIRE_pi[:, bio.index("gra")] \
-        + 0.40 * EFIRE_pi[:, bio.index("des")] * CBURNT_pi[:, bio.index("gra")] / CBURNT_pi[:, bio.index("des")]
+    EFIRE_pi[:, bio.index("pas")] = 0.60 * EFIRE_pi[:, bio.index("gra")] + 0.40 * EFIRE_pi[:, bio.index("des")] * CBURNT_pi[:, bio.index("gra")] / CBURNT_pi[:, bio.index("des")]
     TMP = CBURNT_pi[:, bio.index("des")] == 0
     EFIRE_pi[:, bio.index("pas")][TMP] = EFIRE_pi[:, bio.index("gra")][TMP]
 
@@ -828,7 +650,7 @@ igni_0[np.isnan(igni_0) | np.isinf(igni_0)] = 0
 
 # arbitrary adjustment of parameters
 # lower preindustrial npp
-npp_0 *= CO2_0 / np.mean(CO2_cmip5[201:231])
+npp_0 *= CO2_0 / np.mean(historical.CO2_cmip5[201:231])
 # crops: yearly harvest of 80% & protection against wildfires of 100%
 if nb_biome > 1:
     npp_0[:, biome_index["cro"]] *= 0.2
@@ -873,13 +695,11 @@ if PI_1750:
     if data_LULCC[:3] == "LUH":
         for b1 in range(len(bio)):
             for b2 in range(len(bio)):
-                path = f"data/LandUse_{data_LULCC}/#DATA.LandUse_{data_LULCC}_{mod_LSNKcover}.1501-2015_114reg1.LUC_" \
-                       f"{bio[b1]}2{bio[b2]}.csv"
+                path = f"data/LandUse_{data_LULCC}/#DATA.LandUse_{data_LULCC}_{mod_LSNKcover}.1501-2015_114reg1.LUC_" f"{bio[b1]}2{bio[b2]}.csv"
                 if os.path.isfile(path):
                     TMP = load_data(path)
                     for i in range(1, 114 + 1):
-                        LUC_tmp[1: 50 + 1, regionI_index[i], biome_index[bio[b1]],
-                        biome_index[bio[b2]]] += TMP[200: 200 + 50, i - 1]
+                        LUC_tmp[1: 50 + 1, regionI_index[i], biome_index[bio[b1]], biome_index[bio[b2]]] += TMP[200: 200 + 50, i - 1]
     # correct land-cover
     AREA_0 += np.sum(np.sum(LUC_tmp, 2), 0) - np.sum(np.sum(LUC_tmp, 3), 0)
     del LUC_tmp
@@ -961,19 +781,14 @@ pr_fdbk = load_cmip5('fdbk', 'pr')
 
 # complete with arbitrary values
 for area, other in [
-    (AREA_ctrl, [CSOIL0_ctrl, NPP_ctrl, RH_ctrl, FINPUT_ctrl]),
-    (AREA_upct, [CSOIL0_upct, NPP_upct, RH_upct, FINPUT_upct]),
-    (AREA_fxcl, [CSOIL0_fxcl, NPP_fxcl, RH_fxcl, FINPUT_fxcl]),
-    (AREA_fdbk, [CSOIL0_fdbk, NPP_fdbk, RH_fdbk, FINPUT_fdbk]),
+    (AREA_ctrl, [CSOIL0_ctrl, NPP_ctrl, RH_ctrl, FINPUT_ctrl]), (AREA_upct, [CSOIL0_upct, NPP_upct, RH_upct, FINPUT_upct]), (AREA_fxcl, [CSOIL0_fxcl, NPP_fxcl, RH_fxcl, FINPUT_fxcl]), (AREA_fdbk, [CSOIL0_fdbk, NPP_fdbk, RH_fdbk, FINPUT_fdbk]),
 ]:
 
     # if no shrubs in the model
     if (nb_biome > 1) & (np.sum(AREA_ctrl[:, :, bio.index("shr")]) == 0) & (mod_biomeSHR == "SHR"):
         area[:, :, bio.index("shr")] = area[:, :, bio.index("gra")]
         for arr in other:
-            arr[:, :, bio.index("shr")] = \
-                0.85 * arr[:, :, bio.index("gra")] \
-                + 0.15 * arr[:, :, bio.index("for")] * area[:, :, bio.index("gra")] / area[:, :, bio.index("for")]
+            arr[:, :, bio.index("shr")] = 0.85 * arr[:, :, bio.index("gra")] + 0.15 * arr[:, :, bio.index("for")] * area[:, :, bio.index("gra")] / area[:, :, bio.index("for")]
             TMP = (area[:, :, bio.index("for")] == 0)
             arr[:, :, bio.index("shr")][TMP] = arr[:, :, bio.index("gra")][TMP]
 
@@ -987,9 +802,7 @@ for area, other in [
     if (nb_biome > 1) & (np.sum(AREA_ctrl[:, :, bio.index("pas")]) == 0):
         area[:, :, bio.index("pas")] = area[:, :, bio.index("gra")]
         for arr in other:
-            other[:, :, bio.index("pas")] = \
-                0.60 * arr[:, :, bio.index("gra")] \
-                + 0.40 * arr[:, :, bio.index("des")] * area[:, :, bio.index("gra")] / area[:, :, bio.index("des")]
+            other[:, :, bio.index("pas")] = 0.60 * arr[:, :, bio.index("gra")] + 0.40 * arr[:, :, bio.index("des")] * area[:, :, bio.index("gra")] / area[:, :, bio.index("des")]
             TMP = (area[:, :, bio.index("des")] == 0)
             arr[:, :, bio.index("pas")][TMP] = arr[:, :, bio.index("gra")][TMP]
 
@@ -1001,10 +814,7 @@ for area, other in [
 
 # aggregate biomes
 for arr in [
-    AREA_ctrl, CSOIL0_ctrl, NPP_ctrl, RH_ctrl, FINPUT_ctrl,
-    AREA_upct, CSOIL0_upct, NPP_upct, RH_upct, FINPUT_upct,
-    AREA_fxcl, CSOIL0_fxcl, NPP_fxcl, RH_fxcl, FINPUT_fxcl,
-    AREA_fdbk, CSOIL0_fdbk, NPP_fdbk, RH_fdbk, FINPUT_fdbk,
+    AREA_ctrl, CSOIL0_ctrl, NPP_ctrl, RH_ctrl, FINPUT_ctrl, AREA_upct, CSOIL0_upct, NPP_upct, RH_upct, FINPUT_upct, AREA_fxcl, CSOIL0_fxcl, NPP_fxcl, RH_fxcl, FINPUT_fxcl, AREA_fdbk, CSOIL0_fdbk, NPP_fdbk, RH_fdbk, FINPUT_fdbk,
 ]:
     TMP = arr.copy()
     new = np.zeros([140, nb_regionI, nb_biome], dtype=dty)
@@ -1014,12 +824,9 @@ for arr in [
     arr[:] = new
 
 # aggregate all experiments
-CO2_all = np.array(
-    list(CO2_cmip5[150] * 1.01 ** np.arange(140))
-    + list(CO2_cmip5[150] * 1.01 ** np.arange(140))
-    + list(CO2_cmip5[150] * np.ones(140)),
-    dtype=dty,
-)
+CO2_all = np.array(list(historical.CO2_cmip5[150] * 1.01 ** np.arange(140))
+    + list(historical.CO2_cmip5[150] * 1.01 ** np.arange(140))
+    + list(historical.CO2_cmip5[150] * np.ones(140)), dtype=dty,)
 AREA_all = np.array(list(AREA_upct) + list(AREA_fxcl) + list(AREA_fdbk), dtype=dty)
 CSOIL0_all = np.array(list(CSOIL0_upct) + list(CSOIL0_fxcl) + list(CSOIL0_fdbk), dtype=dty)
 NPP_all = np.array(list(NPP_upct) + list(NPP_fxcl) + list(NPP_fdbk), dtype=dty)
@@ -1075,8 +882,7 @@ for i in range(1, nb_regionI):
 
         # for NPP
         ratio = (NPP_all / AREA_all)[:, i, b] / np.mean((NPP_ctrl / AREA_ctrl)[:, i, b])
-        ratio_dec = (NPP_dec / AREA_dec)[:, i, b] / np.mean(
-            (NPP_ctrl / AREA_ctrl)[:, i, b])
+        ratio_dec = (NPP_dec / AREA_dec)[:, i, b] / np.mean((NPP_ctrl / AREA_ctrl)[:, i, b])
         if mod_LSNKnpp == "log":
 
             def err(var):
@@ -1091,11 +897,9 @@ for i in range(1, nb_regionI):
 
             def err(var):
                 carb = 1 + beta_npp[i, b] * np.log(CO2_all[:] / CO2_cmip5[150])
-                clim = (
-                        1
+                clim = (1
                         + gamma_nppT[i, b] * (tas_all[:, i] - np.mean(tas_ctrl[:, i]))
-                        + var[0] * (pr_all[:, i] - np.mean(pr_ctrl[:, i]))
-                )
+                        + var[0] * (pr_all[:, i] - np.mean(pr_ctrl[:, i])))
                 return np.sum((ratio - carb * clim) ** 2)
 
 
@@ -1103,43 +907,25 @@ for i in range(1, nb_regionI):
         elif mod_LSNKnpp == "hyp":
 
             def err(var):
-                K2 = (
-                             (2 * CO2_cmip5[150] - np.abs(var[1])) - (
-                             1 + np.abs(var[0])) * (CO2_cmip5[150] - np.abs(var[1]))
-                     ) / (
-                             (1 + np.abs(var[0]) - 1) * (
-                             CO2_cmip5[150] - np.abs(var[1])) * (
-                                     2 * CO2_cmip5[150] - np.abs(var[1]))
-                     )
-                K1 = (1 + K2 * (CO2_cmip5[150] - np.abs(var[1]))) / (
-                        CO2_cmip5[150] - np.abs(var[1]))
-                carb = (K1 * (CO2_dec[:] - np.abs(var[1]))) / (
-                        1 + K2 * (CO2_dec[:] - np.abs(var[1])))
+                K2 = ((2 * CO2_cmip5[150] - np.abs(var[1])) - (1 + np.abs(var[0])) * (CO2_cmip5[150] - np.abs(var[1]))) / ((1 + np.abs(var[0]) - 1) * (CO2_cmip5[150] - np.abs(var[1])) * (2 * CO2_cmip5[150] - np.abs(var[1])))
+                K1 = (1 + K2 * (CO2_cmip5[150] - np.abs(var[1]))) / (CO2_cmip5[150] - np.abs(var[1]))
+                carb = (K1 * (CO2_dec[:] - np.abs(var[1]))) / (1 + K2 * (CO2_dec[:] - np.abs(var[1])))
                 clim = 1 + var[2] * (tas_dec[:, i] - np.mean(tas_ctrl[:, i]))
                 return np.sum((ratio_dec - carb * clim) ** 2)
 
 
-            [beta_npp0[i, b], CO2_comp[i, b], gamma_nppT[i, b]] = fmin(err, [
-                np.log(2) * beta_ref[0], 0, 0], disp=False)
+            [beta_npp0[i, b], CO2_comp[i, b], gamma_nppT[i, b]] = fmin(err, [np.log(2) * beta_ref[0], 0, 0], disp=False)
             beta_npp0[i, b] = 1 + np.abs(beta_npp0[i, b])
             CO2_comp[i, b] = np.abs(CO2_comp[i, b])
 
 
             def err(var):
-                K2 = ((2 * CO2_cmip5[150] - CO2_comp[i, b]) - beta_npp0[i, b] * (
-                        CO2_cmip5[150] - CO2_comp[i, b])) / (
-                             (beta_npp0[i, b] - 1) * (CO2_cmip5[150] - CO2_comp[i, b]) * (
-                             2 * CO2_cmip5[150] - CO2_comp[i, b])
-                     )
-                K1 = (1 + K2 * (CO2_cmip5[150] - CO2_comp[i, b])) / (
-                        CO2_cmip5[150] - CO2_comp[i, b])
-                carb = (K1 * (CO2_all[:] - CO2_comp[i, b])) / (
-                        1 + K2 * (CO2_all[:] - CO2_comp[i, b]))
-                clim = (
-                        1
+                K2 = ((2 * CO2_cmip5[150] - CO2_comp[i, b]) - beta_npp0[i, b] * (CO2_cmip5[150] - CO2_comp[i, b])) / ((beta_npp0[i, b] - 1) * (CO2_cmip5[150] - CO2_comp[i, b]) * (2 * CO2_cmip5[150] - CO2_comp[i, b]))
+                K1 = (1 + K2 * (CO2_cmip5[150] - CO2_comp[i, b])) / (CO2_cmip5[150] - CO2_comp[i, b])
+                carb = (K1 * (CO2_all[:] - CO2_comp[i, b])) / (1 + K2 * (CO2_all[:] - CO2_comp[i, b]))
+                clim = (1
                         + gamma_nppT[i, b] * (tas_all[:, i] - np.mean(tas_ctrl[:, i]))
-                        + var[0] * (pr_all[:, i] - np.mean(pr_ctrl[:, i]))
-                )
+                        + var[0] * (pr_all[:, i] - np.mean(pr_ctrl[:, i])))
                 return np.sum((ratio - carb * clim) ** 2)
 
 
@@ -1147,32 +933,23 @@ for i in range(1, nb_regionI):
 
         # for RH rate
         ratio = (RH_all / CSOIL0_all)[:, i, b] / np.mean((RH_ctrl / CSOIL0_ctrl)[:, i, b])
-        ratio_dec = (RH_dec / CSOIL0_dec)[:, i, b] / np.mean(
-            (RH_ctrl / CSOIL0_ctrl)[:, i, b])
+        ratio_dec = (RH_dec / CSOIL0_dec)[:, i, b] / np.mean((RH_ctrl / CSOIL0_ctrl)[:, i, b])
         if mod_LSNKrho == "exp":
 
             def err(var):
-                carb = 1 + np.abs(var[0]) * (
-                        FINPUT_dec[:, i, b] - np.mean(FINPUT_ctrl[:, i, b]))
+                carb = 1 + np.abs(var[0]) * (FINPUT_dec[:, i, b] - np.mean(FINPUT_ctrl[:, i, b]))
                 clim = np.exp(var[1] * (tas_dec[:, i] - np.mean(tas_ctrl[:, i])))
                 return np.sum((ratio_dec - carb * clim) ** 2)
 
 
-            first_guess = (ratio_dec[-131] - 1) / (
-                    FINPUT_dec[-131, i, b] - np.mean(FINPUT_ctrl[:, i, b]))
-            [prim_rho[i, b], gamma_rhoT[i, b]] = fmin(err, [first_guess,
-                                                            np.log(Q10_ref[0]) / 10],
-                                                      disp=False)
+            first_guess = (ratio_dec[-131] - 1) / (FINPUT_dec[-131, i, b] - np.mean(FINPUT_ctrl[:, i, b]))
+            [prim_rho[i, b], gamma_rhoT[i, b]] = fmin(err, [first_guess, np.log(Q10_ref[0]) / 10], disp=False)
             prim_rho[i, b] = np.abs(prim_rho[i, b])
 
 
             def err(var):
-                carb = 1 + prim_rho[i, b] * (
-                        FINPUT_all[:, i, b] - np.mean(FINPUT_ctrl[:, i, b]))
-                clim = np.exp(
-                    gamma_rhoT[i, b] * (tas_all[:, i] - np.mean(tas_ctrl[:, i]))) * (
-                               1 + var[0] * (pr_all[:, i] - np.mean(pr_ctrl[:, i]))
-                       )
+                carb = 1 + prim_rho[i, b] * (FINPUT_all[:, i, b] - np.mean(FINPUT_ctrl[:, i, b]))
+                clim = np.exp(gamma_rhoT[i, b] * (tas_all[:, i] - np.mean(tas_ctrl[:, i]))) * (1 + var[0] * (pr_all[:, i] - np.mean(pr_ctrl[:, i])))
                 return np.sum((ratio - carb * clim) ** 2)
 
 
@@ -1180,32 +957,23 @@ for i in range(1, nb_regionI):
         elif mod_LSNKrho == "gauss":
 
             def err(var):
-                carb = 1 + np.abs(var[0]) * (
-                        FINPUT_dec[:, i, b] - np.mean(FINPUT_ctrl[:, i, b]))
-                clim = np.exp(
-                    np.abs(var[1]) * (tas_dec[:, i] - np.mean(tas_ctrl[:, i]))
-                    - np.abs(var[2]) * (tas_dec[:, i] - np.mean(tas_ctrl[:, i])) ** 2
-                )
+                carb = 1 + np.abs(var[0]) * (FINPUT_dec[:, i, b] - np.mean(FINPUT_ctrl[:, i, b]))
+                clim = np.exp(np.abs(var[1]) * (tas_dec[:, i] - np.mean(tas_ctrl[:, i]))
+                    - np.abs(var[2]) * (tas_dec[:, i] - np.mean(tas_ctrl[:, i])) ** 2)
                 return np.sum((ratio_dec - carb * clim) ** 2)
 
 
-            first_guess = (ratio_dec[-131] - 1) / (
-                    FINPUT_dec[-131, i, b] - np.mean(FINPUT_ctrl[:, i, b]))
-            [prim_rho[i, b], gamma_rhoT1[i, b], gamma_rhoT2[i, b]] = fmin(
-                err, [first_guess, np.log(Q10_ref[0]) / 10, 0], disp=False
-            )
+            first_guess = (ratio_dec[-131] - 1) / (FINPUT_dec[-131, i, b] - np.mean(FINPUT_ctrl[:, i, b]))
+            [prim_rho[i, b], gamma_rhoT1[i, b], gamma_rhoT2[i, b]] = fmin(err, [first_guess, np.log(Q10_ref[0]) / 10, 0], disp=False)
             prim_rho[i, b] = np.abs(prim_rho[i, b])
             gamma_rhoT1[i, b] = np.abs(gamma_rhoT1[i, b])
             gamma_rhoT2[i, b] = -np.abs(gamma_rhoT2[i, b])
 
 
             def err(var):
-                carb = 1 + prim_rho[i, b] * (
-                        FINPUT_all[:, i, b] - np.mean(FINPUT_ctrl[:, i, b]))
-                clim = np.exp(
-                    gamma_rhoT1[i, b] * (tas_all[:, i] - np.mean(tas_ctrl[:, i]))
-                    + gamma_rhoT2[i, b] * (tas_all[:, i] - np.mean(tas_ctrl[:, i])) ** 2
-                ) * (1 + var[0] * (pr_all[:, i] - np.mean(pr_ctrl[:, i])))
+                carb = 1 + prim_rho[i, b] * (FINPUT_all[:, i, b] - np.mean(FINPUT_ctrl[:, i, b]))
+                clim = np.exp(gamma_rhoT1[i, b] * (tas_all[:, i] - np.mean(tas_ctrl[:, i]))
+                    + gamma_rhoT2[i, b] * (tas_all[:, i] - np.mean(tas_ctrl[:, i])) ** 2) * (1 + var[0] * (pr_all[:, i] - np.mean(pr_ctrl[:, i])))
                 return np.sum((ratio - carb * clim) ** 2)
 
 
@@ -1288,19 +1056,14 @@ pr2_fdbk = load_pre_cmip5("fdbk", "pr2")
 
 # complete with arbitrary values
 pairs = [
-    (CBURNT_ctrl, EFIRE_ctrl),
-    (CBURNT_upct, EFIRE_upct),
-    (CBURNT_fxcl, EFIRE_fxcl),
-    (CBURNT_fdbk, EFIRE_fdbk),
+    (CBURNT_ctrl, EFIRE_ctrl), (CBURNT_upct, EFIRE_upct), (CBURNT_fxcl, EFIRE_fxcl), (CBURNT_fdbk, EFIRE_fdbk),
 ]
 
 # if no shrubs in the model
 if (nb_biome > 1) & (np.sum(CBURNT_ctrl[:, :, bio.index("shr")]) == 0) & (mod_biomeSHR == "SHR"):
     for cburnt, efire in pairs:
         cburnt[:, :, bio.index("shr")] = cburnt[:, :, bio.index("gra")]
-        efire[:, :, bio.index("shr")] = \
-            0.85 * efire[:, :, bio.index("gra")] \
-            + 0.15 * efire[:, :, bio.index("for")] * cburnt[:, :, bio.index("gra")] / cburnt[:, :, bio.index("for")]
+        efire[:, :, bio.index("shr")] = 0.85 * efire[:, :, bio.index("gra")] + 0.15 * efire[:, :, bio.index("for")] * cburnt[:, :, bio.index("gra")] / cburnt[:, :, bio.index("for")]
         TMP = (cburnt[:, :, bio.index("for")] == 0)
         efire[:, :, bio.index("shr")][TMP] = efire[:, :, bio.index("gra")][TMP]
 
@@ -1314,9 +1077,7 @@ if (nb_biome > 1) & (np.sum(CBURNT_ctrl[:, :, bio.index("cro")]) == 0):
 if (nb_biome > 1) & (np.sum(CBURNT_ctrl[:, :, bio.index("pas")]) == 0):
     for cburnt, efire in pairs:
         cburnt[:, :, bio.index("pas")] = cburnt[:, :, bio.index("gra")]
-        efire[:, :, bio.index("pas")] = \
-            0.60 * efire[:, :, bio.index("gra")] \
-            + 0.40 * efire[:, :, bio.index("des")] * cburnt[:, :, bio.index("gra")] / cburnt[:, :, bio.index("des")]
+        efire[:, :, bio.index("pas")] = 0.60 * efire[:, :, bio.index("gra")] + 0.40 * efire[:, :, bio.index("des")] * cburnt[:, :, bio.index("gra")] / cburnt[:, :, bio.index("des")]
         TMP = (cburnt[:, :, bio.index("des")] == 0)
         efire[:, :, bio.index("pas")][TMP] = efire[:, :, bio.index("gra")][TMP]
 
@@ -1328,10 +1089,7 @@ if (nb_biome > 1) & (np.sum(CBURNT_ctrl[:, :, bio.index("urb")]) == 0) & ((mod_b
 
 # aggregate biomes
 for arr in [
-    CBURNT_ctrl, EFIRE_ctrl,
-    CBURNT_upct, EFIRE_upct,
-    CBURNT_fxcl, EFIRE_fxcl,
-    CBURNT_fdbk, EFIRE_fdbk,
+    CBURNT_ctrl, EFIRE_ctrl, CBURNT_upct, EFIRE_upct, CBURNT_fxcl, EFIRE_fxcl, CBURNT_fdbk, EFIRE_fdbk,
 ]:
     TMP = arr.copy()
     new = np.zeros([140, nb_regionI, nb_biome], dtype=dty)
@@ -1341,12 +1099,9 @@ for arr in [
     arr[:] = new
 
 # aggregate all experiments
-CO2_all = np.array(
-    list(CO2_cmip5[150] * 1.01 ** np.arange(140))
+CO2_all = np.array(list(CO2_cmip5[150] * 1.01 ** np.arange(140))
     + list(CO2_cmip5[150] * 1.01 ** np.arange(140))
-    + list(CO2_cmip5[150] * np.ones(140)),
-    dtype=dty,
-)
+    + list(CO2_cmip5[150] * np.ones(140)), dtype=dty,)
 
 EFIRE_all = np.array(list(EFIRE_upct) + list(EFIRE_fxcl) + list(EFIRE_fdbk), dtype=dty)
 CBURNT_all = np.array(list(CBURNT_upct) + list(CBURNT_fxcl) + list(CBURNT_fdbk), dtype=dty)
@@ -1381,26 +1136,21 @@ for i in range(1, nb_regionI):
 
         # for ignition rate
         if mod_EFIREtrans != "":
-            ratio = (EFIRE_all / CBURNT_all)[:, i, b] / np.mean(
-                (EFIRE_ctrl / CBURNT_ctrl)[:, i, b])
-            ratio_dec = (EFIRE_dec / CBURNT_dec)[:, i, b] / np.mean(
-                (EFIRE_ctrl / CBURNT_ctrl)[:, i, b])
+            ratio = (EFIRE_all / CBURNT_all)[:, i, b] / np.mean((EFIRE_ctrl / CBURNT_ctrl)[:, i, b])
+            ratio_dec = (EFIRE_dec / CBURNT_dec)[:, i, b] / np.mean((EFIRE_ctrl / CBURNT_ctrl)[:, i, b])
 
 
             def err(var):
                 carb = 1
-                clim = (
-                        1
-                        + var[0] * (CO2_dec[:] - CO2_cmip5[150])
-                        + np.abs(var[1]) * (tas2_dec[:, i] - np.mean(tas2_ctrl[:, i]))
-                        - np.abs(var[2]) * (pr2_dec[:, i] - np.mean(pr2_ctrl[:, i]))
-                )
+                clim = (1
+                    + var[0] * (CO2_dec[:] - CO2_cmip5[150])
+                    + np.abs(var[1]) * (tas2_dec[:, i] - np.mean(tas2_ctrl[:, i]))
+                    - np.abs(var[2]) * (pr2_dec[:, i] - np.mean(pr2_ctrl[:, i])))
                 return np.sum((ratio_dec - carb * clim) ** 2)
 
 
             first_guess = (ratio_dec[-131] - 1) / (CO2_dec[-131] - CO2_cmip5[150])
-            [gamma_igniC[i, b], gamma_igniT[i, b], gamma_igniP[i, b]] = \
-                fmin(err, [first_guess, 0, 0], disp=False)
+            [gamma_igniC[i, b], gamma_igniT[i, b], gamma_igniP[i, b]] = fmin(err, [first_guess, 0, 0], disp=False)
             gamma_igniT[i, b] = np.abs(gamma_igniT[i, b])
             gamma_igniP[i, b] = -np.abs(gamma_igniP[i, b])
 
@@ -1807,8 +1557,7 @@ alpha_BB_NH3 = load_alpha_BB("NH3")
 alpha_BB_BC = load_alpha_BB("BC")
 alpha_BB_OC = load_alpha_BB("OC")
 
-for arr in [alpha_BB_CH4, alpha_BB_NOX, alpha_BB_CO, alpha_BB_VOC, alpha_BB_N2O, alpha_BB_SO2, alpha_BB_NH3,
-            alpha_BB_BC, alpha_BB_OC, alpha_BB_CO2]:
+for arr in [alpha_BB_CH4, alpha_BB_NOX, alpha_BB_CO, alpha_BB_VOC, alpha_BB_N2O, alpha_BB_SO2, alpha_BB_NH3, alpha_BB_BC, alpha_BB_OC, alpha_BB_CO2]:
     arr /= alpha_BB_CO2
     arr[np.isnan(arr) | np.isinf(arr)] = 0
     for b in range(nb_biome):

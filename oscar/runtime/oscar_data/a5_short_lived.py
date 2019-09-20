@@ -3,31 +3,20 @@ import os
 import numpy as np
 
 from ...data import load_data
-from .a1_regions import nb_regionJ, nb_kind, nb_regionI, nb_sector, regionJ_index, \
-    regionI_index, ind_final, kindAER_index, kindCHI_index
+from .a1_regions import nb_regionJ, nb_kind, nb_regionI, nb_sector, regionJ_index, regionI_index, ind_final, kindAER_index, kindCHI_index
 from .a2_greenhouse import sec_accmip, ind_edgar, ind_cdiac
-from ...config import dty, mod_regionI, mod_regionJ, scen_ESO2, mod_DATAscen, scen_ECO, \
-    scen_ENOX, scen_EVOC, scen_ENH3, scen_EBC, scen_EOC, data_ENOX, data_ECO, data_EVOC, \
-    data_ESO2, data_ENH3, data_EOC, data_EBC
+from ...config import dty, mod_regionI, mod_regionJ, scen_ESO2, mod_DATAscen, scen_ECO, scen_ENOX, scen_EVOC, scen_ENH3, scen_EBC, scen_EOC, data_ENOX, data_ECO, data_EVOC, data_ESO2, data_ENH3, data_EOC, data_EBC
 
 ##################################################
 #   4. SHORT-LIVED SPECIES
 ##################################################
-
-ENOX = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI],
-                dtype=dty)  # {TgN/yr}
-ECO = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI],
-               dtype=dty)  # {TgC/yr}
-EVOC = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI],
-                dtype=dty)  # {Tg/yr}
-ESO2 = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI],
-                dtype=dty)  # {TgS/yr}
-ENH3 = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI],
-                dtype=dty)  # {TgN/yr}
-EOC = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI],
-               dtype=dty)  # {Tg/yr}
-EBC = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI],
-               dtype=dty)  # {Tg/yr}
+ENOX = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)  # {TgN/yr}
+ECO = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)  # {TgC/yr}
+EVOC = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)  # {Tg/yr}
+ESO2 = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)  # {TgS/yr}
+ENH3 = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)  # {TgN/yr}
+EOC = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)  # {Tg/yr}
+EBC = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)  # {Tg/yr}
 
 # ==========
 # 4.1. EDGAR
@@ -53,8 +42,7 @@ for VAR in ["NOX", "CO", "VOC"]:
         if os.path.isfile(path):
             TMP = load_data(path)
             for i in range(114 + 1):
-                arr[270:ind_edgar + 1, regionJ_index[i], 0, kindCHI_index[VAR],
-                regionI_index[i]] += TMP[:ind_edgar - 270 + 1, i]
+                arr[270:ind_edgar + 1, regionJ_index[i], 0, kindCHI_index[VAR], regionI_index[i]] += TMP[:ind_edgar - 270 + 1, i]
 
 # AeroPrec
 for VAR in ["SO2", "NH3"]:
@@ -72,8 +60,7 @@ for VAR in ["SO2", "NH3"]:
         if os.path.isfile(path):
             TMP = load_data(path)
             for i in range(114 + 1):
-                arr[270:ind_edgar + 1, regionJ_index[i], 0, kindAER_index[VAR], regionI_index[i]] += \
-                    TMP[:ind_edgar - 270 + 1, i]
+                arr[270:ind_edgar + 1, regionJ_index[i], 0, kindAER_index[VAR], regionI_index[i]] += TMP[:ind_edgar - 270 + 1, i]
 
 # PM10 (proxy for OC/BC)
 EPM10edgar = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
@@ -82,10 +69,8 @@ for s in range(1, len(sec_accmip) - 2):
     if os.path.isfile(path):
         TMP = load_data(path)
         for i in range(114 + 1):
-            EPM10edgar[270: ind_edgar + 1, regionJ_index[i], 0, kindAER_index["OC"], regionI_index[i]] += \
-                TMP[: ind_edgar - 270 + 1, i] / 2
-            EPM10edgar[270: ind_edgar + 1, regionJ_index[i], 0, kindAER_index["BC"], regionI_index[i]] += \
-                TMP[: ind_edgar - 270 + 1, i] / 2
+            EPM10edgar[270: ind_edgar + 1, regionJ_index[i], 0, kindAER_index["OC"], regionI_index[i]] += TMP[: ind_edgar - 270 + 1, i] / 2
+            EPM10edgar[270: ind_edgar + 1, regionJ_index[i], 0, kindAER_index["BC"], regionI_index[i]] += TMP[: ind_edgar - 270 + 1, i] / 2
 
 # ===============
 # 4.2. EDGAR-HTAP
@@ -109,8 +94,7 @@ for VAR in ["NOX", "CO", "VOC"]:
         if os.path.isfile(path):
             TMP = load_data(path)
             for i in range(114 + 1):
-                arr[308:310 + 1, regionJ_index[i], 0, kindCHI_index[VAR], regionI_index[i]] += \
-                    TMP[:ind_edgar - 270 + 1, i]
+                arr[308:310 + 1, regionJ_index[i], 0, kindCHI_index[VAR], regionI_index[i]] += TMP[:ind_edgar - 270 + 1, i]
 
 # AeroPrec
 for VAR in ["SO2", "NH3", "OC", "BC"]:
@@ -130,8 +114,7 @@ for VAR in ["SO2", "NH3", "OC", "BC"]:
         if os.path.isfile(path):
             TMP = load_data(path)
             for i in range(114 + 1):
-                arr[308:310 + 1, regionJ_index[i], 0, kindAER_index[VAR], regionI_index[i]] += \
-                    TMP[:ind_edgar - 270 + 1, i]
+                arr[308:310 + 1, regionJ_index[i], 0, kindAER_index[VAR], regionI_index[i]] += TMP[:ind_edgar - 270 + 1, i]
 
 # ===========
 # 4.3. ACCMIP
@@ -213,9 +196,7 @@ EBCproj = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], 
 
 # OzoPrec
 for VAR, scen, arr in [
-    ("NOX", scen_ENOX, ENOXproj),
-    ("CO", scen_ECO, ECOproj),
-    ("VOC", scen_EVOC, EVOCproj),
+    ("NOX", scen_ENOX, ENOXproj), ("CO", scen_ECO, ECOproj), ("VOC", scen_EVOC, EVOCproj),
 ]:
     if (scen[:4] == "SRES") & (ind_final > ind_cdiac):
         path = f"data/EOzoPrec_SRES/#DATA.EOzoPrec_SRES.2000-2100_4reg0.{scen[5:]}_E{VAR}.csv"
@@ -237,17 +218,13 @@ if (scen_ESO2[:4] == "SRES") & (ind_final > ind_cdiac):
     TMP = load_data(path)
     for i in range(4 + 1):
         if (mod_regionI == "SRES4") & (mod_regionJ == "SRES4"):
-            ESO2proj[300: min(ind_final, 400) + 1, i, 0, kindAER_index["SO2"], i] += \
-                TMP[: min(ind_final, 400) - 300 + 1, i]
+            ESO2proj[300: min(ind_final, 400) + 1, i, 0, kindAER_index["SO2"], i] += TMP[: min(ind_final, 400) - 300 + 1, i]
         elif (mod_regionI == "SRES4") & (mod_regionJ != "SRES4"):
-            ESO2proj[300: min(ind_final, 400) + 1, 0, 0, kindAER_index["SO2"], i] += \
-                TMP[: min(ind_final, 400) - 300 + 1, i]
+            ESO2proj[300: min(ind_final, 400) + 1, 0, 0, kindAER_index["SO2"], i] += TMP[: min(ind_final, 400) - 300 + 1, i]
         elif (mod_regionI != "SRES4") & (mod_regionJ == "SRES4"):
-            ESO2proj[300: min(ind_final, 400) + 1, i, 0, kindAER_index["SO2"], 0] += \
-                TMP[: min(ind_final, 400) - 300 + 1, i]
+            ESO2proj[300: min(ind_final, 400) + 1, i, 0, kindAER_index["SO2"], 0] += TMP[: min(ind_final, 400) - 300 + 1, i]
         elif (mod_regionI != "SRES4") & (mod_regionJ != "SRES4"):
-            ESO2proj[300: min(ind_final, 400) + 1, 0, 0, kindAER_index["SO2"], 0] += \
-                TMP[: min(ind_final, 400) - 300 + 1, i]
+            ESO2proj[300: min(ind_final, 400) + 1, 0, 0, kindAER_index["SO2"], 0] += TMP[: min(ind_final, 400) - 300 + 1, i]
 
 # ========
 # 4.5. RCP
@@ -258,57 +235,42 @@ if (scen_ESO2[:4] == "SRES") & (ind_final > ind_cdiac):
 
 # OzoPrec
 for VAR, scen, arr in [
-    ("NOX", scen_ENOX, ENOXproj),
-    ("CO", scen_ECO, ECOproj),
-    ("VOC", scen_EVOC, EVOCproj),
+    ("NOX", scen_ENOX, ENOXproj), ("CO", scen_ECO, ECOproj), ("VOC", scen_EVOC, EVOCproj),
 ]:
     if (scen[:3] == "RCP") & (ind_final > ind_cdiac):
         for s in range(1, len(sec_accmip) - 2):
-            path = f"data/EOzoPrec_RCP/#DATA.EOzoPrec_RCP.2000-2100_5reg0.rcp{scen[3]}{scen[5]}_E{VAR}_" \
-                   f"{sec_accmip[s]}.csv"
+            path = f"data/EOzoPrec_RCP/#DATA.EOzoPrec_RCP.2000-2100_5reg0.rcp{scen[3]}{scen[5]}_E{VAR}_{sec_accmip[s]}.csv"
             if os.path.isfile(path):
                 TMP = load_data(path)
                 for i in range(5 + 1):
                     if (mod_regionI == "RCP5") & (mod_regionJ == "RCP5"):
-                        arr[300:min(ind_final, 400) + 1, i, 0, kindCHI_index[VAR], i] += \
-                            TMP[:min(ind_final, 400) - 300 + 1, i]
+                        arr[300:min(ind_final, 400) + 1, i, 0, kindCHI_index[VAR], i] += TMP[:min(ind_final, 400) - 300 + 1, i]
                     elif (mod_regionI == "RCP5") & (mod_regionJ != "RCP5"):
-                        arr[300:min(ind_final, 400) + 1, 0, 0, kindCHI_index[VAR], i] += \
-                            TMP[:min(ind_final, 400) - 300 + 1, i]
+                        arr[300:min(ind_final, 400) + 1, 0, 0, kindCHI_index[VAR], i] += TMP[:min(ind_final, 400) - 300 + 1, i]
                     elif (mod_regionI != "RCP5") & (mod_regionJ == "RCP5"):
-                        arr[300:min(ind_final, 400) + 1, i, 0, kindCHI_index[VAR], 0] += \
-                            TMP[:min(ind_final, 400) - 300 + 1, i]
+                        arr[300:min(ind_final, 400) + 1, i, 0, kindCHI_index[VAR], 0] += TMP[:min(ind_final, 400) - 300 + 1, i]
                     elif (mod_regionI != "RCP5") & (mod_regionJ != "RCP5"):
-                        arr[300:min(ind_final, 400) + 1, 0, 0, kindCHI_index[VAR], 0] += \
-                            TMP[:min(ind_final, 400) - 300 + 1, i]
+                        arr[300:min(ind_final, 400) + 1, 0, 0, kindCHI_index[VAR], 0] += TMP[:min(ind_final, 400) - 300 + 1, i]
 
 # AeroPrec
 for VAR, scen, arr in [
-    ("SO2", scen_ESO2, ESO2proj),
-    ("NH3", scen_ENH3, ENH3proj),
-    ("OC", scen_EOC, EOCproj),
-    ("BC", scen_EBC, EBCproj),
+    ("SO2", scen_ESO2, ESO2proj), ("NH3", scen_ENH3, ENH3proj), ("OC", scen_EOC, EOCproj), ("BC", scen_EBC, EBCproj),
 ]:
     if (scen[:3] == "RCP") & (ind_final > ind_cdiac):
         for s in range(1, len(sec_accmip) - 2):
-            path = f"data/EAeroPrec_RCP/#DATA.EAeroPrec_RCP.2000-2100_5reg0.rcp{scen[3]}{scen[5]}_E{VAR}_" \
-                   f"{sec_accmip[s]}.csv"
+            path = f"data/EAeroPrec_RCP/#DATA.EAeroPrec_RCP.2000-2100_5reg0.rcp{scen[3]}{scen[5]}_E{VAR}_" f"{sec_accmip[s]}.csv"
 
             if os.path.isfile(path):
                 TMP = load_data(path)
                 for i in range(5 + 1):
                     if (mod_regionI == "RCP5") & (mod_regionJ == "RCP5"):
-                        arr[300:min(ind_final, 400) + 1, i, 0, kindAER_index[VAR], i] += \
-                            TMP[:min(ind_final, 400) - 300 + 1, i]
+                        arr[300:min(ind_final, 400) + 1, i, 0, kindAER_index[VAR], i] += TMP[:min(ind_final, 400) - 300 + 1, i]
                     elif (mod_regionI == "RCP5") & (mod_regionJ != "RCP5"):
-                        arr[300:min(ind_final, 400) + 1, 0, 0, kindAER_index[VAR], i] += \
-                            TMP[:min(ind_final, 400) - 300 + 1, i]
+                        arr[300:min(ind_final, 400) + 1, 0, 0, kindAER_index[VAR], i] += TMP[:min(ind_final, 400) - 300 + 1, i]
                     elif (mod_regionI != "RCP5") & (mod_regionJ == "RCP5"):
-                        arr[300:min(ind_final, 400) + 1, i, 0, kindAER_index[VAR], 0] += \
-                            TMP[:min(ind_final, 400) - 300 + 1, i]
+                        arr[300:min(ind_final, 400) + 1, i, 0, kindAER_index[VAR], 0] += TMP[:min(ind_final, 400) - 300 + 1, i]
                     elif (mod_regionI != "RCP5") & (mod_regionJ != "RCP5"):
-                        arr[300:min(ind_final, 400) + 1, 0, 0, kindAER_index[VAR], 0] += \
-                            TMP[:min(ind_final, 400) - 300 + 1, i]
+                        arr[300:min(ind_final, 400) + 1, 0, 0, kindAER_index[VAR], 0] += TMP[:min(ind_final, 400) - 300 + 1, i]
 
 # =================
 # 4.A. PAST DATASET
@@ -316,11 +278,7 @@ for VAR, scen, arr in [
 
 # datasets mixed following trends
 for VAR, data, edgar, raw, ehtap, accmip, bio in [
-    ("NOX", data_ENOX, ENOXedgar, ENOXedgar if data_ENOX == "EDGAR" else ENOXaccmip, ENOXehtap, ENOXaccmip, p_ENOX_bio),
-    ("CO", data_ECO, ECOedgar, ECOedgar if data_ECO == "EDGAR" else ECOaccmip, ECOehtap, ECOaccmip, p_ECO_bio),
-    ("VOC", data_EVOC, EVOCedgar, EVOCedgar if data_EVOC == "EDGAR" else EVOCaccmip, EVOCehtap, EVOCaccmip, p_EVOC_bio),
-    ("SO2", data_ESO2, ESO2edgar, ESO2edgar if data_ESO2 == "EDGAR" else ESO2accmip, ESO2ehtap, ESO2accmip, p_ESO2_bio),
-    ("NH3", data_ENH3, ENH3edgar, ENH3edgar if data_ENH3 == "EDGAR" else ENH3accmip, ENH3ehtap, ENH3accmip, p_ENH3_bio),
+    ("NOX", data_ENOX, ENOXedgar, ENOXedgar if data_ENOX == "EDGAR" else ENOXaccmip, ENOXehtap, ENOXaccmip, p_ENOX_bio), ("CO", data_ECO, ECOedgar, ECOedgar if data_ECO == "EDGAR" else ECOaccmip, ECOehtap, ECOaccmip, p_ECO_bio), ("VOC", data_EVOC, EVOCedgar, EVOCedgar if data_EVOC == "EDGAR" else EVOCaccmip, EVOCehtap, EVOCaccmip, p_EVOC_bio), ("SO2", data_ESO2, ESO2edgar, ESO2edgar if data_ESO2 == "EDGAR" else ESO2accmip, ESO2ehtap, ESO2accmip, p_ESO2_bio), ("NH3", data_ENH3, ENH3edgar, ENH3edgar if data_ENH3 == "EDGAR" else ENH3accmip, ENH3ehtap, ENH3accmip, p_ENH3_bio),
 ]:
     # with EDGAR as reference
     past = raw.copy()
@@ -329,16 +287,14 @@ for VAR, data, edgar, raw, ehtap, accmip, bio in [
         for t in range(ind_edgar + 1, ind_cdiac + 1):
             past[t, ...] = past[t - 1, ...] * ehtap[t, ...] / ehtap[t - 1, ...]
             past[np.isnan(past) | np.isinf(past)] = 0
-            past[t, ...] *= np.sum(past[t - 1, ...]) / np.sum(past[t, ...]) * np.sum(ehtap[t, ...]) / np.sum(
-                ehtap[t - 1, ...])
+            past[t, ...] *= np.sum(past[t - 1, ...]) / np.sum(past[t, ...]) * np.sum(ehtap[t, ...]) / np.sum(ehtap[t - 1, ...])
         past[np.isnan(past) | np.isinf(past)] = 0
 
         # follow ACCMIP variations before 1970
         for t in range(150, 270)[::-1]:
             past[t, ...] = past[t + 1, ...] * accmip[t, ...] / accmip[t + 1, ...]
             past[np.isnan(past) | np.isinf(past)] = 0
-            past[t, ...] *= np.sum(past[t + 1, ...]) / np.sum(past[t, ...]) * np.sum(accmip[t, ...]) / np.sum(
-                accmip[t + 1, ...])
+            past[t, ...] *= np.sum(past[t + 1, ...]) / np.sum(past[t, ...]) * np.sum(accmip[t, ...]) / np.sum(accmip[t + 1, ...])
         past[np.isnan(past) | np.isinf(past)] = 0
 
         # linear extrapolation before 1850
@@ -354,16 +310,14 @@ for VAR, data, edgar, raw, ehtap, accmip, bio in [
         for t in range(300 + 1, ind_edgar + 1):
             past[np.isnan(past) | np.isinf(past)] = 0
             past[t, ...] = past[t - 1, ...] * edgar[t, ...] / edgar[t - 1, ...]
-            past[t, ...] *= np.sum(past[t - 1, ...]) / np.sum(past[t, ...]) * np.sum(edgar[t, ...]) / np.sum(
-                edgar[t - 1, ...])
+            past[t, ...] *= np.sum(past[t - 1, ...]) / np.sum(past[t, ...]) * np.sum(edgar[t, ...]) / np.sum(edgar[t - 1, ...])
         past[np.isnan(past) | np.isinf(past)] = 0
 
         # follow EDGAR-HTAP variations after 2008
         for t in range(ind_edgar + 1, ind_cdiac + 1):
             past[t, ...] = past[t - 1, ...] * ehtap[t, ...] / ehtap[t - 1, ...]
             past[np.isnan(past) | np.isinf(past)] = 0
-            past[t, ...] *= np.sum(past[t - 1, ...]) / np.sum(past[t, ...]) * np.sum(ehtap[t, ...]) / np.sum(
-                ehtap[t - 1, ...])
+            past[t, ...] *= np.sum(past[t - 1, ...]) / np.sum(past[t, ...]) * np.sum(ehtap[t, ...]) / np.sum(ehtap[t - 1, ...])
         past[np.isnan(past) | np.isinf(past)] = 0
 
         # linear extrapolation before 1850
@@ -392,8 +346,7 @@ for VAR, data, edgar, raw, ehtap, accmip, bio in [
         ENH3_0 = arr_0
 
 for VAR, data, bio, accmip, ehtap in [
-    ("OC", data_EOC, p_EOC_bio, EOCaccmip, EOCehtap),
-    ("BC", data_EBC, p_EBC_bio, EBCaccmip, EBCehtap),
+    ("OC", data_EOC, p_EOC_bio, EOCaccmip, EOCehtap), ("BC", data_EBC, p_EBC_bio, EBCaccmip, EBCehtap),
 ]:
     # with ACCMIP as reference
     if data == "ACCMIP":
@@ -403,16 +356,14 @@ for VAR, data, bio, accmip, ehtap in [
         for t in range(300 + 1, ind_edgar + 1):
             past[t, ...] = past[t - 1, ...] * EPM10edgar[t, ...] / EPM10edgar[t - 1, ...]
             past[np.isnan(past) | np.isinf(past)] = 0
-            past[t, ...] *= np.sum(past[t - 1, ...]) / np.sum(past[t, ...]) * np.sum(EPM10edgar[t, ...]) / np.sum(
-                EPM10edgar[t - 1, ...])
+            past[t, ...] *= np.sum(past[t - 1, ...]) / np.sum(past[t, ...]) * np.sum(EPM10edgar[t, ...]) / np.sum(EPM10edgar[t - 1, ...])
         past[np.isnan(past) | np.isinf(past)] = 0
 
         # follow EDGAR-HTAP variations after 2008
         for t in range(ind_edgar + 1, ind_cdiac + 1):
             past[t, ...] = past[t - 1, ...] * ehtap[t, ...] / ehtap[t - 1, ...]
             past[np.isnan(past) | np.isinf(past)] = 0
-            past[t, ...] *= np.sum(past[t - 1, ...]) / np.sum(past[t, ...]) * np.sum(ehtap[t, ...]) / np.sum(
-                ehtap[t - 1, ...])
+            past[t, ...] *= np.sum(past[t - 1, ...]) / np.sum(past[t, ...]) * np.sum(ehtap[t, ...]) / np.sum(ehtap[t - 1, ...])
         past[np.isnan(past) | np.isinf(past)] = 0
 
         # linear extrapolation before 1850
@@ -446,13 +397,7 @@ EBC[:min(ind_cdiac, ind_final) + 1, ...] = EBCpast[:min(ind_cdiac, ind_final) + 
 
 # datasets mixed following various criteria
 for VAR, scen, arr, arrproj, arr_0 in [
-    ("NOX", scen_ENOX, ENOX, ENOXproj, ENOX_0),
-    ("CO", scen_ECO, ECO, ECOproj, ECO_0),
-    ("VOC", scen_EVOC, EVOC, EVOCproj, EVOC_0),
-    ("SO2", scen_ESO2, ESO2, ESO2proj, ESO2_0),
-    ("NH3", scen_ENH3, ENH3, ENH3proj, ENH3_0),
-    ("OC", scen_EOC, EOC, EOCproj, EOC_0),
-    ("BC", scen_EBC, EBC, EBCproj, EBC_0),
+    ("NOX", scen_ENOX, ENOX, ENOXproj, ENOX_0), ("CO", scen_ECO, ECO, ECOproj, ECO_0), ("VOC", scen_EVOC, EVOC, EVOCproj, EVOC_0), ("SO2", scen_ESO2, ESO2, ESO2proj, ESO2_0), ("NH3", scen_ENH3, ENH3, ENH3proj, ENH3_0), ("OC", scen_EOC, EOC, EOCproj, EOC_0), ("BC", scen_EBC, EBC, EBCproj, EBC_0),
 ]:
     # stop emissions
     if (scen == "stop") & (ind_final > ind_cdiac):
@@ -462,7 +407,7 @@ for VAR, scen, arr, arrproj, arr_0 in [
     elif (scen == "cst") & (ind_final > ind_cdiac):
         arr[ind_cdiac + 1:, ...] = arr[ind_cdiac, ...][np.newaxis, ...]
 
-        # RCP or SRES scenarios
+    # RCP or SRES scenarios
     elif ((scen[:4] == "SRES") | (scen[:3] == "RCP")) & (ind_final > ind_cdiac):
 
         # raw discontinuity
@@ -482,14 +427,12 @@ for VAR, scen, arr, arrproj, arr_0 in [
                     arr[t, 0, ..., :] += np.sum(arr[t, 1:, ..., :], 0)
                     arr[t, 1:, ..., :] = 0
 
-                    # linear transition over N years
+        # linear transition over N years
         elif mod_DATAscen[:6] == "smooth":
             N = int(mod_DATAscen[6:])
             if ind_final >= ind_cdiac + N:
                 for t in range(ind_cdiac + 1, ind_cdiac + N):
-                    arr[t, ...] = (1 - (t - ind_cdiac) / float(N)) * arr[ind_cdiac, ...] + (t - ind_cdiac) / float(N) \
-                                  * \
-                                  arrproj[ind_cdiac + N, ...]
+                    arr[t, ...] = (1 - (t - ind_cdiac) / float(N)) * arr[ind_cdiac, ...] + (t - ind_cdiac) / float(N) * arrproj[ind_cdiac + N, ...]
                     def_regI = bool(np.sum(arrproj[t, :, ..., 1:]))
                     def_regJ = bool(np.sum(arrproj[t, 1:, ..., :]))
                     if not def_regI:
@@ -508,23 +451,17 @@ for VAR, scen, arr, arrproj, arr_0 in [
                 if def_regI and def_regJ:
                     arr[t, ...] = arr[t - 1, ...] * arrproj[t, ...] / arrproj[t - 1, ...]
                     arr[np.isnan(arr) | np.isinf(arr)] = 0
-                    arr[t, ...] *= np.sum(arr[t - 1, ...]) / np.sum(arr[t, ...]) * np.sum(arrproj[t, ...]) / np.sum(
-                        arrproj[t - 1, ...])
+                    arr[t, ...] *= np.sum(arr[t - 1, ...]) / np.sum(arr[t, ...]) * np.sum(arrproj[t, ...]) / np.sum(arrproj[t - 1, ...])
                 elif not def_regI and def_regJ:
-                    arr[t, :, ..., 0] = np.sum(arr[t - 1, :, ..., :], -1) * np.sum(arrproj[t, :, ..., :], -1) / np.sum(
-                        arrproj[t - 1, :, ..., :], -1)
+                    arr[t, :, ..., 0] = np.sum(arr[t - 1, :, ..., :], -1) * np.sum(arrproj[t, :, ..., :], -1) / np.sum(arrproj[t - 1, :, ..., :], -1)
                     arr[np.isnan(arr) | np.isinf(arr)] = 0
-                    arr[t, ...] *= np.sum(arr[t - 1, ...]) / np.sum(arr[t, ...]) * np.sum(arrproj[t, ...]) / np.sum(
-                        arrproj[t - 1, ...])
+                    arr[t, ...] *= np.sum(arr[t - 1, ...]) / np.sum(arr[t, ...]) * np.sum(arrproj[t, ...]) / np.sum(arrproj[t - 1, ...])
                 elif def_regI and not def_regJ:
-                    arr[t, 0, ..., :] = np.sum(arr[t - 1, :, ..., :], 0) * np.sum(arrproj[t, :, ..., :], 0) / np.sum(
-                        arrproj[t - 1, :, ..., :], 0)
+                    arr[t, 0, ..., :] = np.sum(arr[t - 1, :, ..., :], 0) * np.sum(arrproj[t, :, ..., :], 0) / np.sum(arrproj[t - 1, :, ..., :], 0)
                     arr[np.isnan(arr) | np.isinf(arr)] = 0
-                    arr[t, ...] *= np.sum(arr[t - 1, ...]) / np.sum(arr[t, ...]) * np.sum(arrproj[t, ...]) / np.sum(
-                        arrproj[t - 1, ...])
+                    arr[t, ...] *= np.sum(arr[t - 1, ...]) / np.sum(arr[t, ...]) * np.sum(arrproj[t, ...]) / np.sum(arrproj[t - 1, ...])
                 elif not def_regI and not def_regJ:
-                    arr[t, 0, ..., 0] = np.sum(np.sum(arr[t - 1, :, ..., :], -1), 0) * np.sum(
-                        np.sum(arrproj[t, :, ..., :], -1), 0) / np.sum(np.sum(arrproj[t - 1, :, ..., :], -1), 0)
+                    arr[t, 0, ..., 0] = np.sum(np.sum(arr[t - 1, :, ..., :], -1), 0) * np.sum(np.sum(arrproj[t, :, ..., :], -1), 0) / np.sum(np.sum(arrproj[t - 1, :, ..., :], -1), 0)
             arr[np.isnan(arr) | np.isinf(arr)] = 0
 
 # Delete individual datasets
