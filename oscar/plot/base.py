@@ -5,7 +5,7 @@ from matplotlib.font_manager import FontProperties
 from .. import historical
 from .. import scenarios
 from ..runtime.oscar_data import ind_cdiac, ind_final
-from ..runtime.oscar_param import alpha_CO2, AREA_0, alpha_CH4, tau_CH4_OH, alpha_N2O, tau_N2O_hv, gamma_age, tau_lag, RF_ipcc, tau_CH4_hv, tau_CH4_soil, tau_CH4_ocean, chi_O3s_EESC, EESC_x, gst_giss, gst_had, gst_ncdc, chi_O3s_N2O
+from ..runtime.oscar_param import alpha_CO2, AREA_0, alpha_CH4, tau_CH4_OH, alpha_N2O, tau_N2O_hv, gamma_age, tau_lag, tau_CH4_hv, tau_CH4_soil, tau_CH4_ocean, chi_O3s_EESC, EESC_x, gst_giss, gst_had, gst_ncdc, chi_O3s_N2O
 
 
 def plot_CO2(D_CO2, OSNK, LSNK, ELUC, EFF, D_AREA, D_npp, D_efire, D_fmort, D_rh1, D_fmet, D_rh2, D_FIN, D_FOUT, D_FCIRC, D_MORT_luc, D_EFIRE_luc, D_RH1_luc, D_RH2_luc, EHWP1_luc, EHWP2_luc, EHWP3_luc,):
@@ -292,7 +292,7 @@ def plot_clim(RF, D_gst, D_gyp, RF_CO2, RF_CH4, RF_H2Os, RF_N2O, RF_halo, RF_O3t
     ax = plt.subplot(2, 3, 1)
     plt.plot([1700, 1700 + ind_final], [0, 0], "k-")
     plt.plot(1700 + np.arange(ind_final + 1), RF, color="k", lw=2, label="OSCAR")
-    plt.plot(1700 + np.arange(len(RF_ipcc)), RF_ipcc, color="r", lw=2, ls="--", label="IPCC")
+    plt.plot(1700 + np.arange(len(historical.RF_ipcc)), historical.RF_ipcc, color="r", lw=2, ls="--", label="IPCC")
     plt.title("RF (W/m2)", fontsize="medium")
     plt.legend(loc=0, ncol=2, prop=FontProperties(size="small"))
     plt.xticks(rotation=27)

@@ -180,6 +180,8 @@ elif mod_O3Temis == "mean-OxComp":
     chi_O3t_CO = np.array([0.0011], dtype=dty) * 28 / 12.0
     chi_O3t_VOC = np.array([0.0033], dtype=dty)
     chi_O3t_NOX = np.array([0.125], dtype=dty)
+else:
+    raise RuntimeError
 
 # load pre-processed ACCMIP results for specified model
 # for sensitivity to climate
@@ -304,18 +306,13 @@ elif mod_O3Sfracrel in ["Laube2013"]:
         fracrel[ODS.index("CFC114")] = (2.01017e-02 * tau + -4.67409e-08 * tau ** 2) * np.exp(tau / 4.28272e00)  # not given
         fracrel[ODS.index("CFC115")] = (3.55000e-03 * tau + 7.67310e-04 * tau ** 2) * np.exp(tau / 4.33197e00)  # not given
         fracrel[ODS.index("CCl4")] = -0.0139 + 0.131_338 * tau + 0.004_648_06 * tau ** 2
-        fracrel[
-            ODS.index("CH3CCl3")] = -0.0227 + 0.254_820 * tau + -0.015_059_46 * tau ** 2
+        fracrel[ODS.index("CH3CCl3")] = -0.0227 + 0.254_820 * tau + -0.015_059_46 * tau ** 2
         fracrel[ODS.index("HCFC22")] = -0.0190 + 0.021_203 * tau + 0.002_294_34 * tau ** 2
-        fracrel[
-            ODS.index("HCFC141b")] = -0.0635 + 0.050_362 * tau + 0.009_399_38 * tau ** 2
-        fracrel[
-            ODS.index("HCFC142b")] = -0.0032 + 0.010_130 * tau + 0.002_331_85 * tau ** 2
-        fracrel[
-            ODS.index("Halon1211")] = -0.0535 + 0.204_371 * tau + -0.004_646_44 * tau ** 2
+        fracrel[ODS.index("HCFC141b")] = -0.0635 + 0.050_362 * tau + 0.009_399_38 * tau ** 2
+        fracrel[ODS.index("HCFC142b")] = -0.0032 + 0.010_130 * tau + 0.002_331_85 * tau ** 2
+        fracrel[ODS.index("Halon1211")] = -0.0535 + 0.204_371 * tau + -0.004_646_44 * tau ** 2
         fracrel[ODS.index("Halon1202")] = (-1.51872e-02 * tau + 1.68718e-01 * tau ** 2) * np.exp(-tau / 3.43897e00)  # not given
-        fracrel[
-            ODS.index("Halon1301")] = -0.0185 + 0.061_608 * tau + 0.010_518_28 * tau ** 2
+        fracrel[ODS.index("Halon1301")] = -0.0185 + 0.061_608 * tau + 0.010_518_28 * tau ** 2
         fracrel[ODS.index("Halon2402")] = (2.25980e-01 * tau + 2.23266e-04 * tau ** 2 + -1.13882e-03 * tau ** 3)  # not given
         fracrel[ODS.index("CH3Br")] = (7.60148e-02 * tau + 1.12771e-01 * tau ** 2) * np.exp(-tau / 4.09494e00)  # not given
         fracrel[ODS.index("CH3Cl")] = 1.39444e-01 * tau + 1.46219e-04 * tau ** 2 + 8.40557e-04 * tau ** 3  # not given
@@ -354,7 +351,7 @@ elif mod_O3Sfracrel in ["Laube2013"]:
         fracrel[ODS.index("CH3Cl")] = 1.39444e-01 + 2 * 1.46219e-04 * tau + 3 * 8.40557e-04 * tau ** 2  # not given
         return fracrel
 
-    # others values for EESC {.}
+# other values for EESC {.}
 # relative strength of bromine from [Daniel et al., 2007]
 alpha_Br = np.array([60.0], dtype=dty)
 n_Cl = np.array([3, 2, 3, 2, 1, 4, 3, 1, 2, 1, 1, 0, 0, 0, 0, 1], dtype=dty)
@@ -386,45 +383,39 @@ def err(var):
 
 # sensitivity of strato ozone to chlorine and climate {DU/ppt}&{DU/K}
 # from [Douglass et al., 2014] (figure 2; data provided by author)
-if mod_O3Strans == "mean-CCMVal2":
-    chi_O3s_EESC = np.array([-12.5e-3], dtype=dty)
-    Gamma_O3s = np.array([0.012], dtype=dty) / ta_trend
-elif mod_O3Strans == "AMTRAC":
-    chi_O3s_EESC = np.array([-13.7e-3], dtype=dty)
-    Gamma_O3s = np.array([-0.015], dtype=dty) / ta_trend
-elif mod_O3Strans == "CCSR-NIES":
-    chi_O3s_EESC = np.array([-7.9e-3], dtype=dty)
-    Gamma_O3s = np.array([0.013], dtype=dty) / ta_trend
-elif mod_O3Strans == "CMAM":
-    chi_O3s_EESC = np.array([-8.1e-3], dtype=dty)
-    Gamma_O3s = np.array([-0.15], dtype=dty) / ta_trend
-elif mod_O3Strans == "CNRM-ACM":
-    chi_O3s_EESC = np.array([-23.2e-3], dtype=dty)
-    Gamma_O3s = np.array([0.0066], dtype=dty) / ta_trend
-elif mod_O3Strans == "LMDZrepro":
-    chi_O3s_EESC = np.array([-10.6e-3], dtype=dty)
-    Gamma_O3s = np.array([0.042], dtype=dty) / ta_trend
-elif mod_O3Strans == "MRI":
-    chi_O3s_EESC = np.array([-20.3e-3], dtype=dty)
-    Gamma_O3s = np.array([-0.030], dtype=dty) / ta_trend
-elif mod_O3Strans == "Niwa-SOCOL":
-    chi_O3s_EESC = np.array([-5.2e-3], dtype=dty)
-    Gamma_O3s = np.array([0.087], dtype=dty) / ta_trend
-elif mod_O3Strans == "SOCOL":
-    chi_O3s_EESC = np.array([-10.5e-3], dtype=dty)
-    Gamma_O3s = np.array([0.067], dtype=dty) / ta_trend
-elif mod_O3Strans == "ULAQ":
-    chi_O3s_EESC = np.array([-15.4e-3], dtype=dty)
-    Gamma_O3s = np.array([0.062], dtype=dty) / ta_trend
-elif mod_O3Strans == "UMSLIMCAT":
-    chi_O3s_EESC = np.array([-10.6e-3], dtype=dty)
-    Gamma_O3s = np.array([0.0071], dtype=dty) / ta_trend
-elif mod_O3Strans == "UMUKCA-UCAM":
-    chi_O3s_EESC = np.array([-11.5e-3], dtype=dty)
-    Gamma_O3s = np.array([0.04], dtype=dty) / ta_trend
+chi_O3s_EESC_map = {
+    "mean-CCMVal2": -12.5e-3,
+    "AMTRAC": -13.7e-3,
+    "CCSR-NIES": -7.9e-3,
+    "CMAM": -8.1e-3,
+    "CNRM-ACM": -23.2e-3,
+    "LMDZrepro": -10.6e-3,
+    "MRI": -20.3e-3,
+    "Niwa-SOCOL": -5.2e-3,
+    "SOCOL": -10.5e-3,
+    "ULAQ": -15.4e-3,
+    "UMSLIMCAT": -10.6e-3,
+    "UMUKCA-UCAM": -11.5e-3,
+}
+Gamma_O3s_map = {
+    "mean-CCMVal2": 0.012 / ta_trend,
+    "AMTRAC": -0.015 / ta_trend,
+    "CCSR-NIES": 0.013 / ta_trend,
+    "CMAM": -0.15 / ta_trend,
+    "CNRM-ACM": 0.0066 / ta_trend,
+    "LMDZrepro": 0.042 / ta_trend,
+    "MRI": -0.030 / ta_trend,
+    "Niwa-SOCOL": 0.087 / ta_trend,
+    "SOCOL": 0.067 / ta_trend,
+    "ULAQ": 0.062 / ta_trend,
+    "UMSLIMCAT": 0.0071 / ta_trend,
+    "UMUKCA-UCAM": 0.04 / ta_trend,
+}
+chi_O3s_EESC = chi_O3s_EESC_map[mod_O3Strans]
+Gamma_O3s = Gamma_O3s_map[mod_O3Strans]
 
-# sensitivity of stratospheric O3 to N2O {DU/ppb}&{DU/ppb/ppt}
-# formulation and values from [Daniel et al., 2010]
+#: Sensitivity of stratospheric O3 to N2O {DU/ppb}&{DU/ppb/ppt},
+#: formulation and values from [Daniel et al., 2010]
 if mod_O3Snitrous == "Daniel2010":
     chi_O3s_N2O = chi_O3s_EESC * f_fracrel(3)[0] * 6.4 * (1.53 + 0.53 * 240 / 1400.0)
     EESC_x = np.array([1400 / 0.53], dtype=dty)

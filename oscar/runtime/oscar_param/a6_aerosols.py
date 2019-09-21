@@ -13,14 +13,12 @@ from ...config import dty, mod_POAconv, mod_SO4regsat, mod_POAregsat, mod_BCregs
 
 # conversion of SO4 from {TgS} to {Tg(SO4)}
 alpha_SO4 = np.array([96 / 32.0], dtype=dty)
-# conversion of POM from {Tg(OC)} to {Tg(OM)}
-if mod_POAconv == "default":
-    alpha_POM = np.array([1.4], dtype=dty)
-elif mod_POAconv == "GFDL":
-    alpha_POM = np.array([1.6], dtype=dty)
-elif mod_POAconv == "CSIRO":
-    alpha_POM = np.array([1.3], dtype=dty)
-# conversion of NO3 from {TgN} to {Tg(NO3)}
+
+#: Conversion of POM from {Tg(OC)} to {Tg(OM)}
+alpha_POM_map = {"default": 1.4, "GFDL": 1.6, "CSIRO": 1.3}
+alpha_POM = alpha_POM_map[mod_POAconv]
+
+#: Conversion of NO3 from {TgN} to {Tg(NO3)}
 alpha_NO3 = np.array([62 / 14.0], dtype=dty)
 
 # ==============
@@ -31,67 +29,49 @@ alpha_NO3 = np.array([62 / 14.0], dtype=dty)
 # 6.2.1. HTAP
 # -----------
 
-# regional saturation coefficient {.}
-# from HTAP experiments [Yu et al., 2013] (table 6 extended; provided by author)
-# sulfate
-if mod_SO4regsat == "mean-HTAP":
-    w_reg_SO2 = np.array([-3.51, -3.87, -3.92, -2.85, -3.92], dtype=dty) / -3.51
-elif mod_SO4regsat == "CAMCHEM":
-    w_reg_SO2 = np.array([-4.26, -5.01, -4.86, -3.29, -4.55], dtype=dty) / -4.26
-elif mod_SO4regsat == "GISS-PUCCINI":
-    w_reg_SO2 = np.array([-2.73, -3.88, -2.92, -1.78, -3.44], dtype=dty) / -2.73
-elif mod_SO4regsat == "GMI":
-    w_reg_SO2 = np.array([-3.61, -3.55, -3.96, -3.30, -3.59], dtype=dty) / -3.61
-elif mod_SO4regsat == "GOCART":
-    w_reg_SO2 = np.array([-4.05, -3.86, -4.68, -3.79, -3.06], dtype=dty) / -4.05
-elif mod_SO4regsat == "INCA2":
-    w_reg_SO2 = np.array([-4.03, -4.52, -4.27, -3.33, -5.45], dtype=dty) / -4.03
-elif mod_SO4regsat == "LLNL-IMPACT":
-    w_reg_SO2 = np.array([-3.70, -3.74, -4.27, -2.84, -4.82], dtype=dty) / -3.70
-elif mod_SO4regsat == "SPRINTARS":
-    w_reg_SO2 = np.array([-2.16, -2.51, -2.53, -1.64, -2.56], dtype=dty) / -2.16
-else:
-    w_reg_SO2 = np.array([1, 1, 1, 1, 1], dtype=dty)
+#: Regional saturation coefficient {.}
+#: from HTAP experiments [Yu et al., 2013] (table 6 extended; provided by author)
+#: Sulfate
+w_reg_SO2_map = {
+    "mean-HTAP": np.array([-3.51, -3.87, -3.92, -2.85, -3.92], dtype=dty) / -3.51,
+    "CAMCHEM": np.array([-4.26, -5.01, -4.86, -3.29, -4.55], dtype=dty) / -4.26,
+    "GISS-PUCCINI": np.array([-2.73, -3.88, -2.92, -1.78, -3.44], dtype=dty) / -2.73,
+    "GMI": np.array([-3.61, -3.55, -3.96, -3.30, -3.59], dtype=dty) / -3.61,
+    "GOCART": np.array([-4.05, -3.86, -4.68, -3.79, -3.06], dtype=dty) / -4.05,
+    "INCA2": np.array([-4.03, -4.52, -4.27, -3.33, -5.45], dtype=dty) / -4.03,
+    "LLNL-IMPACT": np.array([-3.70, -3.74, -4.27, -2.84, -4.82], dtype=dty) / -3.70,
+    "SPRINTARS": np.array([-2.16, -2.51, -2.53, -1.64, -2.56], dtype=dty) / -2.16,
+    "": np.array([1, 1, 1, 1, 1], dtype=dty),
+}
+w_reg_SO2 = w_reg_SO2_map[mod_SO4regsat]
 
-# primary organic aerosols
-if mod_POAregsat == "mean-HTAP":
-    w_reg_OC = np.array([-4.00, -4.39, -4.30, -3.68, -4.09], dtype=dty) / -4.00
-elif mod_POAregsat == "CAMCHEM":
-    w_reg_OC = np.array([-3.30, -3.90, -3.23, -2.80, -3.71], dtype=dty) / -3.30
-elif mod_POAregsat == "GISS-PUCCINI":
-    w_reg_OC = np.array([-6.26, -5.86, -6.07, -6.44, -6.38], dtype=dty) / -6.26
-elif mod_POAregsat == "GMI":
-    w_reg_OC = np.array([-4.62, -5.30, -6.13, -4.22, -4.16], dtype=dty) / -4.62
-elif mod_POAregsat == "GOCART":
-    w_reg_OC = np.array([-3.57, -3.65, -3.39, -3.28, -4.00], dtype=dty) / -3.57
-elif mod_POAregsat == "INCA2":
-    w_reg_OC = np.array([-3.07, -4.27, -3.33, -2.88, -2.66], dtype=dty) / -3.07
-elif mod_POAregsat == "LLNL-IMPACT":
-    w_reg_OC = np.array([-1.31, -1.41, -1.97, -0.99, -1.29], dtype=dty) / -1.31
-elif mod_POAregsat == "SPRINTARS":
-    w_reg_OC = np.array([-5.86, -6.32, -5.97, -5.12, -6.45], dtype=dty) / -5.86
-else:
-    w_reg_OC = np.array([1, 1, 1, 1, 1], dtype=dty)
+#: Primary organic aerosols
+w_reg_OC_map = {
+    "mean-HTAP": np.array([-4.00, -4.39, -4.30, -3.68, -4.09], dtype=dty) / -4.00,
+    "CAMCHEM": np.array([-3.30, -3.90, -3.23, -2.80, -3.71], dtype=dty) / -3.30,
+    "GISS-PUCCINI": np.array([-6.26, -5.86, -6.07, -6.44, -6.38], dtype=dty) / -6.26,
+    "GMI": np.array([-4.62, -5.30, -6.13, -4.22, -4.16], dtype=dty) / -4.62,
+    "GOCART": np.array([-3.57, -3.65, -3.39, -3.28, -4.00], dtype=dty) / -3.57,
+    "INCA2": np.array([-3.07, -4.27, -3.33, -2.88, -2.66], dtype=dty) / -3.07,
+    "LLNL-IMPACT": np.array([-1.31, -1.41, -1.97, -0.99, -1.29], dtype=dty) / -1.31,
+    "SPRINTARS": np.array([-5.86, -6.32, -5.97, -5.12, -6.45], dtype=dty) / -5.86,
+    "": np.array([1, 1, 1, 1, 1], dtype=dty),
+}
+w_reg_OC = w_reg_OC_map[mod_POAregsat]
 
-# black carbon
-if mod_BCregsat == "mean-HTAP":
-    w_reg_BC = np.array([29.51, 27.31, 37.36, 28.36, 25.31], dtype=dty) / 29.51
-elif mod_BCregsat == "CAMCHEM":
-    w_reg_BC = np.array([27.56, 28.00, 35.71, 25.24, 24.08], dtype=dty) / 27.56
-elif mod_BCregsat == "GISS-PUCCINI":
-    w_reg_BC = np.array([60.41, 51.67, 69.53, 65.06, 45.46], dtype=dty) / 60.41
-elif mod_BCregsat == "GMI":
-    w_reg_BC = np.array([26.68, 25.80, 42.13, 24.81, 15.00], dtype=dty) / 26.68
-elif mod_BCregsat == "GOCART":
-    w_reg_BC = np.array([46.20, 42.30, 52.21, 45.87, 43.71], dtype=dty) / 46.20
-elif mod_BCregsat == "INCA2":
-    w_reg_BC = np.array([17.32, 16.88, 20.37, 14.14, 23.69], dtype=dty) / 17.32
-elif mod_BCregsat == "LLNL-IMPACT":
-    w_reg_BC = np.array([7.25, 6.63, 12.99, 5.66, 5.56], dtype=dty) / 7.25
-elif mod_BCregsat == "SPRINTARS":
-    w_reg_BC = np.array([21.16, 19.93, 28.58, 17.75, 19.69], dtype=dty) / 21.16
-else:
-    w_reg_BC = np.array([1, 1, 1, 1, 1], dtype=dty)
+#: Black carbon
+w_reg_BC_map = {
+    "mean-HTAP": np.array([29.51, 27.31, 37.36, 28.36, 25.31], dtype=dty) / 29.51,
+    "CAMCHEM": np.array([27.56, 28.00, 35.71, 25.24, 24.08], dtype=dty) / 27.56,
+    "GISS-PUCCINI": np.array([60.41, 51.67, 69.53, 65.06, 45.46], dtype=dty) / 60.41,
+    "GMI": np.array([26.68, 25.80, 42.13, 24.81, 15.00], dtype=dty) / 26.68,
+    "GOCART": np.array([46.20, 42.30, 52.21, 45.87, 43.71], dtype=dty) / 46.20,
+    "INCA2": np.array([17.32, 16.88, 20.37, 14.14, 23.69], dtype=dty) / 17.32,
+    "LLNL-IMPACT": np.array([7.25, 6.63, 12.99, 5.66, 5.56], dtype=dty) / 7.25,
+    "SPRINTARS": np.array([21.16, 19.93, 28.58, 17.75, 19.69], dtype=dty) / 21.16,
+    "": np.array([1, 1, 1, 1, 1], dtype=dty),
+}
+w_reg_BC = w_reg_BC_map[mod_BCregsat]
 
 # -------------
 # 6.2.2. ACCMIP
@@ -101,7 +81,6 @@ else:
 prd = {
     "ctrl": "251yr", "hist": "1850-2005", "rcp26": "2006-2100", "rcp45": "2006-2100", "rcp60": "2006-2100", "rcp85": "2006-2100",
 }
-
 
 # load pre-processed ACCMIP/CMIP5 results for specified model
 # sulfate
@@ -496,6 +475,7 @@ elif mod_NO3load == "Hauglustaine2014":
 
 # fit of parameters (defined in previous section)
 diff = NO3_nitrate - NO3_nitrate[0]
+
 
 def err(var):
     conc = np.abs(var[0]) * alpha_NO3 * (ENOX_nitrate - ENOX_nitrate[0]) + np.abs(var[1]) * alpha_NO3 * (ENH3_nitrate - ENH3_nitrate[0])

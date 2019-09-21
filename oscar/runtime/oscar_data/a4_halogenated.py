@@ -33,8 +33,7 @@ for VAR in HFC:
     path = f"data/EHaloComp_EDGAR/#DATA.EHaloComp_EDGAR.1970-{1700 + ind_edgar}_114reg0.E{VAR}.csv"
     TMP = load_data(path)
     for i in range(114 + 1):
-        EHFCedgar[
-        270: ind_edgar + 1, regionJ_index[i], 0, kindGHG_index["HFC"], regionI_index[i], HFC.index(VAR)] += TMP[: ind_edgar - 270 + 1, i]
+        EHFCedgar[270: ind_edgar + 1, regionJ_index[i], 0, kindGHG_index["HFC"], regionI_index[i], HFC.index(VAR)] += TMP[: ind_edgar - 270 + 1, i]
 
 # PFCs
 EPFCedgar = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_PFC], dtype=dty)

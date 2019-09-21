@@ -201,17 +201,16 @@ mod_O3Tclim = "mean-ACCMIP"
 mod_O3Tradeff = "IPCC-AR5"
 # Newman2006 | Laube2013
 mod_O3Sfracrel = "Newman2006"
-# mean-CCMVal2 | AMTRAC | CCSR-NIES | CMAM | CNRM-ACM | LMDZrepro | MRI
-# | Niwa-SOCOL | SOCOL | ULAQ | UMSLIMCAT | UMUKCA-UCAM
+# mean-CCMVal2 | AMTRAC | CCSR-NIES | CMAM | CNRM-ACM | LMDZrepro | MRI | Niwa-SOCOL | SOCOL | ULAQ | UMSLIMCAT | UMUKCA-UCAM
 mod_O3Strans = "mean-CCMVal2"
 # '' | Daniel2010
 mod_O3Snitrous = "Daniel2010"
 # IPCC-AR4 | mean-ACCENT | ULAQ | DLR-E39C | NCAR-MACCM | CHASER
 mod_O3Sradeff = "IPCC-AR4"
 
-# '' | mean-HTAP | CAMCHEM | GISS-PUCCINI | GMI | GOCART | INCA2 | LLNL-IMPACT
-# | SPRINTARS
+# '' | mean-HTAP | CAMCHEM | GISS-PUCCINI | GMI | GOCART | INCA2 | LLNL-IMPACT | SPRINTARS
 mod_SO4regsat = "mean-HTAP"
+
 # mean-ACCMIP | CSIRO-Mk360 | GFDL-AM3 | GISS-E2-R | MIROC-CHEM
 mod_SO4load = "mean-ACCMIP"
 # mean-AeroCom2 | BCC | CAM4-Oslo | CAM-51 | GEOS-CHEM | GISS-MATRIX | GISS-modelE

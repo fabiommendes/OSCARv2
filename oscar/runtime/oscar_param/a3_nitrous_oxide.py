@@ -29,30 +29,22 @@ alpha_N2O = 0.1765 * np.array([28.0], dtype=dty)
 # 3.2.1. Lifetimes
 # ----------------
 
-# preindustrial lifetime of N2O {yr}
-# average from [Prather et al., 2012]
-if mod_HVSNKtau == "Prather2015":
-    tau_N2O_hv = np.array([123.0], dtype=dty)
-# variations also from [Prather et al., 2015] (table 2)
-elif mod_HVSNKtau == "GMI":
-    tau_N2O_hv = np.array([137.4], dtype=dty) * 123.0 / 132.5
-elif mod_HVSNKtau == "GEOSCCM":
-    tau_N2O_hv = np.array([120.2], dtype=dty) * 123.0 / 132.5
-elif mod_HVSNKtau == "G2d-M":
-    tau_N2O_hv = np.array([127.0], dtype=dty) * 123.0 / 132.5
-elif mod_HVSNKtau == "G2d":
-    tau_N2O_hv = np.array([129.5], dtype=dty) * 123.0 / 132.5
-elif mod_HVSNKtau == "Oslo-c29":
-    tau_N2O_hv = np.array([126.1], dtype=dty) * 123.0 / 132.5
-elif mod_HVSNKtau == "Oslo-c36":
-    tau_N2O_hv = np.array([146.7], dtype=dty) * 123.0 / 132.5
-elif mod_HVSNKtau == "UCI-c29":
-    tau_N2O_hv = np.array([126.2], dtype=dty) * 123.0 / 132.5
-elif mod_HVSNKtau == "UCI-c36":
-    tau_N2O_hv = np.array([146.2], dtype=dty) * 123.0 / 132.5
+#: Preindustrial lifetime of N2O {yr} average from [Prather et al., 2012]
+#: variations also from [Prather et al., 2015] (table 2)
+tau_N2O_hv_map = {
+    "Prather2015": 123.0,
+    "GMI": 137.4 * 123.0 / 132.5,
+    "GEOSCCM": 120.2 * 123.0 / 132.5,
+    "G2d-M": 127.0 * 123.0 / 132.5,
+    "G2d": 129.5 * 123.0 / 132.5,
+    "Oslo-c29": 126.1 * 123.0 / 132.5,
+    "Oslo-c36": 146.7 * 123.0 / 132.5,
+    "UCI-c29": 126.2 * 123.0 / 132.5,
+    "UCI-c36": 146.2 * 123.0 / 132.5,
+}
+tau_N2O_hv = tau_N2O_hv_map[mod_HVSNKtau]
 
-# lag used for lagged concentrations {yr}
-# adjusted; 3yr is typical WMO value
+#: Lag used for lagged concentrations {yr} adjusted; 3yr is typical WMO value
 tau_lag = np.array([3.0], dtype=dty)
 
 # ------------------
@@ -74,6 +66,7 @@ EESC_hv0[ODS.index("CH3Cl")] = 480.0
 for arr in [EESC_hv, EESC_hv0]:
     arr *= np.array([0.47, 0.23, 0.29, 0.12, 0.05, 0.56, 0.67, 0.13, 0.08, 0.01, 0.62, 0.62, 0.28, 0.65, 0.60, 0.44], dtype=dty)
     arr *= np.array([3, 2, 3, 2, 1, 4, 3, 1, 2, 1, 1 + 60 * 1, 0 + 60 * 2, 0 + 60 * 1, 0 + 60 * 2, 0 + 60 * 1, 1], dtype=dty)
+del arr
 
 EESC_hv = np.sum(EESC_hv)
 EESC_hv0 = np.sum(EESC_hv0)
@@ -102,6 +95,8 @@ elif mod_HVSNKtrans == "Prather2012":
     chi_hv_N2O = np.array([0.08], dtype=dty)
     chi_hv_EESC = np.array([0], dtype=dty)
     chi_hv_age = np.array([0], dtype=dty)
+else:
+    raise RuntimeError
 
 
 # expression of hv sink function {.}

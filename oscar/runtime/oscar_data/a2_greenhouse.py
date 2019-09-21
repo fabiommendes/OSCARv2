@@ -43,12 +43,8 @@ for k in range(len(kin)):
 # load EPA emissions
 # see [EPA, 2012]
 ind_epa = 310
-sec_epa = [
-    "agr_ferm", "agr_manu", "agr_othr", "agr_rice", "agr_soil", "ene_burn", "ene_coal", "ene_comb", "ene_ngos", "ene_othr", "ind_acid",
-]
-sec_epa1 = [
-    "agr_ferm", "agr_manu", "agr_othr", "agr_rice", "agr_soil", "ene_coal", "ene_comb", "ene_ngos", "ene_othr", "ind_acid",
-]
+sec_epa = ["agr_ferm", "agr_manu", "agr_othr", "agr_rice", "agr_soil", "ene_burn", "ene_coal", "ene_comb", "ene_ngos", "ene_othr", "ind_acid"]
+sec_epa1 = ["agr_ferm", "agr_manu", "agr_othr", "agr_rice", "agr_soil", "ene_coal", "ene_comb", "ene_ngos", "ene_othr", "ind_acid"]
 
 # CH4
 ECH4epa = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)

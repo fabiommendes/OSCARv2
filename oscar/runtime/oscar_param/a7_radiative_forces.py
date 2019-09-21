@@ -11,9 +11,6 @@ from ...data import load_data, load_header, load_data_and_header
 #   7. RADIATIVE FORCING
 ##################################################
 
-
-
-
 # load RCP radiative forcing {W/m2}
 # from [Meinshausen et al., 2011]
 RF_rcp = np.zeros([800 + 1, 6], dtype=dty)
@@ -96,66 +93,44 @@ radeff_ODS = 1e-3 * np.array([0.26, 0.32, 0.30, 0.31, 0.20, 0.17, 0.07, 0.21, 0.
 
 # radiative efficiency of tropospheric O3 {{W/m2}/DU}
 # from IPCC-AR5 [Myhre et al., 2013]
-if mod_O3Tradeff == "IPCC-AR5":
-    radeff_O3t = np.array([0.042], dtype=dty)
-# from IPCC-AR4 [Forster et al., 2007]
-elif mod_O3Tradeff == "IPCC-AR4":
-    radeff_O3t = np.array([0.032], dtype=dty)
-# from ACCMIP [Stevenson et al., 2013] (table 3)
-elif mod_O3Tradeff == "mean-ACCMIP":
-    radeff_O3t = np.array([0.377 / 8.9], dtype=dty)
-elif mod_O3Tradeff == "CESM-CAM-superfast":
-    radeff_O3t = np.array([0.446 / 10.0], dtype=dty)
-elif mod_O3Tradeff == "CICERO-OsloCTM2":
-    radeff_O3t = np.array([0.401 / 9.3], dtype=dty)
-elif mod_O3Tradeff == "CMAM":
-    radeff_O3t = np.array([0.322 / 7.6], dtype=dty)
-elif mod_O3Tradeff == "EMAC":
-    radeff_O3t = np.array([0.460 / 10.8], dtype=dty)
-elif mod_O3Tradeff == "GEOSCCM":
-    radeff_O3t = np.array([0.387 / 8.7], dtype=dty)
-elif mod_O3Tradeff == "GFDL-AM3":
-    radeff_O3t = np.array([0.423 / 10.3], dtype=dty)
-elif mod_O3Tradeff == "GISS-E2-R":
-    radeff_O3t = np.array([0.314 / 8.3], dtype=dty)
-elif mod_O3Tradeff == "GISS-E2-R-TOMAS":
-    radeff_O3t = np.array([0.333 / 8.7], dtype=dty)
-elif mod_O3Tradeff == "HadGEM2":
-    radeff_O3t = np.array([0.303 / 7.3], dtype=dty)
-elif mod_O3Tradeff == "LMDzORINCA":
-    radeff_O3t = np.array([0.351 / 8.2], dtype=dty)
-elif mod_O3Tradeff == "MIROC-CHEM":
-    radeff_O3t = np.array([0.402 / 9.2], dtype=dty)
-elif mod_O3Tradeff == "MOCAGE":
-    radeff_O3t = np.array([0.219 / 4.8], dtype=dty)
-elif mod_O3Tradeff == "NCAR-CAM-35":
-    radeff_O3t = np.array([0.433 / 10.2], dtype=dty)
-elif mod_O3Tradeff == "STOC-HadAM3":
-    radeff_O3t = np.array([0.437 / 10.5], dtype=dty)
-elif mod_O3Tradeff == "UM-CAM":
-    radeff_O3t = np.array([0.376 / 8.7], dtype=dty)
-elif mod_O3Tradeff == "TM5":
-    radeff_O3t = np.array([0.422 / 10.0], dtype=dty)
-else:
-    raise RuntimeError
+radeff_O3t_map = {
+    "IPCC-AR5": 0.042,
+    # from IPCC-AR4 [Forster et al., 2007]
+    "IPCC-AR4": 0.032,
+    # from ACCMIP [Stevenson et al., 2013] (table 3)
+    "mean-ACCMIP": 0.377 / 8.9,
+    "CESM-CAM-superfast": 0.446 / 10.0,
+    "CICERO-OsloCTM2": 0.401 / 9.3,
+    "CMAM": 0.322 / 7.6,
+    "EMAC": 0.460 / 10.8,
+    "GEOSCCM": 0.387 / 8.7,
+    "GFDL-AM3": 0.423 / 10.3,
+    "GISS-E2-R": 0.314 / 8.3,
+    "GISS-E2-R-TOMAS": 0.333 / 8.7,
+    "HadGEM2": 0.303 / 7.3,
+    "LMDzORINCA": 0.351 / 8.2,
+    "MIROC-CHEM": 0.402 / 9.2,
+    "MOCAGE": 0.219 / 4.8,
+    "NCAR-CAM-35": 0.433 / 10.2,
+    "STOC-HadAM3": 0.437 / 10.5,
+    "UM-CAM": 0.376 / 8.7,
+    "TM5": 0.422 / 10.0,
+}
+radeff_O3t = radeff_O3t_map[mod_O3Tradeff]
 
 # radiative efficiency of stratospheric O3 {{W/m2}/DU}
 # from IPCC-AR4 [Forster et al., 2007]
-if mod_O3Sradeff == "IPCC-AR4":
-    radeff_O3s = np.array([0.004], dtype=dty)
-# from ACCENT [Gauss et al., 2006] (tables 4 & 6)
-elif mod_O3Sradeff == "mean-ACCENT":
-    radeff_O3s = np.array([-0.058 / -13.9], dtype=dty)
-elif mod_O3Sradeff == "ULAQ":
-    radeff_O3s = np.array([-0.059 / -12.6], dtype=dty)
-elif mod_O3Sradeff == "DLR-E39C":
-    radeff_O3s = np.array([-0.027 / -16.1], dtype=dty)
-elif mod_O3Sradeff == "NCAR-MACCM":
-    radeff_O3s = np.array([-0.019 / -12.7], dtype=dty)
-elif mod_O3Sradeff == "CHASER":
-    radeff_O3s = np.array([-0.126 / -14.1], dtype=dty)
-else:
-    raise RuntimeError
+radeff_O3s_map = {
+    "IPCC-AR4":0.004,
+    # ACCENT [Gauss et al., 2006] (tables 4 & 6)
+    "mean-ACCENT":-0.058 / -13.9,
+    "ULAQ":-0.059 / -12.6,
+    "DLR-E39C":-0.027 / -16.1,
+    "NCAR-MACCM":-0.019 / -12.7,
+    "CHASER":-0.126 / -14.1,
+}
+radeff_O3s = radeff_O3s_map[mod_O3Sradeff]
+
 
 # =============
 # 7.3. AEROSOLS
@@ -165,156 +140,97 @@ else:
 # 7.3.1. Direct
 # -------------
 
-# radiative efficiency of sulfate aerosols {{W/m2}/Tg}
-# from AeroCom2 [Myhre et al., 2013] (table 4)
-if mod_SO4radeff == "mean-AeroCom2":
-    radeff_SO4 = 1e12 / 510_072e9 * np.array([-185], dtype=dty)
-elif mod_SO4radeff == "BCC":
-    radeff_SO4 = 1e12 / 510_072e9 * np.array([-108], dtype=dty)
-elif mod_SO4radeff == "CAM4-Oslo":
-    radeff_SO4 = 1e12 / 510_072e9 * np.array([-173], dtype=dty)
-elif mod_SO4radeff == "CAM-51":
-    radeff_SO4 = 1e12 / 510_072e9 * np.array([-104], dtype=dty)
-elif mod_SO4radeff == "GEOS-CHEM":
-    radeff_SO4 = 1e12 / 510_072e9 * np.array([-123], dtype=dty)
-elif mod_SO4radeff == "GISS-MATRIX":
-    radeff_SO4 = 1e12 / 510_072e9 * np.array([-196], dtype=dty)
-elif mod_SO4radeff == "GISS-modelE":
-    radeff_SO4 = 1e12 / 510_072e9 * np.array([-307], dtype=dty)
-elif mod_SO4radeff == "GMI":
-    radeff_SO4 = 1e12 / 510_072e9 * np.array([-195], dtype=dty)
-elif mod_SO4radeff == "GOCART":
-    radeff_SO4 = 1e12 / 510_072e9 * np.array([-238], dtype=dty)
-elif mod_SO4radeff == "HadGEM2":
-    radeff_SO4 = 1e12 / 510_072e9 * np.array([-193], dtype=dty)
-elif mod_SO4radeff == "IMPACT-Umich":
-    radeff_SO4 = 1e12 / 510_072e9 * np.array([-113], dtype=dty)
-elif mod_SO4radeff == "INCA":
-    radeff_SO4 = 1e12 / 510_072e9 * np.array([-180], dtype=dty)
-elif mod_SO4radeff == "MPIHAM":
-    radeff_SO4 = 1e12 / 510_072e9 * np.array([-125], dtype=dty)
-elif mod_SO4radeff == "NCAR-CAM-35":
-    radeff_SO4 = 1e12 / 510_072e9 * np.array([-354], dtype=dty)
-elif mod_SO4radeff == "OsloCTM2":
-    radeff_SO4 = 1e12 / 510_072e9 * np.array([-192], dtype=dty)
-elif mod_SO4radeff == "SPRINTARS":
-    radeff_SO4 = 1e12 / 510_072e9 * np.array([-172], dtype=dty)
-else:
-    raise RuntimeError
+#: Radiative efficiency of sulfate aerosols {{W/m2}/Tg}, AeroCom2 [Myhre et al., 2013] (table 4)
+radeff_SO4_map = {
+    "mean-AeroCom2": (-185) * 1e12 / 510_072e9,
+    "BCC": (-108) * 1e12 / 510_072e9,
+    "CAM4-Oslo": (-173) * 1e12 / 510_072e9,
+    "CAM-51": (-104) * 1e12 / 510_072e9,
+    "GEOS-CHEM": (-123) * 1e12 / 510_072e9,
+    "GISS-MATRIX": (-196) * 1e12 / 510_072e9,
+    "GISS-modelE": (-307) * 1e12 / 510_072e9,
+    "GMI": (-195) * 1e12 / 510_072e9,
+    "GOCART": (-238) * 1e12 / 510_072e9,
+    "HadGEM2": (-193) * 1e12 / 510_072e9,
+    "IMPACT-Umich": (-113) * 1e12 / 510_072e9,
+    "INCA": (-180) * 1e12 / 510_072e9,
+    "MPIHAM": (-125) * 1e12 / 510_072e9,
+    "NCAR-CAM-35": (-354) * 1e12 / 510_072e9,
+    "OsloCTM2": (-192) * 1e12 / 510_072e9,
+    "SPRINTARS": (-172) * 1e12 / 510_072e9,
+}
+radeff_SO4 = radeff_SO4_map[mod_SO4radeff]
 
 # radiative efficiency of primary organic aerosols {{W/m2}/Tg}
 # from AeroCom2 [Myhre et al., 2013] (table 6)
-if mod_POAradeff == "mean-AeroCom2":
-    radeff_POA = 1e12 / 510_072e9 * np.array([-113], dtype=dty)
-elif mod_POAradeff == "BCC":
-    radeff_POA = 1e12 / 510_072e9 * np.array([-97], dtype=dty)
-elif mod_POAradeff == "CAM4-Oslo":
-    radeff_POA = 1e12 / 510_072e9 * np.array([-118], dtype=dty)
-elif mod_POAradeff == "CAM-51":
-    radeff_POA = 1e12 / 510_072e9 * np.array([-69], dtype=dty)
-elif mod_POAradeff == "GEOS-CHEM":
-    radeff_POA = 1e12 / 510_072e9 * np.array([-95], dtype=dty)
-elif mod_POAradeff == "GISS-MATRIX":
-    radeff_POA = 1e12 / 510_072e9 * np.array([-129], dtype=dty)
-elif mod_POAradeff == "GISS-modelE":
-    radeff_POA = 1e12 / 510_072e9 * np.array([-76], dtype=dty)
-elif mod_POAradeff == "GMI":
-    radeff_POA = 1e12 / 510_072e9 * np.array([-189], dtype=dty)
-elif mod_POAradeff == "GOCART":
-    radeff_POA = 1e12 / 510_072e9 * np.array([-144], dtype=dty)
-elif mod_POAradeff == "HadGEM2":
-    radeff_POA = 1e12 / 510_072e9 * np.array([-145], dtype=dty)
-elif mod_POAradeff == "IMPACT-Umich":
-    radeff_POA = 1e12 / 510_072e9 * np.array([-141], dtype=dty)
-elif mod_POAradeff == "INCA":
-    radeff_POA = 1e12 / 510_072e9 * np.array([-76], dtype=dty)
-elif mod_POAradeff == "MPIHAM":
-    radeff_POA = 1e12 / 510_072e9 * np.array([-41], dtype=dty)
-elif mod_POAradeff == "NCAR-CAM-35":
-    radeff_POA = 1e12 / 510_072e9 * np.array([-48], dtype=dty)
-elif mod_POAradeff == "OsloCTM2":
-    radeff_POA = 1e12 / 510_072e9 * np.array([-165], dtype=dty)
-elif mod_POAradeff == "SPRINTARS":
-    radeff_POA = 1e12 / 510_072e9 * np.array([-102], dtype=dty)
-else:
-    raise RuntimeError
+radeff_POA_map = {
+    "mean-AeroCom2": (-113) * 1e12 / 510_072e9,
+    "BCC": (-97) * 1e12 / 510_072e9,
+    "CAM4-Oslo": (-118) * 1e12 / 510_072e9,
+    "CAM-51": (-69) * 1e12 / 510_072e9,
+    "GEOS-CHEM": (-95) * 1e12 / 510_072e9,
+    "GISS-MATRIX": (-129) * 1e12 / 510_072e9,
+    "GISS-modelE": (-76) * 1e12 / 510_072e9,
+    "GMI": (-189) * 1e12 / 510_072e9,
+    "GOCART": (-144) * 1e12 / 510_072e9,
+    "HadGEM2": (-145) * 1e12 / 510_072e9,
+    "IMPACT-Umich": (-141) * 1e12 / 510_072e9,
+    "INCA": (-76) * 1e12 / 510_072e9,
+    "MPIHAM": (-41) * 1e12 / 510_072e9,
+    "NCAR-CAM-35": (-48) * 1e12 / 510_072e9,
+    "OsloCTM2": (-165) * 1e12 / 510_072e9,
+    "SPRINTARS": (-102) * 1e12 / 510_072e9,
+}
+radeff_POA = radeff_POA_map[mod_POAradeff]
 
 # radiative efficiency of black carbon aerosols {{W/m2}/Tg}
 # from AeroCom2 [Myhre et al., 2013] (table 5)
-if mod_BCradeff == "mean-AeroCom2":
-    radeff_BC = 1e12 / 510_072e9 * np.array([1438], dtype=dty)
-elif mod_BCradeff == "BCC":
-    radeff_BC = 1e12 / 510_072e9 * np.array([650], dtype=dty)
-elif mod_BCradeff == "CAM4-Oslo":
-    radeff_BC = 1e12 / 510_072e9 * np.array([1763], dtype=dty)
-elif mod_BCradeff == "CAM-51":
-    radeff_BC = 1e12 / 510_072e9 * np.array([2661], dtype=dty)
-elif mod_BCradeff == "GEOS-CHEM":
-    radeff_BC = 1e12 / 510_072e9 * np.array([1067], dtype=dty)
-elif mod_BCradeff == "GISS-MATRIX":
-    radeff_BC = 1e12 / 510_072e9 * np.array([2484], dtype=dty)
-elif mod_BCradeff == "GISS-modelE":
-    radeff_BC = 1e12 / 510_072e9 * np.array([1253], dtype=dty)
-elif mod_BCradeff == "GMI":
-    radeff_BC = 1e12 / 510_072e9 * np.array([1208], dtype=dty)
-elif mod_BCradeff == "GOCART":
-    radeff_BC = 1e12 / 510_072e9 * np.array([874], dtype=dty)
-elif mod_BCradeff == "HadGEM2":
-    radeff_BC = 1e12 / 510_072e9 * np.array([612], dtype=dty)
-elif mod_BCradeff == "IMPACT-Umich":
-    radeff_BC = 1e12 / 510_072e9 * np.array([1467], dtype=dty)
-elif mod_BCradeff == "INCA":
-    radeff_BC = 1e12 / 510_072e9 * np.array([1160], dtype=dty)
-elif mod_BCradeff == "MPIHAM":
-    radeff_BC = 1e12 / 510_072e9 * np.array([1453], dtype=dty)
-elif mod_BCradeff == "NCAR-CAM-35":
-    radeff_BC = 1e12 / 510_072e9 * np.array([1364], dtype=dty)
-elif mod_BCradeff == "OsloCTM2":
-    radeff_BC = 1e12 / 510_072e9 * np.array([2161], dtype=dty)
-elif mod_BCradeff == "SPRINTARS":
-    radeff_BC = 1e12 / 510_072e9 * np.array([1322], dtype=dty)
-else:
-    raise RuntimeError
+radeff_BC_map = {
+    "mean-AeroCom2": 1e12 / 510_072e9 * 1438,
+    "BCC": 1e12 / 510_072e9 * 650,
+    "CAM4-Oslo": 1e12 / 510_072e9 * 1763,
+    "CAM-51": 1e12 / 510_072e9 * 2661,
+    "GEOS-CHEM": 1e12 / 510_072e9 * 1067,
+    "GISS-MATRIX": 1e12 / 510_072e9 * 2484,
+    "GISS-modelE": 1e12 / 510_072e9 * 1253,
+    "GMI": 1e12 / 510_072e9 * 1208,
+    "GOCART": 1e12 / 510_072e9 * 874,
+    "HadGEM2": 1e12 / 510_072e9 * 612,
+    "IMPACT-Umich": 1e12 / 510_072e9 * 1467,
+    "INCA": 1e12 / 510_072e9 * 1160,
+    "MPIHAM": 1e12 / 510_072e9 * 1453,
+    "NCAR-CAM-35": 1e12 / 510_072e9 * 1364,
+    "OsloCTM2": 1e12 / 510_072e9 * 2161,
+    "SPRINTARS": 1e12 / 510_072e9 * 1322,
+}
+radeff_BC = radeff_BC_map[mod_BCradeff]
 
 # radiative efficiency of nitrate aerosols {{W/m2}/Tg}
 # from AeroCom2 [Myhre et al., 2013] (table 8)
-if mod_NO3radeff == "mean-AeroCom2":
-    radeff_NO3 = 1e12 / 510_072e9 * np.array([-166], dtype=dty)
-elif mod_NO3radeff == "GEOS-CHEM":
-    radeff_NO3 = 1e12 / 510_072e9 * np.array([-136], dtype=dty)
-elif mod_NO3radeff == "GISS-MATRIX":
-    radeff_NO3 = 1e12 / 510_072e9 * np.array([-240], dtype=dty)
-elif mod_NO3radeff == "GMI":
-    radeff_NO3 = 1e12 / 510_072e9 * np.array([-103], dtype=dty)
-elif mod_NO3radeff == "HadGEM2":
-    radeff_NO3 = 1e12 / 510_072e9 * np.array([-249], dtype=dty)
-elif mod_NO3radeff == "IMPACT-Umich":
-    radeff_NO3 = 1e12 / 510_072e9 * np.array([-155], dtype=dty)
-elif mod_NO3radeff == "INCA":
-    radeff_NO3 = 1e12 / 510_072e9 * np.array([-110], dtype=dty)
-elif mod_NO3radeff == "NCAR-CAM-35":
-    radeff_NO3 = 1e12 / 510_072e9 * np.array([-91], dtype=dty)
-elif mod_NO3radeff == "OsloCTM2":
-    radeff_NO3 = 1e12 / 510_072e9 * np.array([-173], dtype=dty)
-else:
-    raise RuntimeError
+radeff_NO3_map = {
+    "mean-AeroCom2": (-166) * 1e12 / 510_072e9,
+    "GEOS-CHEM": (-136) * 1e12 / 510_072e9,
+    "GISS-MATRIX": (-240) * 1e12 / 510_072e9,
+    "GMI": (-103) * 1e12 / 510_072e9,
+    "HadGEM2": (-249) * 1e12 / 510_072e9,
+    "IMPACT-Umich": (-155) * 1e12 / 510_072e9,
+    "INCA": (-110) * 1e12 / 510_072e9,
+    "NCAR-CAM-35": (-91) * 1e12 / 510_072e9,
+    "OsloCTM2": (-173) * 1e12 / 510_072e9,
+}
+radeff_NO3 = radeff_NO3_map[mod_NO3radeff]
 
 # radiative efficiency of secondary organic aerosols {{W/m2}/Tg}
 # from AeroCom2 [Myhre et al., 2013] (table 7)
-if mod_SOAradeff == "mean-AeroCom2":
-    radeff_SOA = 1e12 / 510_072e9 * np.array([-122], dtype=dty)
-elif mod_SOAradeff == "CAM-51":
-    radeff_SOA = 1e12 / 510_072e9 * np.array([-45], dtype=dty)
-elif mod_SOAradeff == "GEOS-CHEM":
-    radeff_SOA = 1e12 / 510_072e9 * np.array([-45], dtype=dty)
-elif mod_SOAradeff == "IMPACT-Umich":
-    radeff_SOA = 1e12 / 510_072e9 * np.array([-218], dtype=dty)
-elif mod_SOAradeff == "MPIHAM":
-    radeff_SOA = 1e12 / 510_072e9 * np.array([-139], dtype=dty)
-elif mod_SOAradeff == "OsloCTM2":
-    radeff_SOA = 1e12 / 510_072e9 * np.array([-161], dtype=dty)
-else:
-    raise RuntimeError
+radeff_SOA_map = {
+    "mean-AeroCom2": (-122) * 1e12 / 510_072e9,
+    "CAM-51": (-45) * 1e12 / 510_072e9,
+    "GEOS-CHEM": (-45) * 1e12 / 510_072e9,
+    "IMPACT-Umich": (-218) * 1e12 / 510_072e9,
+    "MPIHAM": (-139) * 1e12 / 510_072e9,
+    "OsloCTM2": (-161) * 1e12 / 510_072e9,
+}
+radeff_SOA = radeff_SOA_map[mod_SOAradeff]
 
 # radiative efficiency of natural aerosols {{W/m2}/Tg}
 # set to zero in this version
@@ -325,23 +241,17 @@ radeff_SALT = 1e12 / 510_072e9 * np.array([0], dtype=dty)
 # 7.3.2. Indirect
 # ---------------
 
-# semi-direct effect (adjustements induced by the direct RF of BC)
-# best-guess from IPCC AR5 [Boucher et al., 2013]
-if mod_BCadjust == "Boucher2013":
-    k_BC_adjust = np.array([-0.1 / 0.6], dtype=dty)
-# variations from [Lohmann et al., 2010] (figure 2; data provided by author)
-elif mod_BCadjust == "CSIRO":
-    k_BC_adjust = np.array([-0.37], dtype=dty) * (-0.1 / 0.6) / -0.111
-elif mod_BCadjust == "GISS":
-    k_BC_adjust = np.array([-0.225], dtype=dty) * (-0.1 / 0.6) / -0.111
-elif mod_BCadjust == "HadGEM2":
-    k_BC_adjust = np.array([-0.13], dtype=dty) * (-0.1 / 0.6) / -0.111
-elif mod_BCadjust == "ECHAM5":
-    k_BC_adjust = np.array([0.05], dtype=dty) * (-0.1 / 0.6) / -0.111
-elif mod_BCadjust == "ECMWF":
-    k_BC_adjust = np.array([0.12], dtype=dty) * (-0.1 / 0.6) / -0.111
-else:
-    raise RuntimeError
+#: Semi-direct effect (adjustements induced by the direct RF of BC), best-guess from IPCC AR5 [Boucher et al., 2013]
+k_BC_adjust_map = {
+    "Boucher2013": -0.1 / 0.6,
+    # variations from [Lohmann et al., 2010] (figure 2; data provided by author)
+    "CSIRO": -0.37 * (-0.1 / 0.6) / -0.111,
+    "GISS": -0.225 * (-0.1 / 0.6) / -0.111,
+    "HadGEM2": -0.13 * (-0.1 / 0.6) / -0.111,
+    "ECHAM5": 0.05 * (-0.1 / 0.6) / -0.111,
+    "ECMWF": 0.12 * (-0.1 / 0.6) / -0.111,
+}
+k_BC_adjust = k_BC_adjust_map[mod_BCadjust]
 
 # solubility of aerosols for the aerosol-cloud interaction
 # from [Hansen et al., 2005]
@@ -368,24 +278,17 @@ else:
 # ERF over 1850-2000 for the aerosol-cloud interaction
 # from ACCMIP [Shindell et al., 2013] (table 7)
 # rescaled to the best guess of IPCC AR5 [Boucher et al., 2013]
-if mod_CLOUDerf == "mean-ACCMIP":
-    RF_ref1 = np.array([-0.84], dtype=dty) * -0.45 / -0.84
-elif mod_CLOUDerf == "CSIRO-Mk360":
-    RF_ref1 = np.array([-0.99], dtype=dty) * -0.45 / -0.84
-elif mod_CLOUDerf == "GFDL-AM3":
-    RF_ref1 = np.array([-0.82], dtype=dty) * -0.45 / -0.84
-elif mod_CLOUDerf == "GISS-E2-R":
-    RF_ref1 = np.array([-0.61], dtype=dty) * -0.45 / -0.84
-elif mod_CLOUDerf == "HadGEM2":
-    RF_ref1 = np.array([-0.89], dtype=dty) * -0.45 / -0.84
-elif mod_CLOUDerf == "LMDzORINCA":
-    RF_ref1 = np.array([-0.21], dtype=dty) * -0.45 / -0.84
-elif mod_CLOUDerf == "MIROC-CHEM":
-    RF_ref1 = np.array([-1.12], dtype=dty) * -0.45 / -0.84
-elif mod_CLOUDerf == "NCAR-CAM-51":
-    RF_ref1 = np.array([-1.22], dtype=dty) * -0.45 / -0.84
-else:
-    raise RuntimeError
+RF_ref1_map = {
+    "mean-ACCMIP": -0.84 * -0.45 / -0.84,
+    "CSIRO-Mk360": -0.99 * -0.45 / -0.84,
+    "GFDL-AM3": -0.82 * -0.45 / -0.84,
+    "GISS-E2-R": -0.61 * -0.45 / -0.84,
+    "HadGEM2": -0.89 * -0.45 / -0.84,
+    "LMDzORINCA": -0.21 * -0.45 / -0.84,
+    "MIROC-CHEM": -1.12 * -0.45 / -0.84,
+    "NCAR-CAM-51": -1.22 * -0.45 / -0.84,
+}
+RF_ref1 = RF_ref1_map[mod_CLOUDerf]
 
 # soluble aerosol load for the aerosol-cloud interaction
 # load pre-processed ACCMIP data
@@ -399,21 +302,18 @@ for n in range(len(lgd)):
         AER_ref0 += TMP[0, n] * globals()["solub_" + lgd[n]]
         AER_ref1 += TMP[1, n] * globals()["solub_" + lgd[n]]
 
-# calculate parameters for aerosol-cloud interaction
-# intensity of indirect effect {W/m2}
-# based on a logarithmic formulation [e.g. Gultepe and Isaac, 1999]
+#: Aerosol-cloud interaction intensity of indirect effect {W/m2}
+#: based on a logarithmic formulation [e.g. Gultepe and Isaac, 1999]
 Phi_0 = RF_ref1 / np.log(AER_ref1 / AER_ref0)
 
-# preindustrial load of soluble aerosols {Tg}
-# reduced by a factor from [Carslaw et al., 2013] and two arbitrary variations
-if mod_CLOUDpreind == "median":
-    AERh_0 = AER_ref0 * np.exp(1 * (1.42 - 1.30) / Phi_0)
-elif mod_CLOUDpreind == "high":
-    AERh_0 = AER_ref0 * np.exp(0 * (1.42 - 1.30) / Phi_0)
-elif mod_CLOUDpreind == "low":
-    AERh_0 = AER_ref0 * np.exp(2 * (1.42 - 1.30) / Phi_0)
-else:
-    raise RuntimeError
+#: Preindustrial load of soluble aerosols {Tg}
+#: reduced by a factor from [Carslaw et al., 2013] and two arbitrary variations
+AERh_0_map = {
+    "median": AER_ref0 * np.exp(1 * (1.42 - 1.30) / Phi_0),
+    "high": AER_ref0 * np.exp(0 * (1.42 - 1.30) / Phi_0),
+    "low": AER_ref0 * np.exp(2 * (1.42 - 1.30) / Phi_0),
+}
+AERh_0 = AERh_0_map[mod_CLOUDpreind]
 
 # ----------------
 # 7.3.3. Volcanoes
@@ -448,33 +348,23 @@ if mod_ALBBCreg == "Reddy2007":
 # global normalized radiative effect {{W/m2}/{Tg/yr}}
 # from ACCMIP [Lee et al., 2013] (tab. 3 & fig. 15)
 # rescaled to the best guess of IPCC AR5 [Boucher et al., 2013] (using table 7.1a)
-if mod_ALBBCrf == "mean-ACCMIP":
-    radeff_BCsnow = np.array([0.0146 / (7.9 - 3.2)], dtype=dty) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2))
-elif mod_ALBBCrf == "CICERO-OsloCTM2":
-    radeff_BCsnow = np.array([0.0131 / (7.8 - 3.1)], dtype=dty) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2))
-elif mod_ALBBCrf == "GFDL-AM3":
-    radeff_BCsnow = np.array([0.0130 / (7.8 - 3.1)], dtype=dty) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2))
-elif mod_ALBBCrf == "GISS-E2-R":
-    radeff_BCsnow = np.array([0.0142 / (8.8 - 4.0)], dtype=dty) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2))
-elif mod_ALBBCrf == "GISS-E2-R-TOMAS":
-    radeff_BCsnow = np.array([0.0175 / (7.8 - 3.1)], dtype=dty) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2))
-elif mod_ALBBCrf == "HadGEM2":
-    radeff_BCsnow = np.array([0.0133 / (7.8 - 3.1)], dtype=dty) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2))
-elif mod_ALBBCrf == "MIROC-CHEM":
-    radeff_BCsnow = np.array([0.0173 / (7.7 - 3.0)], dtype=dty) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2))
-elif mod_ALBBCrf == "NCAR-CAM-35":
-    radeff_BCsnow = np.array([0.0143 / (7.8 - 3.1)], dtype=dty) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2))
-elif mod_ALBBCrf == "NCAR-CAM-51":
-    radeff_BCsnow = np.array([0.0141 / (7.8 - 3.1)], dtype=dty) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2))
+radeff_BCsnow_map = {
+    "mean-ACCMIP":  0.0146 / (7.9 - 3.2) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2)),
+    "CICERO-OsloCTM2":  0.0131 / (7.8 - 3.1) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2)),
+    "GFDL-AM3":  0.0130 / (7.8 - 3.1) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2)),
+    "GISS-E2-R":  0.0142 / (8.8 - 4.0) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2)),
+    "GISS-E2-R-TOMAS":  0.0175 / (7.8 - 3.1) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2)),
+    "HadGEM2":  0.0133 / (7.8 - 3.1) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2)),
+    "MIROC-CHEM":  0.0173 / (7.7 - 3.0) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2)),
+    "NCAR-CAM-35":  0.0143 / (7.8 - 3.1) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2)),
+    "NCAR-CAM-51":  0.0141 / (7.8 - 3.1) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2)),
+}
+radeff_BCsnow = radeff_BCsnow_map[mod_ALBBCrf]
 
 # warming efficacy of black carbon on snow {.}
 # from IPCC AR5 [Boucher et al., 2013] (sect. 7.5.2.3)
-if mod_ALBBCwarm == "median":
-    warmeff_BCsnow = np.array([3.0], dtype=dty)
-elif mod_ALBBCwarm == "low":
-    warmeff_BCsnow = np.array([2.0], dtype=dty)
-elif mod_ALBBCwarm == "high":
-    warmeff_BCsnow = np.array([4.0], dtype=dty)
+warmeff_BCsnow_map = {"median": 3.0, "low": 2.0, "high": 4.0}
+warmeff_BCsnow = warmeff_BCsnow_map[mod_ALBBCwarm]
 
 # -----------------
 # 7.4.2. Land-Cover
@@ -527,13 +417,5 @@ alpha_LCC = p_trans * alpha_alb * rsds_alb[:, np.newaxis] / (510_072e9 / 1e10)
 
 # warming efficacy of land-cover change albedo effect {.}
 # from [Bright et al., 2015] (tab. 7)
-if mod_ALBLCwarm == "Hansen2005":
-    warmeff_LCC = np.array([1.02], dtype=dty)
-elif mod_ALBLCwarm == "Davin2007":
-    warmeff_LCC = np.array([0.5], dtype=dty)
-elif mod_ALBLCwarm == "Davin2010":
-    warmeff_LCC = np.array([0.78], dtype=dty)
-elif mod_ALBLCwarm == "Jones2013":
-    warmeff_LCC = np.array([0.79], dtype=dty)
-else:
-    raise RuntimeError
+warmeff_LCC_map = {"Hansen2005": 1.02, "Davin2007": 0.5, "Davin2010": 0.78, "Jones2013": 0.79}
+warmeff_LCC = warmeff_LCC_map[mod_ALBLCwarm]

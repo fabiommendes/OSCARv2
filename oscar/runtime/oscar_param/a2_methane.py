@@ -16,7 +16,7 @@ CH4_0 = historical.CH4_0
 # 2.1. ATMOSPHERE
 # ===============
 
-# conversion of CH4 from {ppb} to {TgC}
+#: Conversion of CH4 from {ppb} to {TgC}
 alpha_CH4 = 0.1765 * np.array([12.0], dtype=dty)
 
 # ==============
@@ -27,50 +27,34 @@ alpha_CH4 = 0.1765 * np.array([12.0], dtype=dty)
 # 2.2.1. Lifetimes
 # ----------------
 
-# preindustrial lifetime of CH4 {yr}
-# from [Prather et al., 2012]
-# rescale of strato lifetime from [Prather et al., 2015]
+#: Preindustrial lifetime of CH4 {yr} [Prather et al., 2012]
+#: Rescale of strato lifetime from [Prather et al., 2015]
 tau_CH4_hv = 1.06 * np.array([120.0], dtype=dty)
 tau_CH4_soil = np.array([150.0], dtype=dty)
 tau_CH4_ocean = np.array([200.0], dtype=dty)
-# average from [Prather et al., 2012]
-if mod_OHSNKtau == "Prather2012":
-    tau_CH4_OH = np.array([11.2], dtype=dty)
-# variations from [Naik et al., 2013] (table 1)
-elif mod_OHSNKtau == "CESM-CAM-superfast":
-    tau_CH4_OH = np.array([8.4], dtype=dty) * 11.2 / 9.7
-elif mod_OHSNKtau == "CICERO-OsloCTM2":
-    tau_CH4_OH = np.array([10.0], dtype=dty) * 11.2 / 9.7
-elif mod_OHSNKtau == "CMAM":
-    tau_CH4_OH = np.array([9.4], dtype=dty) * 11.2 / 9.7
-elif mod_OHSNKtau == "EMAC":
-    tau_CH4_OH = np.array([9.1], dtype=dty) * 11.2 / 9.7
-elif mod_OHSNKtau == "GEOSCCM":
-    tau_CH4_OH = np.array([9.6], dtype=dty) * 11.2 / 9.7
-elif mod_OHSNKtau == "GDFL-AM3":
-    tau_CH4_OH = np.array([9.4], dtype=dty) * 11.2 / 9.7
-elif mod_OHSNKtau == "GISS-E2-R":
-    tau_CH4_OH = np.array([10.6], dtype=dty) * 11.2 / 9.7
-elif mod_OHSNKtau == "GISS-E2-R-TOMAS":
-    tau_CH4_OH = np.array([9.2], dtype=dty) * 11.2 / 9.7
-elif mod_OHSNKtau == "HadGEM2":
-    tau_CH4_OH = np.array([11.6], dtype=dty) * 11.2 / 9.7
-elif mod_OHSNKtau == "LMDzORINCA":
-    tau_CH4_OH = np.array([10.5], dtype=dty) * 11.2 / 9.7
-elif mod_OHSNKtau == "MIROC-CHEM":
-    tau_CH4_OH = np.array([8.7], dtype=dty) * 11.2 / 9.7
-elif mod_OHSNKtau == "MOCAGE":
-    tau_CH4_OH = np.array([7.1], dtype=dty) * 11.2 / 9.7
-elif mod_OHSNKtau == "NCAR-CAM-35":
-    tau_CH4_OH = np.array([9.2], dtype=dty) * 11.2 / 9.7
-elif mod_OHSNKtau == "STOC-HadAM3":
-    tau_CH4_OH = np.array([9.1], dtype=dty) * 11.2 / 9.7
-elif mod_OHSNKtau == "TM5":
-    tau_CH4_OH = np.array([9.9], dtype=dty) * 11.2 / 9.7
-elif mod_OHSNKtau == "UM-CAM":
-    tau_CH4_OH = np.array([14.0], dtype=dty) * 11.2 / 9.7
-else:
-    raise RuntimeError
+tau_CH4_OH_map = {
+    # Average from [Prather et al., 2012]
+    "Prather2012":  11.2,
+
+    # Variations from [Naik et al., 2013] (table 1)
+    "CESM-CAM-superfast":  8.4 * 11.2 / 9.7,
+    "CICERO-OsloCTM2":  10.0 * 11.2 / 9.7,
+    "CMAM":  9.4 * 11.2 / 9.7,
+    "EMAC":  9.1 * 11.2 / 9.7,
+    "GEOSCCM":  9.6 * 11.2 / 9.7,
+    "GDFL-AM3":  9.4 * 11.2 / 9.7,
+    "GISS-E2-R":  10.6 * 11.2 / 9.7,
+    "GISS-E2-R-TOMAS":  9.2 * 11.2 / 9.7,
+    "HadGEM2":  11.6 * 11.2 / 9.7,
+    "LMDzORINCA":  10.5 * 11.2 / 9.7,
+    "MIROC-CHEM":  8.7 * 11.2 / 9.7,
+    "MOCAGE":  7.1 * 11.2 / 9.7,
+    "NCAR-CAM-35":  9.2 * 11.2 / 9.7,
+    "STOC-HadAM3":  9.1 * 11.2 / 9.7,
+    "TM5":  9.9 * 11.2 / 9.7,
+    "UM-CAM":  14.0 * 11.2 / 9.7,
+}
+tau_CH4_OH = tau_CH4_OH_map[mod_OHSNKtau]
 
 # arbitrary rescaling (down) of OH lifetime
 scale_OH = 0.80
@@ -80,85 +64,35 @@ tau_CH4_OH *= scale_OH
 # 2.2.2. Holmes2013
 # -----------------
 
-# sensitivity of OH sink to climate, ozone and methane {.}
-# from [Holmes et al., 2013]
-if mod_OHSNKtrans == "Holmes2013":
-    chi_OH_Tatm = np.array([3.0], dtype=dty)
-    chi_OH_Qatm = np.array([0.32], dtype=dty)
-    chi_OH_O3 = np.array([-0.55], dtype=dty)
-    chi_OH_CH4 = np.array([-0.31], dtype=dty)
-elif mod_OHSNKtrans == "UCI-CTM":
-    chi_OH_Tatm = np.array([3.9], dtype=dty)
-    chi_OH_Qatm = np.array([0.32], dtype=dty)
-    chi_OH_O3 = np.array([-0.66], dtype=dty)
-    chi_OH_CH4 = np.array([-0.363], dtype=dty)
-elif mod_OHSNKtrans == "Oslo-CTM3":
-    chi_OH_Tatm = np.array([2.8], dtype=dty)
-    chi_OH_Qatm = np.array([0.29], dtype=dty)
-    chi_OH_O3 = np.array([-0.43], dtype=dty)
-    chi_OH_CH4 = np.array([-0.307], dtype=dty)
-elif mod_OHSNKtrans == "GEOS-Chem":
-    chi_OH_Tatm = np.array([2.2], dtype=dty)
-    chi_OH_Qatm = np.array([0.34], dtype=dty)
-    chi_OH_O3 = np.array([-0.61], dtype=dty)
-    chi_OH_CH4 = np.array([-0.274], dtype=dty)
-# but also from the TAR [Ehhalt et al., 2001]
-elif mod_OHSNKtrans == "mean-OxComp":
-    chi_OH_Tatm = np.array([0.0], dtype=dty)
-    chi_OH_Qatm = np.array([0.0], dtype=dty)
-    chi_OH_O3 = np.array([0.0], dtype=dty)
-    chi_OH_CH4 = np.array([-0.32], dtype=dty)
+#: Sensitivity of OH sink to climate, ozone and methane {.} [Holmes et al., 2013] and [Ehhalt et al., 2001] (TAR, mean-OxComp)
+chi_OH_Tatm_map = {"Holmes2013": 3.0, "UCI-CTM": 3.9, "Oslo-CTM3": 2.8, "GEOS-Chem": 2.2, "mean-OxComp": 0.0}
+chi_OH_Qatm_map = {"Holmes2013": 0.32, "UCI-CTM": 0.32, "Oslo-CTM3": 0.29, "GEOS-Chem": 0.34, "mean-OxComp": 0.0}
+chi_OH_O3_map = {"Holmes2013": -0.55, "UCI-CTM": -0.66, "Oslo-CTM3": -0.43, "GEOS-Chem": -0.61, "mean-OxComp": 0.0}
+chi_OH_CH4_map = {"Holmes2013": -0.31, "UCI-CTM": -0.363, "Oslo-CTM3": -0.307, "GEOS-Chem": -0.274, "mean-OxComp": -0.32}
+chi_OH_Tatm = chi_OH_Tatm_map[mod_OHSNKtrans]
+chi_OH_Qatm = chi_OH_Qatm_map[mod_OHSNKtrans]
+chi_OH_O3 = chi_OH_O3_map[mod_OHSNKtrans]
+chi_OH_CH4 = chi_OH_CH4_map[mod_OHSNKtrans]
 
-# logarithmic sensitivity of OH sink to ozone precursors {.}
-# kept logarithmic; from [Holmes et al., 2013]
-if mod_OHSNKfct == "log":
-    if mod_OHSNKtrans == "Holmes2013":
-        chi_OH_NOX = np.array([-0.14], dtype=dty)
-        chi_OH_CO = np.array([0.06], dtype=dty)
-        chi_OH_VOC = np.array([0.04], dtype=dty)
-    elif mod_OHSNKtrans == "UCI-CTM":
-        chi_OH_NOX = np.array([-0.15], dtype=dty)
-        chi_OH_CO = np.array([0.066], dtype=dty)
-        chi_OH_VOC = np.array([0.04], dtype=dty)
-    elif mod_OHSNKtrans == "Oslo-CTM3":
-        chi_OH_NOX = np.array([-0.10], dtype=dty)
-        chi_OH_CO = np.array([0.05], dtype=dty)
-        chi_OH_VOC = np.array([0.04], dtype=dty)
-    elif mod_OHSNKtrans == "GEOS-Chem":
-        chi_OH_NOX = np.array([-0.16], dtype=dty)
-        chi_OH_CO = np.array([0.065], dtype=dty)
-        chi_OH_VOC = np.array([0.04], dtype=dty)
-    elif mod_OHSNKtrans == "mean-OxComp":
-        chi_OH_NOX = np.array([-0.137], dtype=dty)
-        chi_OH_CO = np.array([0.11], dtype=dty)
-        chi_OH_VOC = np.array([0.047], dtype=dty)
+#: Sensitivity of OH sink to ozone precursors {.}; from [Holmes et al., 2013]
+chi_OH_map = {
+    # Logarithmic sensitivity, kept logarithmic
+    ('log', 'NOX'): {"Holmes2013": -0.14, "UCI-CTM": -0.15, "Oslo-CTM3": -0.10, "GEOS-Chem": -0.16, "mean-OxComp": -0.137},
+    ('log', 'CO'): {"Holmes2013": 0.06, "UCI-CTM": 0.066, "Oslo-CTM3": 0.05, "GEOS-Chem": 0.065, "mean-OxComp": 0.11},
+    ('log', 'VOC'): {"Holmes2013": 0.04, "UCI-CTM": 0.04, "Oslo-CTM3": 0.04, "GEOS-Chem": 0.04, "mean-OxComp": 0.047},
 
-    # linear sensitivity {./{TgN/yr}}&{./{TgC/yr}}&{./{Tg/yr}}
-# rescaled using the TAR [Ehhalt et al., 2001]
-elif mod_OHSNKfct == "lin":
-    if mod_OHSNKtrans == "Holmes2013":
-        chi_OH_NOX = np.array([0.0042 * -0.14 / -0.137], dtype=dty)
-        chi_OH_CO = np.array([-1.05e-4 * 0.06 / 0.11], dtype=dty) * 28 / 12.0
-        chi_OH_VOC = np.array([-3.14e-4 * 0.04 / 0.047], dtype=dty)
-    elif mod_OHSNKtrans == "UCI-CTM":
-        chi_OH_NOX = np.array([0.0042 * -0.15 / -0.137], dtype=dty)
-        chi_OH_CO = np.array([-1.05e-4 * 0.066 / 0.11], dtype=dty) * 28 / 12.0
-        chi_OH_VOC = np.array([-3.14e-4 * 0.04 / 0.047], dtype=dty)
-    elif mod_OHSNKtrans == "Oslo-CTM3":
-        chi_OH_NOX = np.array([0.0042 * -0.10 / -0.137], dtype=dty)
-        chi_OH_CO = np.array([-1.05e-4 * 0.05 / 0.11], dtype=dty) * 28 / 12.0
-        chi_OH_VOC = np.array([-3.14e-4 * 0.04 / 0.047], dtype=dty)
-    elif mod_OHSNKtrans == "GEOS-Chem":
-        chi_OH_NOX = np.array([0.0042 * -0.16 / -0.137], dtype=dty)
-        chi_OH_CO = np.array([-1.05e-4 * 0.065 / 0.11], dtype=dty) * 28 / 12.0
-        chi_OH_VOC = np.array([-3.14e-4 * 0.04 / 0.047], dtype=dty)
-    elif mod_OHSNKtrans == "mean-OxComp":
-        chi_OH_NOX = np.array([0.0042], dtype=dty)
-        chi_OH_CO = np.array([-1.05e-4], dtype=dty) * 28 / 12.0
-        chi_OH_VOC = np.array([-3.14e-4], dtype=dty)
+    # Linear sensitivity {./{TgN/yr}}&{./{TgC/yr}}&{./{Tg/yr}}, rescaled using the TAR [Ehhalt et al., 2001]
+    ('lin', 'NOX'): {"Holmes2013": 0.0042 * -0.14 / -0.137, "UCI-CTM": 0.0042 * -0.15 / -0.137, "Oslo-CTM3": 0.0042 * -0.10 / -0.137, "GEOS-Chem": 0.0042 * -0.16 / -0.137, "mean-OxComp": 0.0042},
+    ('lin', 'CO'): {"Holmes2013": -1.05e-4 * 0.06 / 0.11 * 28 / 12.0, "UCI-CTM": -1.05e-4 * 0.066 / 0.11 * 28 / 12.0, "Oslo-CTM3": -1.05e-4 * 0.05 / 0.11 * 28 / 12.0, "GEOS-Chem": -1.05e-4 * 0.065 / 0.11 * 28 / 12.0, "mean-OxComp": -1.05e-4 * 28 / 12.0},
+    ('lin', 'VOC'): {"Holmes2013": -3.14e-4 * 0.04 / 0.047, "UCI-CTM": -3.14e-4 * 0.04 / 0.047, "Oslo-CTM3": -3.14e-4 * 0.04 / 0.047, "GEOS-Chem": -3.14e-4 * 0.04 / 0.047, "mean-OxComp": -3.14e-4},
+}
 
-# constant parameters for OH sink function {.}&{.}&{K}&{DU}
-# from [Holmes et al., 2013] (supp.)
+chi_OH_NOX = chi_OH_map[mod_OHSNKfct, 'NOX'][mod_OHSNKtrans]
+chi_OH_CO = chi_OH_map[mod_OHSNKfct, 'CO'][mod_OHSNKtrans]
+chi_OH_VOC = chi_OH_map[mod_OHSNKfct, 'VOC'][mod_OHSNKtrans]
+
+
+#: Constant parameters for OH sink function {.}&{.}&{K}&{DU} [Holmes et al., 2013] (supp.)
 k_Tatm = 0.94  # +/- 0.1
 k_Qatm = 1.5  # +/- 0.1
 Tatm_0 = 251.0  # +/- 1
@@ -384,9 +318,7 @@ bio = ["des", "for", "shr", "gra", "cro", "pas"]
 # load pre-processed WETCHIMP results for specified model
 # preindustrial partition of wetlands
 mod_LSNKcover_save = mod_LSNKcover
-cover_options = [
-    "ESA-CCI", "MODIS", "Ramankutty1999", "Levavasseur2012", "mean-TRENDYv2", "CLM-45", "JSBACH", "JULES", "LPJ", "LPJ-GUESS", "LPX-Bern", "OCN", "ORCHIDEE", "VISIT",
-]
+cover_options = ["ESA-CCI", "MODIS", "Ramankutty1999", "Levavasseur2012", "mean-TRENDYv2", "CLM-45", "JSBACH", "JULES", "LPJ", "LPJ-GUESS", "LPX-Bern", "OCN", "ORCHIDEE", "VISIT"]
 AREA_wet = np.zeros([nb_regionI, nb_biome], dtype=dty)
 if mod_EWETpreind != "":
     for mod_LSNKcover in cover_options:
