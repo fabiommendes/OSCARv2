@@ -7,13 +7,7 @@ from glob import glob
 
 from sidekick import fn
 
-CTRL_TOKENS = {
-    tokenize.ENCODING,
-    tokenize.NEWLINE,
-    tokenize.INDENT,
-    tokenize.DEDENT,
-    tokenize.ENDMARKER,
-}
+CTRL_TOKENS = {tokenize.ENCODING, tokenize.NEWLINE, tokenize.INDENT, tokenize.DEDENT, tokenize.ENDMARKER}
 
 IS_FILE = re.compile(r'''
 (?P<indent>\s*)

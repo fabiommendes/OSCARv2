@@ -44,6 +44,17 @@ procedures to call some OSCAR-specific functions that (for now) call the
 CSV module, but can be later abstracted to use more efficient data storage
 methods.
 
+[??]
+Add a caching scheme to load_data()-like functions to cache results from loading
+the same dataset with the same parameters.
+
+[??]
+Remove all star imports and explicitly load variables from other modules.
+
+[??]
+Start refactoring architecture: group by role instead of element: historical 
+data, scenarios, chemestry, etc.
+
 
 ## Extract data
 
