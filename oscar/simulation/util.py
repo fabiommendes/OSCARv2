@@ -1,8 +1,8 @@
 import numpy as np
 
-from ..config import ind_final, dty
 from ..data_loaders import nb_regionI, nb_biome
 from ..params import nb_obox, nb_regionPF
+from .. import config
 
 
 def reduce_driver(driver):
@@ -29,14 +29,14 @@ class Lazy:
             self.name = name
 
 
-scalar_timeseries = lambda: Lazy(lambda _: np.zeros([ind_final + 1], dtype=dty))
-region_timeseries = lambda: Lazy(lambda _: np.zeros([ind_final + 1, nb_regionI], dtype=dty))
-region_biome_timeseries = lambda: Lazy(lambda _: np.zeros([ind_final + 1, nb_regionI, nb_biome], dtype=dty))
-region_biome2_age_timeseries = lambda: Lazy(lambda _: np.zeros([ind_final + 1, nb_regionI, nb_biome, nb_biome, ind_final + 1], dtype=dty))
-obox_timeseries = lambda: Lazy(lambda _: np.zeros([ind_final + 1, nb_obox], dtype=dty))
-species_timeseries = lambda n: Lazy(lambda _: np.zeros([ind_final + 1, n], dtype=dty))
-regionPF_timeseries = lambda: Lazy(lambda _: np.zeros([ind_final + 1, nb_regionPF], dtype=dty))
-land_var = lambda: Lazy(lambda _: np.zeros([nb_regionI, nb_biome], dtype=dty))
-land_use_var = lambda: Lazy(lambda _: np.zeros([nb_regionI, nb_biome, nb_biome, ind_final + 1], dtype=dty))
+scalar_timeseries = lambda: Lazy(lambda _: np.zeros([config.ind_final + 1], dtype=config.dty))
+region_timeseries = lambda: Lazy(lambda _: np.zeros([config.ind_final + 1, nb_regionI], dtype=config.dty))
+region_biome_timeseries = lambda: Lazy(lambda _: np.zeros([config.ind_final + 1, nb_regionI, nb_biome], dtype=config.dty))
+region_biome2_age_timeseries = lambda: Lazy(lambda _: np.zeros([config.ind_final + 1, nb_regionI, nb_biome, nb_biome, config.ind_final + 1], dtype=config.dty))
+obox_timeseries = lambda: Lazy(lambda _: np.zeros([config.ind_final + 1, nb_obox], dtype=config.dty))
+species_timeseries = lambda n: Lazy(lambda _: np.zeros([config.ind_final + 1, n], dtype=config.dty))
+regionPF_timeseries = lambda: Lazy(lambda _: np.zeros([config.ind_final + 1, nb_regionPF], dtype=config.dty))
+land_var = lambda: Lazy(lambda _: np.zeros([nb_regionI, nb_biome], dtype=config.dty))
+land_use_var = lambda: Lazy(lambda _: np.zeros([nb_regionI, nb_biome, nb_biome, config.ind_final + 1], dtype=config.dty))
 scalar_var = lambda value=0.0: Lazy(lambda _: value)
-linear_var = lambda n: Lazy(lambda _: np.zeros([n], dtype=dty))
+linear_var = lambda n: Lazy(lambda _: np.zeros([n], dtype=config.dty))

@@ -1,8 +1,7 @@
 import matplotlib.pyplot as plt
 
 from ..constants import HFC, ODS, PFC
-from ..config import fT, p
-from ..params import ind_final
+from .. import config
 from .drivers import EFF, ECH4, EN2O, RFcon, RFvolc, RFsolar
 from .atmosphere import AtmosphereSimulatorMixin
 from .chemestry import ChemestrySimulatorMixin
@@ -44,11 +43,12 @@ class Simulation(OceanSimulationMixin,
     D_ODS_t = species_timeseries(nb_ODS)
     D_ODS_lag_t = species_timeseries(nb_ODS)
 
-    def __init__(self, p=p, fT=fT, track=["ELUC", "OSNK", "LSNK", "D_CO2", "RF", "D_gst"], plot='all'):
+    def __init__(self, p=config.p, fT=config.fT, track=["ELUC", "OSNK", "LSNK", "D_CO2", "RF", "D_gst"], plot='all'):
         super().__init__()
         var_plot = self.plot_vars(plot)
         self.fT = fT
         self.dt = 1 / p
+        self.p = p
 
         # save variables
         self.tracking = list(set(track) | set(var_plot))
@@ -58,7 +58,7 @@ class Simulation(OceanSimulationMixin,
         """
         Run simulation to final time.
         """
-        for t in range(1, ind_final + 1):
+        for t in range(1, config.ind_final + 1):
             self.time = t
             self.step(t)
 
@@ -66,7 +66,7 @@ class Simulation(OceanSimulationMixin,
         """
         Advance 1 step in simulation.
         """
-        for tt in range(p):
+        for tt in range(self.p):
             self.step_ocean(t)
             self.step_land(t)
             self.step_land_use(t)

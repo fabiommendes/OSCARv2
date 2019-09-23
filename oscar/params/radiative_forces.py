@@ -4,8 +4,8 @@ from .carbon import CO2_0
 from .methane import CH4_0
 from .nitrous_oxide import N2O_0
 from ..data_loaders import nb_regionI, nb_biome, regionI_index, biome_index
-from ..config import dty, mod_O3Tradeff, mod_SO4radeff, mod_POAradeff, mod_BCradeff, mod_NO3radeff, mod_SOAradeff, mod_BCadjust, mod_CLOUDsolub, mod_CLOUDerf, mod_CLOUDpreind, mod_ALBBCrf, mod_ALBBCreg, mod_ALBBCwarm, mod_ALBLCalb, mod_ALBLCflux, mod_ALBLCcover, mod_ALBLCwarm, mod_O3Sradeff
 from ..data import load_data, load_data_and_header
+from .. import config
 
 ##################################################
 #   7. RADIATIVE FORCING
@@ -13,7 +13,7 @@ from ..data import load_data, load_data_and_header
 
 # load RCP radiative forcing {W/m2}
 # from [Meinshausen et al., 2011]
-RF_rcp = np.zeros([800 + 1, 6], dtype=dty)
+RF_rcp = np.zeros([800 + 1, 6], dtype=config.dty)
 RF_rcp[:300] = np.nan
 n = -1
 for rcp in ["rcp26", "rcp45", "rcp60", "rcp85", "rcp45to26", "rcp60to45"]:
@@ -36,22 +36,22 @@ for rcp in ["rcp26", "rcp45", "rcp60", "rcp85", "rcp45to26", "rcp60to45"]:
 # from IPCC-TAR [Ramaswamy et al., 2001]
 def f_RF_CO2(D_CO2):
     RF = 5.35 * np.log(1 + D_CO2 / CO2_0)
-    return np.array(RF, dtype=dty)
+    return np.array(RF, dtype=config.dty)
 
 
 def f_RF_CH4(D_CH4):
     RF = 0.036 * (np.sqrt(CH4_0 + D_CH4) - np.sqrt(CH4_0))
-    return np.array(RF, dtype=dty)
+    return np.array(RF, dtype=config.dty)
 
 
 def f_RF_H2Os(D_CH4_lag):
     RF = 0.15 * 0.036 * (np.sqrt(CH4_0 + D_CH4_lag) - np.sqrt(CH4_0))
-    return np.array(RF, dtype=dty)
+    return np.array(RF, dtype=config.dty)
 
 
 def f_RF_N2O(D_N2O):
     RF = 0.12 * (np.sqrt(N2O_0 + D_N2O) - np.sqrt(N2O_0))
-    return np.array(RF, dtype=dty)
+    return np.array(RF, dtype=config.dty)
 
 
 def f_RF_overlap(D_CH4, D_N2O):
@@ -59,19 +59,19 @@ def f_RF_overlap(D_CH4, D_N2O):
         + 2.01e-5 * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 0.75
         + 5.31e-15 * (CH4_0 + D_CH4) * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 1.52)
     RF -= 0.47 * np.log(1 + 2.01e-5 * (CH4_0 * N2O_0) ** 0.75 + 5.31e-15 * CH4_0 * (CH4_0 * N2O_0) ** 1.52)
-    return np.array(RF, dtype=dty)
+    return np.array(RF, dtype=config.dty)
 
 
 def df_RF_overlap_dCH4(D_CH4, D_N2O):
     RF = 0.47 * (2.01e-5 * 0.75 * (CH4_0 + D_CH4) ** (0.75 - 1) * (N2O_0 + D_N2O) ** (0.75) + 5.31e-15 * (1.52 + 1) * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 1.52)
     RF /= (1 + 2.01e-5 * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 0.75 + 5.31e-15 * (CH4_0 + D_CH4) * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 1.52)
-    return np.array(RF, dtype=dty)
+    return np.array(RF, dtype=config.dty)
 
 
 def df_RF_overlap_dN2O(D_CH4, D_N2O):
     RF = 0.47 * (2.01e-5 * 0.75 * (CH4_0 + D_CH4) ** (0.75) * (N2O_0 + D_N2O) ** (0.75 - 1) + 5.31e-15 * 1.52 * (CH4_0 + D_CH4) ** (1.52 + 1) * (N2O_0 + D_N2O) ** (1.52 - 1))
     RF /= (1 + 2.01e-5 * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 0.75 + 5.31e-15 * (CH4_0 + D_CH4) * ((CH4_0 + D_CH4) * (N2O_0 + D_N2O)) ** 1.52)
-    return np.array(RF, dtype=dty)
+    return np.array(RF, dtype=config.dty)
 
 
 def df_RF_overlap(D_CH4, D_N2O):
@@ -83,9 +83,9 @@ def df_RF_overlap(D_CH4, D_N2O):
 
 # radiative efficiency of halogenated compounds {{W/m2}/ppt}
 # from IPCC-AR5 [Myrhe et al., 2013] (table 8.A.1)
-radeff_HFC = 1e-3 * np.array([0.18, 0.11, 0.23, 0.16, 0.16, 0.10, 0.26, 0.24, 0.24, 0.22, 0.42], dtype=dty)
-radeff_PFC = 1e-3 * np.array([0.57, 0.20, 0.09, 0.25, 0.28, 0.32, 0.36, 0.41, 0.44, 0.50], dtype=dty)
-radeff_ODS = 1e-3 * np.array([0.26, 0.32, 0.30, 0.31, 0.20, 0.17, 0.07, 0.21, 0.16, 0.19, 0.29, 0.27, 0.30, 0.31, 0.004, 0.01], dtype=dty)
+radeff_HFC = 1e-3 * np.array([0.18, 0.11, 0.23, 0.16, 0.16, 0.10, 0.26, 0.24, 0.24, 0.22, 0.42], dtype=config.dty)
+radeff_PFC = 1e-3 * np.array([0.57, 0.20, 0.09, 0.25, 0.28, 0.32, 0.36, 0.41, 0.44, 0.50], dtype=config.dty)
+radeff_ODS = 1e-3 * np.array([0.26, 0.32, 0.30, 0.31, 0.20, 0.17, 0.07, 0.21, 0.16, 0.19, 0.29, 0.27, 0.30, 0.31, 0.004, 0.01], dtype=config.dty)
 
 # ==========
 # 7.2. OZONE
@@ -116,7 +116,7 @@ radeff_O3t_map = {
     "UM-CAM": 0.376 / 8.7,
     "TM5": 0.422 / 10.0,
 }
-radeff_O3t = radeff_O3t_map[mod_O3Tradeff]
+radeff_O3t = radeff_O3t_map[config.mod_O3Tradeff]
 
 # radiative efficiency of stratospheric O3 {{W/m2}/DU}
 # from IPCC-AR4 [Forster et al., 2007]
@@ -129,7 +129,7 @@ radeff_O3s_map = {
     "NCAR-MACCM":-0.019 / -12.7,
     "CHASER":-0.126 / -14.1,
 }
-radeff_O3s = radeff_O3s_map[mod_O3Sradeff]
+radeff_O3s = radeff_O3s_map[config.mod_O3Sradeff]
 
 
 # =============
@@ -159,7 +159,7 @@ radeff_SO4_map = {
     "OsloCTM2": (-192) * 1e12 / 510_072e9,
     "SPRINTARS": (-172) * 1e12 / 510_072e9,
 }
-radeff_SO4 = radeff_SO4_map[mod_SO4radeff]
+radeff_SO4 = radeff_SO4_map[config.mod_SO4radeff]
 
 # radiative efficiency of primary organic aerosols {{W/m2}/Tg}
 # from AeroCom2 [Myhre et al., 2013] (table 6)
@@ -181,7 +181,7 @@ radeff_POA_map = {
     "OsloCTM2": (-165) * 1e12 / 510_072e9,
     "SPRINTARS": (-102) * 1e12 / 510_072e9,
 }
-radeff_POA = radeff_POA_map[mod_POAradeff]
+radeff_POA = radeff_POA_map[config.mod_POAradeff]
 
 # radiative efficiency of black carbon aerosols {{W/m2}/Tg}
 # from AeroCom2 [Myhre et al., 2013] (table 5)
@@ -203,7 +203,7 @@ radeff_BC_map = {
     "OsloCTM2": 1e12 / 510_072e9 * 2161,
     "SPRINTARS": 1e12 / 510_072e9 * 1322,
 }
-radeff_BC = radeff_BC_map[mod_BCradeff]
+radeff_BC = radeff_BC_map[config.mod_BCradeff]
 
 # radiative efficiency of nitrate aerosols {{W/m2}/Tg}
 # from AeroCom2 [Myhre et al., 2013] (table 8)
@@ -218,7 +218,7 @@ radeff_NO3_map = {
     "NCAR-CAM-35": (-91) * 1e12 / 510_072e9,
     "OsloCTM2": (-173) * 1e12 / 510_072e9,
 }
-radeff_NO3 = radeff_NO3_map[mod_NO3radeff]
+radeff_NO3 = radeff_NO3_map[config.mod_NO3radeff]
 
 # radiative efficiency of secondary organic aerosols {{W/m2}/Tg}
 # from AeroCom2 [Myhre et al., 2013] (table 7)
@@ -230,7 +230,7 @@ radeff_SOA_map = {
     "MPIHAM": (-139) * 1e12 / 510_072e9,
     "OsloCTM2": (-161) * 1e12 / 510_072e9,
 }
-radeff_SOA = radeff_SOA_map[mod_SOAradeff]
+radeff_SOA = radeff_SOA_map[config.mod_SOAradeff]
 
 # radiative efficiency of natural aerosols {{W/m2}/Tg}
 # set to zero in this version
@@ -244,18 +244,18 @@ radeff_SALT = 1e12 / 510_072e9 * 0
 #: Semi-direct effect (adjustements induced by the direct RF of BC), best-guess from IPCC AR5 [Boucher et al., 2013]
 k_BC_adjust_map = {
     "Boucher2013": -0.1 / 0.6,
-    # variations from [Lohmann et al., 2010] (figure 2; data_loaders provided by author)
+    # variations from [Lohmann et al., 2010] (figure 2; config.data_loaders provided by author)
     "CSIRO": -0.37 * (-0.1 / 0.6) / -0.111,
     "GISS": -0.225 * (-0.1 / 0.6) / -0.111,
     "HadGEM2": -0.13 * (-0.1 / 0.6) / -0.111,
     "ECHAM5": 0.05 * (-0.1 / 0.6) / -0.111,
     "ECMWF": 0.12 * (-0.1 / 0.6) / -0.111,
 }
-k_BC_adjust = k_BC_adjust_map[mod_BCadjust]
+k_BC_adjust = k_BC_adjust_map[config.mod_BCadjust]
 
 # solubility of aerosols for the aerosol-cloud interaction
 # from [Hansen et al., 2005]
-if mod_CLOUDsolub == "Hansen2005":
+if config.mod_CLOUDsolub == "Hansen2005":
     solub_SO4 = 1.0
     solub_POA = 0.8
     solub_BC = 0.7  # average of FF (0.6) and BB (0.8)
@@ -264,7 +264,7 @@ if mod_CLOUDsolub == "Hansen2005":
     solub_DUST = 0.0
     solub_SALT = 1.0
 # from [Lamarque et al., 2011] (RCP database)
-elif mod_CLOUDsolub == "Lamarque2011":
+elif config.mod_CLOUDsolub == "Lamarque2011":
     solub_SO4 = 1.0
     solub_POA = 0.86
     solub_BC = 0.80
@@ -288,11 +288,11 @@ RF_ref1_map = {
     "MIROC-CHEM": -1.12 * -0.45 / -0.84,
     "NCAR-CAM-51": -1.22 * -0.45 / -0.84,
 }
-RF_ref1 = RF_ref1_map[mod_CLOUDerf]
+RF_ref1 = RF_ref1_map[config.mod_CLOUDerf]
 
 # soluble aerosol load for the aerosol-cloud interaction
-# load pre-processed ACCMIP data_loaders
-path = f"data/AeroCloud_ACCMIP/#DATA.AeroCloud_{mod_CLOUDerf}.(2yr)_(7aer).LOAD.csv"
+# load pre-processed ACCMIP config.data_loaders
+path = f"data/AeroCloud_ACCMIP/#DATA.AeroCloud_{config.mod_CLOUDerf}.(2yr)_(7aer).LOAD.csv"
 TMP, lgd = load_data_and_header(path)
 del lgd[0]
 AER_ref0 = 0
@@ -313,7 +313,7 @@ AERh_0_map = {
     "high": AER_ref0 * np.exp(0 * (1.42 - 1.30) / Phi_0),
     "low": AER_ref0 * np.exp(2 * (1.42 - 1.30) / Phi_0),
 }
-AERh_0 = AERh_0_map[mod_CLOUDpreind]
+AERh_0 = AERh_0_map[config.mod_CLOUDpreind]
 
 # ----------------
 # 7.3.3. Volcanoes
@@ -334,7 +334,7 @@ warmeff_volc: float = 0.6
 # read region distribution
 path = "data/RegDiv_Reddy2007/#DATA.RegDiv_Reddy2007.114reg1_(9reg0).AREA.csv"
 TMP = load_data(path, start=1)
-p_reg9 = np.zeros([nb_regionI, 9 + 1], dtype=dty)
+p_reg9 = np.zeros([nb_regionI, 9 + 1], dtype=config.dty)
 for i in range(1, 114 + 1):
     p_reg9[regionI_index[i], :] += TMP[i - 1, :]
 p_reg9 /= np.sum(p_reg9, 1)[:, np.newaxis]
@@ -342,8 +342,8 @@ p_reg9[np.isnan(p_reg9) | np.isinf(p_reg9)] = 0
 
 # regional effect coefficient {.}
 # from [Reddy and Boucher, 2007] (table 1)
-if mod_ALBBCreg == "Reddy2007":
-    w_reg_BCsnow = np.array([1, 1 / 6.0, 11 / 11.0, 1 / 10.0, 63 / 12.0, 2 / 3.0, 2 / 13.0, 17 / 43.0, 1 / 1.0, 2 / 1.0], dtype=dty)
+if config.mod_ALBBCreg == "Reddy2007":
+    w_reg_BCsnow = np.array([1, 1 / 6.0, 11 / 11.0, 1 / 10.0, 63 / 12.0, 2 / 3.0, 2 / 13.0, 17 / 43.0, 1 / 1.0, 2 / 1.0], dtype=config.dty)
 
 # global normalized radiative effect {{W/m2}/{Tg/yr}}
 # from ACCMIP [Lee et al., 2013] (tab. 3 & fig. 15)
@@ -359,12 +359,12 @@ radeff_BCsnow_map = {
     "NCAR-CAM-35":  0.0143 / (7.8 - 3.1) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2)),
     "NCAR-CAM-51":  0.0141 / (7.8 - 3.1) * (0.04 / 4.8) / (0.0146 / (7.9 - 3.2)),
 }
-radeff_BCsnow = radeff_BCsnow_map[mod_ALBBCrf]
+radeff_BCsnow = radeff_BCsnow_map[config.mod_ALBBCrf]
 
 # warming efficacy of black carbon on snow {.}
 # from IPCC AR5 [Boucher et al., 2013] (sect. 7.5.2.3)
 warmeff_BCsnow_map = {"median": 3.0, "low": 2.0, "high": 4.0}
-warmeff_BCsnow = warmeff_BCsnow_map[mod_ALBBCwarm]
+warmeff_BCsnow = warmeff_BCsnow_map[config.mod_ALBBCwarm]
 
 # -----------------
 # 7.4.2. Land-Cover
@@ -374,8 +374,8 @@ warmeff_BCsnow = warmeff_BCsnow_map[mod_ALBBCwarm]
 bio = ["des", "for", "shr", "gra", "cro", "pas", "urb"]
 
 # load pre-processed albedo climatology
-path = f"data/Albedo_{mod_ALBLCalb}/#DATA.Albedo_{mod_ALBLCalb}_{mod_ALBLCflux}_{mod_ALBLCcover}.114reg1_7bio.alb.csv"
-path2 = f"data/Albedo_{mod_ALBLCalb}/#DATA.Albedo_{mod_ALBLCalb}_{mod_ALBLCflux}_{mod_ALBLCcover}.114reg1_7bio.RSDS.csv"
+path = f"data/Albedo_{config.mod_ALBLCalb}/#DATA.Albedo_{config.mod_ALBLCalb}_{config.mod_ALBLCflux}_{config.mod_ALBLCcover}.114reg1_7bio.alb.csv"
+path2 = f"data/Albedo_{config.mod_ALBLCalb}/#DATA.Albedo_{config.mod_ALBLCalb}_{config.mod_ALBLCflux}_{config.mod_ALBLCcover}.114reg1_7bio.RSDS.csv"
 TMP = load_data(path)
 TMP2 = load_data(path2)
 alpha_alb = np.zeros([nb_regionI, nb_biome])
@@ -397,8 +397,8 @@ if np.sum(alpha_alb[:, biome_index["pas"]]) == 0:
     alpha_alb[np.isnan(alpha_alb) | np.isinf(alpha_alb)] = 0
 
 # load pre-processed radiation climatology
-path = f"data/RadFlux_{mod_ALBLCflux}/#DATA.RadFlux_{mod_ALBLCflux}.114reg1.rsds.csv"
-path2 = f"data/RadFlux_{mod_ALBLCflux}/#DATA.RadFlux_{mod_ALBLCflux}.114reg1.AREA.csv"
+path = f"data/RadFlux_{config.mod_ALBLCflux}/#DATA.RadFlux_{config.mod_ALBLCflux}.114reg1.rsds.csv"
+path2 = f"data/RadFlux_{config.mod_ALBLCflux}/#DATA.RadFlux_{config.mod_ALBLCflux}.114reg1.AREA.csv"
 TMP = load_data(path)
 TMP2 = load_data(path2)
 rsds_alb = np.zeros([nb_regionI])
@@ -418,4 +418,4 @@ alpha_LCC = p_trans * alpha_alb * rsds_alb[:, np.newaxis] / (510_072e9 / 1e10)
 # warming efficacy of land-cover change albedo effect {.}
 # from [Bright et al., 2015] (tab. 7)
 warmeff_LCC_map = {"Hansen2005": 1.02, "Davin2007": 0.5, "Davin2010": 0.78, "Jones2013": 0.79}
-warmeff_LCC = warmeff_LCC_map[mod_ALBLCwarm]
+warmeff_LCC = warmeff_LCC_map[config.mod_ALBLCwarm]

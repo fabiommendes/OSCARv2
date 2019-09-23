@@ -2,13 +2,13 @@ import numpy as np
 import csv
 import os
 from functools import lru_cache
-from .config import dty
+from . import config
 
 
 @lru_cache(128)
-def load_data(path, start=None, dtype=dty, use='csv'):
+def load_data(path, start=None, dtype=config.dty, use='csv'):
     """
-    Return an array with data_loaders loaded from given path.
+    Return an array with config.data_loaders loaded from given path.
     """
 
     cached = os.path.join('cache', path) + '.npy'
@@ -37,15 +37,15 @@ def load_data(path, start=None, dtype=dty, use='csv'):
 @lru_cache(128)
 def load_data_and_header(path):
     """
-    Return (header, array) with a list of column names and numeric data_loaders loaded
+    Return (header, array) with a list of column names and numeric config.data_loaders loaded
     from given path.
     """
     header, *data = csv.reader(open(path, "r"))
-    return np.array(data, dtype=dty), header
+    return np.array(data, dtype=config.dty), header
 
 
 def load_header(path):
     """
-    Return a list with the header from a table stored as CSV data_loaders.
+    Return a list with the header from a table stored as CSV config.data_loaders.
     """
     return next(iter(csv.reader(open(path, "r"))))

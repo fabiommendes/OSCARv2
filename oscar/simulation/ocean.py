@@ -1,8 +1,8 @@
 import numpy as np
 
-from ..config import dty
-from ..params import nb_obox, mld_0, alpha_mld, gamma_mld, p_circ, v_fg, alpha_CO2, f_pCO2, tau_circ, alpha_dic
 from .util import scalar_timeseries, obox_timeseries
+from ..params import nb_obox, mld_0, alpha_mld, gamma_mld, p_circ, v_fg, alpha_CO2, f_pCO2, tau_circ, alpha_dic
+from .. import config
 
 
 class OceanSimulationMixin:
@@ -23,7 +23,7 @@ class OceanSimulationMixin:
     def __init__(self):
         super().__init__()
         self.D_dic = 0
-        self.D_CSURF = np.zeros([nb_obox], dtype=dty)
+        self.D_CSURF = np.zeros([nb_obox], dtype=config.dty)
 
     def step_ocean(self, t):
         dt = self.dt

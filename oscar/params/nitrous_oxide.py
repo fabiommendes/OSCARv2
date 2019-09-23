@@ -3,8 +3,8 @@ from scipy.optimize import fmin
 
 from .. import historical
 from ..constants import ODS
-from ..config import dty, mod_HVSNKtau, mod_HVSNKtrans, mod_HVSNKcirc
 from ..data import load_data
+from .. import config
 
 N2O_0 = historical.N2O_0
 nb_ODS = len(ODS)
@@ -42,7 +42,7 @@ tau_N2O_hv_map = {
     "UCI-c29": 126.2 * 123.0 / 132.5,
     "UCI-c36": 146.2 * 123.0 / 132.5,
 }
-tau_N2O_hv = tau_N2O_hv_map[mod_HVSNKtau]
+tau_N2O_hv = tau_N2O_hv_map[config.mod_HVSNKtau]
 
 #: Lag used for lagged concentrations {yr} adjusted; 3yr is typical WMO value
 tau_lag: float = 3.0
@@ -53,8 +53,8 @@ tau_lag: float = 3.0
 
 # estimate EESC for use to deduce strato sink sensitivity
 # ODS concentration from [IPCC WG1, 2013] (annex 2) in year 2005
-EESC_hv = np.zeros([nb_ODS], dtype=dty)
-EESC_hv0 = np.zeros([nb_ODS], dtype=dty)
+EESC_hv = np.zeros([nb_ODS], dtype=config.dty)
+EESC_hv0 = np.zeros([nb_ODS], dtype=config.dty)
 for VAR in ODS:
     path = f"data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1960-2011.{VAR}.csv"
     TMP = load_data(path)
@@ -64,8 +64,8 @@ EESC_hv0[ODS.index("CH3Cl")] = 480.0
 
 #  fractional releases from [Newman et al., 2007]
 for arr in [EESC_hv, EESC_hv0]:
-    arr *= np.array([0.47, 0.23, 0.29, 0.12, 0.05, 0.56, 0.67, 0.13, 0.08, 0.01, 0.62, 0.62, 0.28, 0.65, 0.60, 0.44], dtype=dty)
-    arr *= np.array([3, 2, 3, 2, 1, 4, 3, 1, 2, 1, 1 + 60 * 1, 0 + 60 * 2, 0 + 60 * 1, 0 + 60 * 2, 0 + 60 * 1, 1], dtype=dty)
+    arr *= np.array([0.47, 0.23, 0.29, 0.12, 0.05, 0.56, 0.67, 0.13, 0.08, 0.01, 0.62, 0.62, 0.28, 0.65, 0.60, 0.44], dtype=config.dty)
+    arr *= np.array([3, 2, 3, 2, 1, 4, 3, 1, 2, 1, 1 + 60 * 1, 0 + 60 * 2, 0 + 60 * 1, 0 + 60 * 2, 0 + 60 * 1, 1], dtype=config.dty)
 del arr
 
 EESC_hv = np.sum(EESC_hv)
@@ -74,24 +74,24 @@ EESC_hv0 = np.sum(EESC_hv0)
 # sensitivity of strato sink to N2O, ODSs and age-of-air
 # from [Prather et al., 2015] (table 3)
 # change in age-of-air based on [Fleming et al., 2011] (figure 12)
-if mod_HVSNKtrans == "Prather2015":
+if config.mod_HVSNKtrans == "Prather2015":
     chi_hv_N2O = 0.065
     chi_hv_EESC = 0.04 / np.log(EESC_hv / EESC_hv0)
     chi_hv_age = 0
-elif mod_HVSNKtrans == "G2d":
+elif config.mod_HVSNKtrans == "G2d":
     chi_hv_N2O = 0.018 / np.log(321 / 270.0)
     chi_hv_EESC = 0.048 / np.log(EESC_hv / EESC_hv0)
     chi_hv_age = 0.011 / np.log(4.0 / 4.5)
-elif mod_HVSNKtrans == "Oslo-c29":
+elif config.mod_HVSNKtrans == "Oslo-c29":
     chi_hv_N2O = 0.010 / np.log(321 / 270.0)
     chi_hv_EESC = 0.033 / np.log(EESC_hv / EESC_hv0)
     chi_hv_age = 0
-elif mod_HVSNKtrans == "UCI-c29":
+elif config.mod_HVSNKtrans == "UCI-c29":
     chi_hv_N2O = 0.012 / np.log(321 / 270.0)
     chi_hv_EESC = 0.029 / np.log(EESC_hv / EESC_hv0)
     chi_hv_age = 0
 # but also from [Prather et al., 2012]
-elif mod_HVSNKtrans == "Prather2012":
+elif config.mod_HVSNKtrans == "Prather2012":
     chi_hv_N2O = 0.08
     chi_hv_EESC = 0
     chi_hv_age = 0
@@ -105,28 +105,28 @@ def f_hv(D_N2O, D_EESC, D_gst):
     from .ozone import EESC_0
 
     D_hv = np.exp(chi_hv_N2O * np.log(1 + D_N2O / N2O_0) + chi_hv_EESC * np.log(1 + D_EESC / EESC_0) - chi_hv_age * np.log(1 + gamma_age * D_gst))- 1
-    return np.array(D_hv, dtype=dty)
+    return np.array(D_hv, dtype=config.dty)
 
 
 def df_hv_dN2O(D_N2O, D_EESC, D_gst):
     from .ozone import EESC_0
 
     D_hv = chi_hv_N2O / (N2O_0 + D_N2O) * np.exp(chi_hv_N2O * np.log(1 + D_N2O / N2O_0) + chi_hv_EESC * np.log(1 + D_EESC / EESC_0) - chi_hv_age * np.log(1 + gamma_age * D_gst))
-    return np.array(D_hv, dtype=dty)
+    return np.array(D_hv, dtype=config.dty)
 
 
 def df_hv_dEESC(D_N2O, D_EESC, D_gst):
     from .ozone import EESC_0
 
     D_hv = chi_hv_EESC / (EESC_0 + D_EESC)  * np.exp(chi_hv_N2O * np.log(1 + D_N2O / N2O_0) + chi_hv_EESC * np.log(1 + D_EESC / EESC_0) - chi_hv_age * np.log(1 + gamma_age * D_gst))
-    return np.array(D_hv, dtype=dty)
+    return np.array(D_hv, dtype=config.dty)
 
 
 def df_hv_dgst(D_N2O, D_EESC, D_gst):
     from .ozone import EESC_0
 
     D_hv = chi_hv_age * gamma_age / (1 + gamma_age * D_gst)  * np.exp(chi_hv_N2O * np.log(1 + D_N2O / N2O_0) + chi_hv_EESC * np.log(1 + D_EESC / EESC_0) - chi_hv_age * np.log(1 + gamma_age * D_gst))
-    return np.array(D_hv, dtype=dty)
+    return np.array(D_hv, dtype=config.dty)
 
 
 def df_hv(D_N2O, D_EESC, D_gst):
@@ -142,10 +142,10 @@ def df_hv(D_N2O, D_EESC, D_gst):
 # --------------
 
 # load pre-processed CCMVal2 results for specified model
-age_atm = np.zeros([2099 - 1961 + 1], dtype=dty)
-ta_atm = np.zeros([2099 - 1961 + 1], dtype=dty)
+age_atm = np.zeros([2099 - 1961 + 1], dtype=config.dty)
+ta_atm = np.zeros([2099 - 1961 + 1], dtype=config.dty)
 for VAR, arr in [('age', age_atm), ('ta', ta_atm)]:
-    path = f"data/Atmosphere_CCMVal2/#DATA.Atmosphere_{mod_HVSNKcirc}.1961-2099_(1lvl).{VAR}.csv"
+    path = f"data/Atmosphere_CCMVal2/#DATA.Atmosphere_{config.mod_HVSNKcirc}.1961-2099_(1lvl).{VAR}.csv"
     TMP = load_data(path, start=1)
     arr[:] = TMP[:, 0]
 

@@ -2,21 +2,22 @@ import os
 
 import numpy as np
 
-from .regions import nb_regionJ, nb_kind, nb_regionI, nb_sector, regionJ_index, regionI_index, ind_final, kindAER_index, kindCHI_index
+from .regions import nb_regionJ, nb_kind, nb_regionI, nb_sector, regionJ_index, regionI_index, kindAER_index, kindCHI_index
 from .greenhouse import sec_accmip, ind_edgar, ind_cdiac
 from ..data import load_data
-from ..config import dty, mod_regionI, mod_regionJ, scen_ESO2, mod_DATAscen, scen_ECO, scen_ENOX, scen_EVOC, scen_ENH3, scen_EBC, scen_EOC, data_ENOX, data_ECO, data_EVOC, data_ESO2, data_ENH3, data_EOC, data_EBC
+from .. import config
+
 
 ##################################################
 #   4. SHORT-LIVED SPECIES
 ##################################################
-ENOX = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)  # {TgN/yr}
-ECO = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)  # {TgC/yr}
-EVOC = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)  # {Tg/yr}
-ESO2 = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)  # {TgS/yr}
-ENH3 = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)  # {TgN/yr}
-EOC = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)  # {Tg/yr}
-EBC = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)  # {Tg/yr}
+ENOX = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)  # {TgN/yr}
+ECO = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)  # {TgC/yr}
+EVOC = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)  # {Tg/yr}
+ESO2 = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)  # {TgS/yr}
+ENH3 = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)  # {TgN/yr}
+EOC = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)  # {Tg/yr}
+EBC = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)  # {Tg/yr}
 
 # ==========
 # 4.1. EDGAR
@@ -27,7 +28,7 @@ EBC = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtyp
 
 # OzoPrec
 for VAR in ["NOX", "CO", "VOC"]:
-    arr = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+    arr = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
     if VAR == "NOX":
         ENOXedgar = arr
     elif VAR == "CO":
@@ -46,7 +47,7 @@ for VAR in ["NOX", "CO", "VOC"]:
 
 # AeroPrec
 for VAR in ["SO2", "NH3"]:
-    arr = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+    arr = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
 
     if VAR == 'SO2':
         ESO2edgar = arr
@@ -63,7 +64,7 @@ for VAR in ["SO2", "NH3"]:
                 arr[270:ind_edgar + 1, regionJ_index[i], 0, kindAER_index[VAR], regionI_index[i]] += TMP[:ind_edgar - 270 + 1, i]
 
 # PM10 (proxy for OC/BC)
-EPM10edgar = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+EPM10edgar = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
 for s in range(1, len(sec_accmip) - 2):
     path = f"data/EAeroPrec_EDGAR/#DATA.EAeroPrec_EDGAR.1970-{1700 + ind_edgar}_114reg0.EPM10_{sec_accmip[s]}.csv"
     if os.path.isfile(path):
@@ -81,7 +82,7 @@ for s in range(1, len(sec_accmip) - 2):
 
 # OzoPrec
 for VAR in ["NOX", "CO", "VOC"]:
-    arr = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+    arr = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
     if VAR == 'NOX':
         ENOXehtap = arr
     elif VAR == 'CO':
@@ -98,7 +99,7 @@ for VAR in ["NOX", "CO", "VOC"]:
 
 # AeroPrec
 for VAR in ["SO2", "NH3", "OC", "BC"]:
-    arr = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+    arr = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
 
     if VAR == "SO2":
         ESO2ehtap = arr
@@ -125,8 +126,8 @@ for VAR in ["SO2", "NH3", "OC", "BC"]:
 
 # OzoPrec
 for VAR in ["NOX", "CO", "VOC"]:
-    accmip = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
-    bio = np.zeros([nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+    accmip = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
+    bio = np.zeros([nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
 
     if VAR == "NOX":
         ENOXaccmip = accmip
@@ -151,8 +152,8 @@ for VAR in ["NOX", "CO", "VOC"]:
 
 # AeroPrec
 for VAR in ["SO2", "NH3", "OC", "BC"]:
-    accmip = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
-    bio = np.zeros([nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+    accmip = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
+    bio = np.zeros([nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
 
     if VAR == "SO2":
         ESO2accmip = accmip
@@ -183,48 +184,48 @@ for VAR in ["SO2", "NH3", "OC", "BC"]:
 # =========
 
 # initialization of projected drivers
-ENOXproj = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
-ECOproj = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
-EVOCproj = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
-ESO2proj = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
-ENH3proj = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
-EOCproj = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
-EBCproj = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+ENOXproj = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
+ECOproj = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
+EVOCproj = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
+ESO2proj = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
+ENH3proj = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
+EOCproj = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
+EBCproj = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
 
 # projection of emissions under SRES scenarios
 # from [IPCC, 2000]
 
 # OzoPrec
 for VAR, scen, arr in [
-    ("NOX", scen_ENOX, ENOXproj), ("CO", scen_ECO, ECOproj), ("VOC", scen_EVOC, EVOCproj),
+    ("NOX", config.scen_ENOX, ENOXproj), ("CO", config.scen_ECO, ECOproj), ("VOC", config.scen_EVOC, EVOCproj),
 ]:
-    if (scen[:4] == "SRES") & (ind_final > ind_cdiac):
+    if (scen[:4] == "SRES") & (config.ind_final > ind_cdiac):
         path = f"data/EOzoPrec_SRES/#DATA.EOzoPrec_SRES.2000-2100_4reg0.{scen[5:]}_E{VAR}.csv"
         TMP = load_data(path)
 
         for i in range(4 + 1):
-            if (mod_regionI == "SRES4") & (mod_regionJ == "SRES4"):
-                arr[300:min(ind_final, 400) + 1, i, 0, kindCHI_index[VAR], i] += TMP[:min(ind_final, 400) - 300 + 1, i]
-            elif (mod_regionI == "SRES4") & (mod_regionJ != "SRES4"):
-                arr[300:min(ind_final, 400) + 1, 0, 0, kindCHI_index[VAR], i] += TMP[:min(ind_final, 400) - 300 + 1, i]
-            elif (mod_regionI != "SRES4") & (mod_regionJ == "SRES4"):
-                arr[300:min(ind_final, 400) + 1, i, 0, kindCHI_index[VAR], 0] += TMP[:min(ind_final, 400) - 300 + 1, i]
-            elif (mod_regionI != "SRES4") & (mod_regionJ != "SRES4"):
-                arr[300:min(ind_final, 400) + 1, 0, 0, kindCHI_index[VAR], 0] += TMP[:min(ind_final, 400) - 300 + 1, i]
+            if (config.mod_regionI == "SRES4") & (config.mod_regionJ == "SRES4"):
+                arr[300:min(config.ind_final, 400) + 1, i, 0, kindCHI_index[VAR], i] += TMP[:min(config.ind_final, 400) - 300 + 1, i]
+            elif (config.mod_regionI == "SRES4") & (config.mod_regionJ != "SRES4"):
+                arr[300:min(config.ind_final, 400) + 1, 0, 0, kindCHI_index[VAR], i] += TMP[:min(config.ind_final, 400) - 300 + 1, i]
+            elif (config.mod_regionI != "SRES4") & (config.mod_regionJ == "SRES4"):
+                arr[300:min(config.ind_final, 400) + 1, i, 0, kindCHI_index[VAR], 0] += TMP[:min(config.ind_final, 400) - 300 + 1, i]
+            elif (config.mod_regionI != "SRES4") & (config.mod_regionJ != "SRES4"):
+                arr[300:min(config.ind_final, 400) + 1, 0, 0, kindCHI_index[VAR], 0] += TMP[:min(config.ind_final, 400) - 300 + 1, i]
 
 # AeroPrec (SO2 only)
-if (scen_ESO2[:4] == "SRES") & (ind_final > ind_cdiac):
-    path = f"data/EAeroPrec_SRES/#DATA.EAeroPrec_SRES.2000-2100_4reg0.{scen_ESO2[5:]}_ESO2.csv"
+if (config.scen_ESO2[:4] == "SRES") & (config.ind_final > ind_cdiac):
+    path = f"data/EAeroPrec_SRES/#DATA.EAeroPrec_SRES.2000-2100_4reg0.{config.scen_ESO2[5:]}_ESO2.csv"
     TMP = load_data(path)
     for i in range(4 + 1):
-        if (mod_regionI == "SRES4") & (mod_regionJ == "SRES4"):
-            ESO2proj[300: min(ind_final, 400) + 1, i, 0, kindAER_index["SO2"], i] += TMP[: min(ind_final, 400) - 300 + 1, i]
-        elif (mod_regionI == "SRES4") & (mod_regionJ != "SRES4"):
-            ESO2proj[300: min(ind_final, 400) + 1, 0, 0, kindAER_index["SO2"], i] += TMP[: min(ind_final, 400) - 300 + 1, i]
-        elif (mod_regionI != "SRES4") & (mod_regionJ == "SRES4"):
-            ESO2proj[300: min(ind_final, 400) + 1, i, 0, kindAER_index["SO2"], 0] += TMP[: min(ind_final, 400) - 300 + 1, i]
-        elif (mod_regionI != "SRES4") & (mod_regionJ != "SRES4"):
-            ESO2proj[300: min(ind_final, 400) + 1, 0, 0, kindAER_index["SO2"], 0] += TMP[: min(ind_final, 400) - 300 + 1, i]
+        if (config.mod_regionI == "SRES4") & (config.mod_regionJ == "SRES4"):
+            ESO2proj[300: min(config.ind_final, 400) + 1, i, 0, kindAER_index["SO2"], i] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
+        elif (config.mod_regionI == "SRES4") & (config.mod_regionJ != "SRES4"):
+            ESO2proj[300: min(config.ind_final, 400) + 1, 0, 0, kindAER_index["SO2"], i] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
+        elif (config.mod_regionI != "SRES4") & (config.mod_regionJ == "SRES4"):
+            ESO2proj[300: min(config.ind_final, 400) + 1, i, 0, kindAER_index["SO2"], 0] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
+        elif (config.mod_regionI != "SRES4") & (config.mod_regionJ != "SRES4"):
+            ESO2proj[300: min(config.ind_final, 400) + 1, 0, 0, kindAER_index["SO2"], 0] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
 
 # ========
 # 4.5. RCP
@@ -235,42 +236,42 @@ if (scen_ESO2[:4] == "SRES") & (ind_final > ind_cdiac):
 
 # OzoPrec
 for VAR, scen, arr in [
-    ("NOX", scen_ENOX, ENOXproj), ("CO", scen_ECO, ECOproj), ("VOC", scen_EVOC, EVOCproj),
+    ("NOX", config.scen_ENOX, ENOXproj), ("CO", config.scen_ECO, ECOproj), ("VOC", config.scen_EVOC, EVOCproj),
 ]:
-    if (scen[:3] == "RCP") & (ind_final > ind_cdiac):
+    if (scen[:3] == "RCP") & (config.ind_final > ind_cdiac):
         for s in range(1, len(sec_accmip) - 2):
             path = f"data/EOzoPrec_RCP/#DATA.EOzoPrec_RCP.2000-2100_5reg0.rcp{scen[3]}{scen[5]}_E{VAR}_{sec_accmip[s]}.csv"
             if os.path.isfile(path):
                 TMP = load_data(path)
                 for i in range(5 + 1):
-                    if (mod_regionI == "RCP5") & (mod_regionJ == "RCP5"):
-                        arr[300:min(ind_final, 400) + 1, i, 0, kindCHI_index[VAR], i] += TMP[:min(ind_final, 400) - 300 + 1, i]
-                    elif (mod_regionI == "RCP5") & (mod_regionJ != "RCP5"):
-                        arr[300:min(ind_final, 400) + 1, 0, 0, kindCHI_index[VAR], i] += TMP[:min(ind_final, 400) - 300 + 1, i]
-                    elif (mod_regionI != "RCP5") & (mod_regionJ == "RCP5"):
-                        arr[300:min(ind_final, 400) + 1, i, 0, kindCHI_index[VAR], 0] += TMP[:min(ind_final, 400) - 300 + 1, i]
-                    elif (mod_regionI != "RCP5") & (mod_regionJ != "RCP5"):
-                        arr[300:min(ind_final, 400) + 1, 0, 0, kindCHI_index[VAR], 0] += TMP[:min(ind_final, 400) - 300 + 1, i]
+                    if (config.mod_regionI == "RCP5") & (config.mod_regionJ == "RCP5"):
+                        arr[300:min(config.ind_final, 400) + 1, i, 0, kindCHI_index[VAR], i] += TMP[:min(config.ind_final, 400) - 300 + 1, i]
+                    elif (config.mod_regionI == "RCP5") & (config.mod_regionJ != "RCP5"):
+                        arr[300:min(config.ind_final, 400) + 1, 0, 0, kindCHI_index[VAR], i] += TMP[:min(config.ind_final, 400) - 300 + 1, i]
+                    elif (config.mod_regionI != "RCP5") & (config.mod_regionJ == "RCP5"):
+                        arr[300:min(config.ind_final, 400) + 1, i, 0, kindCHI_index[VAR], 0] += TMP[:min(config.ind_final, 400) - 300 + 1, i]
+                    elif (config.mod_regionI != "RCP5") & (config.mod_regionJ != "RCP5"):
+                        arr[300:min(config.ind_final, 400) + 1, 0, 0, kindCHI_index[VAR], 0] += TMP[:min(config.ind_final, 400) - 300 + 1, i]
 
 # AeroPrec
 for VAR, scen, arr in [
-    ("SO2", scen_ESO2, ESO2proj), ("NH3", scen_ENH3, ENH3proj), ("OC", scen_EOC, EOCproj), ("BC", scen_EBC, EBCproj),
+    ("SO2", config.scen_ESO2, ESO2proj), ("NH3", config.scen_ENH3, ENH3proj), ("OC", config.scen_EOC, EOCproj), ("BC", config.scen_EBC, EBCproj),
 ]:
-    if (scen[:3] == "RCP") & (ind_final > ind_cdiac):
+    if (scen[:3] == "RCP") & (config.ind_final > ind_cdiac):
         for s in range(1, len(sec_accmip) - 2):
             path = f"data/EAeroPrec_RCP/#DATA.EAeroPrec_RCP.2000-2100_5reg0.rcp{scen[3]}{scen[5]}_E{VAR}_" f"{sec_accmip[s]}.csv"
 
             if os.path.isfile(path):
                 TMP = load_data(path)
                 for i in range(5 + 1):
-                    if (mod_regionI == "RCP5") & (mod_regionJ == "RCP5"):
-                        arr[300:min(ind_final, 400) + 1, i, 0, kindAER_index[VAR], i] += TMP[:min(ind_final, 400) - 300 + 1, i]
-                    elif (mod_regionI == "RCP5") & (mod_regionJ != "RCP5"):
-                        arr[300:min(ind_final, 400) + 1, 0, 0, kindAER_index[VAR], i] += TMP[:min(ind_final, 400) - 300 + 1, i]
-                    elif (mod_regionI != "RCP5") & (mod_regionJ == "RCP5"):
-                        arr[300:min(ind_final, 400) + 1, i, 0, kindAER_index[VAR], 0] += TMP[:min(ind_final, 400) - 300 + 1, i]
-                    elif (mod_regionI != "RCP5") & (mod_regionJ != "RCP5"):
-                        arr[300:min(ind_final, 400) + 1, 0, 0, kindAER_index[VAR], 0] += TMP[:min(ind_final, 400) - 300 + 1, i]
+                    if (config.mod_regionI == "RCP5") & (config.mod_regionJ == "RCP5"):
+                        arr[300:min(config.ind_final, 400) + 1, i, 0, kindAER_index[VAR], i] += TMP[:min(config.ind_final, 400) - 300 + 1, i]
+                    elif (config.mod_regionI == "RCP5") & (config.mod_regionJ != "RCP5"):
+                        arr[300:min(config.ind_final, 400) + 1, 0, 0, kindAER_index[VAR], i] += TMP[:min(config.ind_final, 400) - 300 + 1, i]
+                    elif (config.mod_regionI != "RCP5") & (config.mod_regionJ == "RCP5"):
+                        arr[300:min(config.ind_final, 400) + 1, i, 0, kindAER_index[VAR], 0] += TMP[:min(config.ind_final, 400) - 300 + 1, i]
+                    elif (config.mod_regionI != "RCP5") & (config.mod_regionJ != "RCP5"):
+                        arr[300:min(config.ind_final, 400) + 1, 0, 0, kindAER_index[VAR], 0] += TMP[:min(config.ind_final, 400) - 300 + 1, i]
 
 # =================
 # 4.A. PAST DATASET
@@ -278,7 +279,7 @@ for VAR, scen, arr in [
 
 # datasets mixed following trends
 for VAR, data, edgar, raw, ehtap, accmip, bio in [
-    ("NOX", data_ENOX, ENOXedgar, ENOXedgar if data_ENOX == "EDGAR" else ENOXaccmip, ENOXehtap, ENOXaccmip, p_ENOX_bio), ("CO", data_ECO, ECOedgar, ECOedgar if data_ECO == "EDGAR" else ECOaccmip, ECOehtap, ECOaccmip, p_ECO_bio), ("VOC", data_EVOC, EVOCedgar, EVOCedgar if data_EVOC == "EDGAR" else EVOCaccmip, EVOCehtap, EVOCaccmip, p_EVOC_bio), ("SO2", data_ESO2, ESO2edgar, ESO2edgar if data_ESO2 == "EDGAR" else ESO2accmip, ESO2ehtap, ESO2accmip, p_ESO2_bio), ("NH3", data_ENH3, ENH3edgar, ENH3edgar if data_ENH3 == "EDGAR" else ENH3accmip, ENH3ehtap, ENH3accmip, p_ENH3_bio),
+    ("NOX",  config.data_ENOX, ENOXedgar, ENOXedgar if  config.data_ENOX == "EDGAR" else ENOXaccmip, ENOXehtap, ENOXaccmip, p_ENOX_bio), ("CO", config.data_ECO, ECOedgar, ECOedgar if config.data_ECO == "EDGAR" else ECOaccmip, ECOehtap, ECOaccmip, p_ECO_bio), ("VOC", config.data_EVOC, EVOCedgar, EVOCedgar if config.data_EVOC == "EDGAR" else EVOCaccmip, EVOCehtap, EVOCaccmip, p_EVOC_bio), ("SO2", config.data_ESO2, ESO2edgar, ESO2edgar if config.data_ESO2 == "EDGAR" else ESO2accmip, ESO2ehtap, ESO2accmip, p_ESO2_bio), ("NH3", config.data_ENH3, ENH3edgar, ENH3edgar if config.data_ENH3 == "EDGAR" else ENH3accmip, ENH3ehtap, ENH3accmip, p_ENH3_bio),
 ]:
     # with EDGAR as reference
     past = raw.copy()
@@ -346,7 +347,7 @@ for VAR, data, edgar, raw, ehtap, accmip, bio in [
         ENH3_0 = arr_0
 
 for VAR, data, bio, accmip, ehtap in [
-    ("OC", data_EOC, p_EOC_bio, EOCaccmip, EOCehtap), ("BC", data_EBC, p_EBC_bio, EBCaccmip, EBCehtap),
+    ("OC", config.data_EOC, p_EOC_bio, EOCaccmip, EOCehtap), ("BC", config.data_EBC, p_EBC_bio, EBCaccmip, EBCehtap),
 ]:
     # with ACCMIP as reference
     if data == "ACCMIP":
@@ -383,13 +384,13 @@ for VAR, data, bio, accmip, ehtap in [
         EBC_0 = arr_0
 
 # cut past dataset to right length
-ENOX[:min(ind_cdiac, ind_final) + 1, ...] = ENOXpast[:min(ind_cdiac, ind_final) + 1, ...]
-ECO[:min(ind_cdiac, ind_final) + 1, ...] = ECOpast[:min(ind_cdiac, ind_final) + 1, ...]
-EVOC[:min(ind_cdiac, ind_final) + 1, ...] = EVOCpast[:min(ind_cdiac, ind_final) + 1, ...]
-ESO2[:min(ind_cdiac, ind_final) + 1, ...] = ESO2past[:min(ind_cdiac, ind_final) + 1, ...]
-ENH3[:min(ind_cdiac, ind_final) + 1, ...] = ENH3past[:min(ind_cdiac, ind_final) + 1, ...]
-EOC[:min(ind_cdiac, ind_final) + 1, ...] = EOCpast[:min(ind_cdiac, ind_final) + 1, ...]
-EBC[:min(ind_cdiac, ind_final) + 1, ...] = EBCpast[:min(ind_cdiac, ind_final) + 1, ...]
+ENOX[:min(ind_cdiac, config.ind_final) + 1, ...] = ENOXpast[:min(ind_cdiac, config.ind_final) + 1, ...]
+ECO[:min(ind_cdiac, config.ind_final) + 1, ...] = ECOpast[:min(ind_cdiac, config.ind_final) + 1, ...]
+EVOC[:min(ind_cdiac, config.ind_final) + 1, ...] = EVOCpast[:min(ind_cdiac, config.ind_final) + 1, ...]
+ESO2[:min(ind_cdiac, config.ind_final) + 1, ...] = ESO2past[:min(ind_cdiac, config.ind_final) + 1, ...]
+ENH3[:min(ind_cdiac, config.ind_final) + 1, ...] = ENH3past[:min(ind_cdiac, config.ind_final) + 1, ...]
+EOC[:min(ind_cdiac, config.ind_final) + 1, ...] = EOCpast[:min(ind_cdiac, config.ind_final) + 1, ...]
+EBC[:min(ind_cdiac, config.ind_final) + 1, ...] = EBCpast[:min(ind_cdiac, config.ind_final) + 1, ...]
 
 # ==================
 # 4.B. FINAL DATASET
@@ -397,27 +398,27 @@ EBC[:min(ind_cdiac, ind_final) + 1, ...] = EBCpast[:min(ind_cdiac, ind_final) + 
 
 # datasets mixed following various criteria
 for VAR, scen, arr, arrproj, arr_0 in [
-    ("NOX", scen_ENOX, ENOX, ENOXproj, ENOX_0), ("CO", scen_ECO, ECO, ECOproj, ECO_0), ("VOC", scen_EVOC, EVOC, EVOCproj, EVOC_0), ("SO2", scen_ESO2, ESO2, ESO2proj, ESO2_0), ("NH3", scen_ENH3, ENH3, ENH3proj, ENH3_0), ("OC", scen_EOC, EOC, EOCproj, EOC_0), ("BC", scen_EBC, EBC, EBCproj, EBC_0),
+    ("NOX", config.scen_ENOX, ENOX, ENOXproj, ENOX_0), ("CO", config.scen_ECO, ECO, ECOproj, ECO_0), ("VOC", config.scen_EVOC, EVOC, EVOCproj, EVOC_0), ("SO2", config.scen_ESO2, ESO2, ESO2proj, ESO2_0), ("NH3", config.scen_ENH3, ENH3, ENH3proj, ENH3_0), ("OC", config.scen_EOC, EOC, EOCproj, EOC_0), ("BC", config.scen_EBC, EBC, EBCproj, EBC_0),
 ]:
     # stop emissions
-    if (scen == "stop") & (ind_final > ind_cdiac):
+    if (scen == "stop") & (config.ind_final > ind_cdiac):
         arr[ind_cdiac + 1:, ...] = arr_0[np.newaxis, ...]
 
     # constant emissions
-    elif (scen == "cst") & (ind_final > ind_cdiac):
+    elif (scen == "cst") & (config.ind_final > ind_cdiac):
         arr[ind_cdiac + 1:, ...] = arr[ind_cdiac, ...][np.newaxis, ...]
 
     # RCP or SRES scenarios
-    elif ((scen[:4] == "SRES") | (scen[:3] == "RCP")) & (ind_final > ind_cdiac):
+    elif ((scen[:4] == "SRES") | (scen[:3] == "RCP")) & (config.ind_final > ind_cdiac):
 
         # raw discontinuity
-        if mod_DATAscen == "raw":
+        if config.mod_DATAscen == "raw":
             arr[ind_cdiac + 1:, ...] = arrproj[ind_cdiac + 1:, ...]
 
         # offset at transition point
-        elif mod_DATAscen == "offset":
+        elif config.mod_DATAscen == "offset":
             arr[ind_cdiac + 1:, ...] = arrproj[ind_cdiac + 1:, ...] - arrproj[ind_cdiac, ...] + arr[ind_cdiac, ...]
-            for t in range(ind_cdiac + 1, ind_final + 1):
+            for t in range(ind_cdiac + 1, config.ind_final + 1):
                 def_regI = bool(np.sum(arrproj[t, :, ..., 1:]))
                 def_regJ = bool(np.sum(arrproj[t, 1:, ..., :]))
                 if not def_regI:
@@ -428,9 +429,9 @@ for VAR, scen, arr, arrproj, arr_0 in [
                     arr[t, 1:, ..., :] = 0
 
         # linear transition over N years
-        elif mod_DATAscen[:6] == "smooth":
-            N = int(mod_DATAscen[6:])
-            if ind_final >= ind_cdiac + N:
+        elif config.mod_DATAscen[:6] == "smooth":
+            N = int(config.mod_DATAscen[6:])
+            if config.ind_final >= ind_cdiac + N:
                 for t in range(ind_cdiac + 1, ind_cdiac + N):
                     arr[t, ...] = (1 - (t - ind_cdiac) / float(N)) * arr[ind_cdiac, ...] + (t - ind_cdiac) / float(N) * arrproj[ind_cdiac + N, ...]
                     def_regI = bool(np.sum(arrproj[t, :, ..., 1:]))
@@ -444,8 +445,8 @@ for VAR, scen, arr, arrproj, arr_0 in [
                 arr[ind_cdiac + N:, ...] = arrproj[ind_cdiac + N:, ...]
 
         # follow trends of projection
-        elif mod_DATAscen == "trends":
-            for t in range(ind_cdiac + 1, ind_final + 1):
+        elif config.mod_DATAscen == "trends":
+            for t in range(ind_cdiac + 1, config.ind_final + 1):
                 def_regI = bool(np.sum(arrproj[t, :, ..., 1:]))
                 def_regJ = bool(np.sum(arrproj[t, 1:, ..., :]))
                 if def_regI and def_regJ:

@@ -2,15 +2,15 @@ import os
 
 import numpy as np
 
-from .regions import nb_regionJ, nb_kind, nb_regionI, nb_sector, regionJ_index, kFF, regionI_index, ind_final, kindGHG_index
-from ..config import dty, scen_EFF, mod_regionI, scen_EN2O, scen_ECH4, data_ECH4, data_EN2O, mod_DATAscen, mod_regionJ, data_EFF
+from .regions import nb_regionJ, nb_kind, nb_regionI, nb_sector, regionJ_index, kFF, regionI_index, kindGHG_index
 from ..data import load_data, load_data_and_header
+from .. import config
 
 ##################################################
 #   1. GREENHOUSE GASES
 ##################################################
 
-init = lambda: np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+init = lambda: np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
 EFF = init()  # {GtC/yr}
 ECH4 = init()  # {TgC/yr}
 EN2O = init()  # {TgN/yr}
@@ -25,7 +25,7 @@ ind_cdiac = 310
 kin = ["sol", "liq", "gas", "cem", "fla"]
 
 # total emissions
-EFFcdiac = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+EFFcdiac = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
 
 for k in range(len(kin)):
     path = f"data/EFossil_CDIAC/#DATA.EFossil_CDIAC.1751-2010_114reg0.EFF_{kin[k]}.csv"
@@ -47,7 +47,7 @@ sec_epa = ["agr_ferm", "agr_manu", "agr_othr", "agr_rice", "agr_soil", "ene_burn
 sec_epa1 = ["agr_ferm", "agr_manu", "agr_othr", "agr_rice", "agr_soil", "ene_coal", "ene_comb", "ene_ngos", "ene_othr", "ind_acid"]
 
 # CH4
-ECH4epa = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+ECH4epa = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
 for s in range(len(sec_epa1)):
     path = f"data/EMethane_EPA/#DATA.EMethane_EPA.1990-{1700 + ind_epa}_114reg0.ECH4_{sec_epa1[s]}.csv"
     if os.path.isfile(path):
@@ -56,7 +56,7 @@ for s in range(len(sec_epa1)):
             ECH4epa[290: ind_epa + 1, regionJ_index[i], 0, kindGHG_index["CH4"], regionI_index[i]] += TMP[: ind_epa - 290 + 1, i]
 
 # N2O
-EN2Oepa = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+EN2Oepa = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
 for s in range(len(sec_epa1)):
     path = f"data/ENitrousOx_EPA/#DATA.ENitrousOx_EPA.1990-{1700 + ind_epa}_114reg0.EN2O_{sec_epa1[s]}.csv"
     if os.path.isfile(path):
@@ -75,7 +75,7 @@ sec_ehyde = ["oo", "fc", "fp", "bc", "in", "al", "an", "aw", "lf", "sb", "df"]
 sec_accmip = ["ooo", "ene", "ind", "tra", "shp", "air", "dom", "slv", "agr", "awb", "wst", "for", "gra"]
 
 # FF
-EFFedgar = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+EFFedgar = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
 for s in range(1, len(sec_ehyde) - 2):
     path = f"data/ECarbon_EDGAR/#DATA.ECarbon_EDGAR.1970-{1700 + ind_edgar}_114reg0.ECO2_{sec_ehyde[s]}.csv"
     if os.path.isfile(path):
@@ -84,7 +84,7 @@ for s in range(1, len(sec_ehyde) - 2):
             EFFedgar[270: ind_edgar + 1, regionJ_index[i], 0, kFF, regionI_index[i]] += TMP[: ind_edgar - 270 + 1, i]
 
 # CH4
-ECH4edgar = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+ECH4edgar = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
 for s in range(1, len(sec_accmip) - 2):
     path = f"data/EMethane_EDGAR/#DATA.EMethane_EDGAR.1970-{1700 + ind_edgar}_114reg0.ECH4_{sec_accmip[s]}.csv"
     if os.path.isfile(path):
@@ -93,7 +93,7 @@ for s in range(1, len(sec_accmip) - 2):
             ECH4edgar[270: ind_edgar + 1, regionJ_index[i], 0, kindGHG_index["CH4"], regionI_index[i]] += TMP[: ind_edgar - 270 + 1, i]
 
 # N2O
-EN2Oedgar = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+EN2Oedgar = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
 for s in range(1, len(sec_ehyde) - 2):
     path = f"data/ENitrousOx_EDGAR/#DATA.ENitrousOx_EDGAR.1970-{1700 + ind_edgar}_114reg0.EN2O_{sec_ehyde[s]}.csv"
     if os.path.isfile(path):
@@ -109,7 +109,7 @@ for s in range(1, len(sec_ehyde) - 2):
 # see [JRC, 2013]
 
 # FF
-EFFeft = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+EFFeft = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
 for s in range(1, len(sec_ehyde) - 2):
     path = f"data/ECarbon_EDGAR-FT/#DATA.ECarbon_EDGAR-FT.2008-2010_114reg0.ECO2_{sec_ehyde[s]}.csv"
     if os.path.isfile(path):
@@ -118,7 +118,7 @@ for s in range(1, len(sec_ehyde) - 2):
             EFFeft[308: 310 + 1, regionJ_index[i], 0, kFF, regionI_index[i]] += TMP[: 310 - 308 + 1, i]
 
 # CH4
-ECH4eft = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+ECH4eft = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
 for s in range(1, len(sec_accmip) - 2):
     path = f"data/EMethane_EDGAR-FT/#DATA.EMethane_EDGAR-FT.2008-2010_114reg0.ECH4_{sec_accmip[s]}.csv"
     if os.path.isfile(path):
@@ -127,7 +127,7 @@ for s in range(1, len(sec_accmip) - 2):
             ECH4eft[308: 310 + 1, regionJ_index[i], 0, kindGHG_index["CH4"], regionI_index[i]] += TMP[: 310 - 308 + 1, i]
 
 # N2O
-EN2Oeft = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+EN2Oeft = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
 for s in range(1, len(sec_ehyde) - 2):
     path = f"data/ENitrousOx_EDGAR-FT/#DATA.ENitrousOx_EDGAR-FT.2008-2010_114reg0.EN2O_{sec_ehyde[s]}.csv"
 
@@ -144,8 +144,8 @@ for s in range(1, len(sec_ehyde) - 2):
 # from [Lamarque et al., 2010]
 
 # CH4
-ECH4accmip = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
-p_ECH4_bio = np.zeros([nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+ECH4accmip = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
+p_ECH4_bio = np.zeros([nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
 for s in range(1, len(sec_accmip) - 2):
     path = f"data/EMethane_ACCMIP/#DATA.EMethane_ACCMIP.1850-2000_114reg0.ECH4_{sec_accmip[s]}.csv"
 
@@ -166,8 +166,8 @@ p_ECH4_bio[np.isnan(p_ECH4_bio) | np.isinf(p_ECH4_bio)] = 0
 # from [van Aardenne et al., 2001]
 
 # N2O
-EN2Oehyde = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
-p_EN2O_bio = np.zeros([nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+EN2Oehyde = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
+p_EN2O_bio = np.zeros([nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
 for s in range(1, len(sec_ehyde) - 2):
     path = f"data/ENitrousOx_EDGAR-HYDE/#DATA.ENitrousOx_EDGAR-HYDE.1890-1990_114reg0.EN2O_{sec_ehyde[s]}.csv"
 
@@ -185,7 +185,7 @@ p_EN2O_bio[np.isnan(p_EN2O_bio) | np.isinf(p_EN2O_bio)] = 0
 # ==============
 
 # load emissions from [Stern et al., 1998]
-ECH4stern = np.zeros([ind_cdiac + 1], dtype=dty)
+ECH4stern = np.zeros([ind_cdiac + 1], dtype=config.dty)
 path = "data/EMethane_Stern1998/#DATA.EMethane_Stern1998.1860-1994_(7sec).ECH4.csv"
 TMP, lgd = load_data_and_header(path)
 for s in range(len(lgd)):
@@ -197,7 +197,7 @@ for s in range(len(lgd)):
 # =================
 
 # load emissions from [Davidson et al., 2009]
-EN2Odavidson = np.zeros([ind_cdiac + 1], dtype=dty)
+EN2Odavidson = np.zeros([ind_cdiac + 1], dtype=config.dty)
 path = "data/ENitrousOx_Davidson2009/#DATA.ENitrousOx_Davidson2009.1860-2005_(5sec).EN2O.csv"
 TMP, lgd = load_data_and_header(path)
 for s in range(len(lgd)):
@@ -214,56 +214,56 @@ if True:
 # =========
 
 # initialization of projected drivers
-EFFproj = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
-ECH4proj = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
-EN2Oproj = np.zeros([ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=dty)
+EFFproj = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
+ECH4proj = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
+EN2Oproj = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI], dtype=config.dty)
 
 # projection of emissions under SRES scenarios
 # from [IPCC, 2000]
 
 # FF
-if (scen_EFF[:4] == "SRES") & (ind_final > ind_cdiac):
-    path = f"data/EFossil_SRES/#DATA.EFossil_SRES.2000-2100_4reg0.{scen_EFF[5:]}_EFF.csv"
+if (config.scen_EFF[:4] == "SRES") & (config.ind_final > ind_cdiac):
+    path = f"data/EFossil_SRES/#DATA.EFossil_SRES.2000-2100_4reg0.{config.scen_EFF[5:]}_EFF.csv"
     TMP = load_data(path)
     for i in range(4 + 1):
-        if (mod_regionI == "SRES4") & (mod_regionJ == "SRES4"):
-            EFFproj[300: min(ind_final, 400) + 1, i, 0, kFF, i] += TMP[: min(ind_final, 400) - 300 + 1, i]
-        elif (mod_regionI == "SRES4") & (mod_regionJ != "SRES4"):
-            EFFproj[300: min(ind_final, 400) + 1, 0, 0, kFF, i] += TMP[: min(ind_final, 400) - 300 + 1, i]
-        elif (mod_regionI != "SRES4") & (mod_regionJ == "SRES4"):
-            EFFproj[300: min(ind_final, 400) + 1, i, 0, kFF, 0] += TMP[: min(ind_final, 400) - 300 + 1, i]
-        elif (mod_regionI != "SRES4") & (mod_regionJ != "SRES4"):
-            EFFproj[300: min(ind_final, 400) + 1, 0, 0, kFF, 0] += TMP[: min(ind_final,400) - 300 + 1, i]
+        if (config.mod_regionI == "SRES4") & (config.mod_regionJ == "SRES4"):
+            EFFproj[300: min(config.ind_final, 400) + 1, i, 0, kFF, i] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
+        elif (config.mod_regionI == "SRES4") & (config.mod_regionJ != "SRES4"):
+            EFFproj[300: min(config.ind_final, 400) + 1, 0, 0, kFF, i] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
+        elif (config.mod_regionI != "SRES4") & (config.mod_regionJ == "SRES4"):
+            EFFproj[300: min(config.ind_final, 400) + 1, i, 0, kFF, 0] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
+        elif (config.mod_regionI != "SRES4") & (config.mod_regionJ != "SRES4"):
+            EFFproj[300: min(config.ind_final, 400) + 1, 0, 0, kFF, 0] += TMP[: min(config.ind_final,400) - 300 + 1, i]
 
 # CH4
-if (scen_ECH4[:4] == "SRES") & (ind_final > ind_cdiac):
-    path = f"data/EMethane_SRES/#DATA.EMethane_SRES.2000-2100_4reg0.{scen_ECH4[5:]}_ECH4.csv"
+if (config.scen_ECH4[:4] == "SRES") & (config.ind_final > ind_cdiac):
+    path = f"data/EMethane_SRES/#DATA.EMethane_SRES.2000-2100_4reg0.{config.scen_ECH4[5:]}_ECH4.csv"
     TMP = load_data(path)
     for i in range(4 + 1):
-        if (mod_regionI == "SRES4") & (mod_regionJ == "SRES4"):
-            ECH4proj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["CH4"], i] += TMP[: min(ind_final,400) - 300 + 1,i]
-        elif (mod_regionI == "SRES4") & (mod_regionJ != "SRES4"):
-            ECH4proj[300: min(ind_final, 400) + 1, 0, 0, kindGHG_index["CH4"], i] += TMP[: min(ind_final,400) - 300 + 1, i]
-        elif (mod_regionI != "SRES4") & (mod_regionJ == "SRES4"):
-            ECH4proj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["CH4"], 0] += TMP[
-                                                                                     : min(ind_final, 400) - 300 + 1, i]
-        elif (mod_regionI != "SRES4") & (mod_regionJ != "SRES4"):
-            ECH4proj[300: min(ind_final, 400) + 1, 0, 0, kindGHG_index["CH4"], 0] += TMP[
-                                                                                     : min(ind_final, 400) - 300 + 1, i]
+        if (config.mod_regionI == "SRES4") & (config.mod_regionJ == "SRES4"):
+            ECH4proj[300: min(config.ind_final, 400) + 1, i, 0, kindGHG_index["CH4"], i] += TMP[: min(config.ind_final,400) - 300 + 1,i]
+        elif (config.mod_regionI == "SRES4") & (config.mod_regionJ != "SRES4"):
+            ECH4proj[300: min(config.ind_final, 400) + 1, 0, 0, kindGHG_index["CH4"], i] += TMP[: min(config.ind_final,400) - 300 + 1, i]
+        elif (config.mod_regionI != "SRES4") & (config.mod_regionJ == "SRES4"):
+            ECH4proj[300: min(config.ind_final, 400) + 1, i, 0, kindGHG_index["CH4"], 0] += TMP[
+                                                                                     : min(config.ind_final, 400) - 300 + 1, i]
+        elif (config.mod_regionI != "SRES4") & (config.mod_regionJ != "SRES4"):
+            ECH4proj[300: min(config.ind_final, 400) + 1, 0, 0, kindGHG_index["CH4"], 0] += TMP[
+                                                                                     : min(config.ind_final, 400) - 300 + 1, i]
 
 # N2O
-if (scen_EN2O[:4] == "SRES") & (ind_final > ind_cdiac):
-    path = f"data/ENitrousOx_SRES/#DATA.ENitrousOx_SRES.2000-2100_4reg0.{scen_EN2O[5:]}_EN2O.csv"
+if (config.scen_EN2O[:4] == "SRES") & (config.ind_final > ind_cdiac):
+    path = f"data/ENitrousOx_SRES/#DATA.ENitrousOx_SRES.2000-2100_4reg0.{config.scen_EN2O[5:]}_EN2O.csv"
     TMP = load_data(path)
     for i in range(4 + 1):
-        if (mod_regionI == "SRES4") & (mod_regionJ == "SRES4"):
-            EN2Oproj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["N2O"], i] += TMP[: min(ind_final,400) - 300 + 1, i]
-        elif (mod_regionI == "SRES4") & (mod_regionJ != "SRES4"):
-            EN2Oproj[300: min(ind_final, 400) + 1, 0, 0, kindGHG_index["N2O"], i] += TMP[: min(ind_final,400) - 300 + 1, i]
-        elif (mod_regionI != "SRES4") & (mod_regionJ == "SRES4"):
-            EN2Oproj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["N2O"], 0] += TMP[: min(ind_final,400) - 300 + 1, i]
-        elif (mod_regionI != "SRES4") & (mod_regionJ != "SRES4"):
-            EN2Oproj[300: min(ind_final, 400) + 1, 0, 0, kindGHG_index["N2O"], 0] += TMP[: min(ind_final,400) - 300 + 1, i]
+        if (config.mod_regionI == "SRES4") & (config.mod_regionJ == "SRES4"):
+            EN2Oproj[300: min(config.ind_final, 400) + 1, i, 0, kindGHG_index["N2O"], i] += TMP[: min(config.ind_final,400) - 300 + 1, i]
+        elif (config.mod_regionI == "SRES4") & (config.mod_regionJ != "SRES4"):
+            EN2Oproj[300: min(config.ind_final, 400) + 1, 0, 0, kindGHG_index["N2O"], i] += TMP[: min(config.ind_final,400) - 300 + 1, i]
+        elif (config.mod_regionI != "SRES4") & (config.mod_regionJ == "SRES4"):
+            EN2Oproj[300: min(config.ind_final, 400) + 1, i, 0, kindGHG_index["N2O"], 0] += TMP[: min(config.ind_final,400) - 300 + 1, i]
+        elif (config.mod_regionI != "SRES4") & (config.mod_regionJ != "SRES4"):
+            EN2Oproj[300: min(config.ind_final, 400) + 1, 0, 0, kindGHG_index["N2O"], 0] += TMP[: min(config.ind_final,400) - 300 + 1, i]
 
 # =========
 # 1.10. RCP
@@ -273,49 +273,49 @@ if (scen_EN2O[:4] == "SRES") & (ind_final > ind_cdiac):
 # from [Meinshausen et al., 2011]
 
 # FF
-if (scen_EFF[:3] == "RCP") & (ind_final > ind_cdiac):
-    path = f"data/EFossil_RCP/#DATA.EFossil_RCP.2000-2100_5reg0.rcp{scen_EFF[3]}{scen_EFF[5]}_EFF.csv"
+if (config.scen_EFF[:3] == "RCP") & (config.ind_final > ind_cdiac):
+    path = f"data/EFossil_RCP/#DATA.EFossil_RCP.2000-2100_5reg0.rcp{config.scen_EFF[3]}{config.scen_EFF[5]}_EFF.csv"
     TMP = load_data(path)
     for i in range(5 + 1):
-        if (mod_regionI == "RCP5") & (mod_regionJ == "RCP5"):
-            EFFproj[300: min(ind_final, 400) + 1, i, 0, kFF, i] += TMP[: min(ind_final, 400) - 300 + 1, i]
-        elif (mod_regionI == "RCP5") & (mod_regionJ != "RCP5"):
-            EFFproj[300: min(ind_final, 400) + 1, 0, 0, kFF, i] += TMP[: min(ind_final, 400) - 300 + 1, i]
-        elif (mod_regionI != "RCP5") & (mod_regionJ == "RCP5"):
-            EFFproj[300: min(ind_final, 400) + 1, i, 0, kFF, 0] += TMP[: min(ind_final, 400) - 300 + 1, i]
-        elif (mod_regionI != "RCP5") & (mod_regionJ != "RCP5"):
-            EFFproj[300: min(ind_final, 400) + 1, 0, 0, kFF, 0] += TMP[: min(ind_final, 400) - 300 + 1, i]
+        if (config.mod_regionI == "RCP5") & (config.mod_regionJ == "RCP5"):
+            EFFproj[300: min(config.ind_final, 400) + 1, i, 0, kFF, i] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
+        elif (config.mod_regionI == "RCP5") & (config.mod_regionJ != "RCP5"):
+            EFFproj[300: min(config.ind_final, 400) + 1, 0, 0, kFF, i] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
+        elif (config.mod_regionI != "RCP5") & (config.mod_regionJ == "RCP5"):
+            EFFproj[300: min(config.ind_final, 400) + 1, i, 0, kFF, 0] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
+        elif (config.mod_regionI != "RCP5") & (config.mod_regionJ != "RCP5"):
+            EFFproj[300: min(config.ind_final, 400) + 1, 0, 0, kFF, 0] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
 
 # CH4
-if (scen_ECH4[:3] == "RCP") & (ind_final > ind_cdiac):
+if (config.scen_ECH4[:3] == "RCP") & (config.ind_final > ind_cdiac):
     for s in range(1, len(sec_accmip) - 2):
-        path = f"data/EMethane_RCP/#DATA.EMethane_RCP.2000-2100_5reg0.rcp{scen_ECH4[3]}{scen_ECH4[5]}_ECH4_" f"{sec_accmip[s]}.csv"
+        path = f"data/EMethane_RCP/#DATA.EMethane_RCP.2000-2100_5reg0.rcp{config.scen_ECH4[3]}{config.scen_ECH4[5]}_ECH4_" f"{sec_accmip[s]}.csv"
 
         if os.path.isfile(path):
             TMP = load_data(path)
             for i in range(5 + 1):
-                if (mod_regionI == "RCP5") & (mod_regionJ == "RCP5"):
-                    ECH4proj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["CH4"], i] += TMP[: min(ind_final, 400) - 300 + 1, i]
-                elif (mod_regionI == "RCP5") & (mod_regionJ != "RCP5"):
-                    ECH4proj[300: min(ind_final, 400) + 1, 0, 0, kindGHG_index["CH4"], i] += TMP[: min(ind_final, 400) - 300 + 1, i]
-                elif (mod_regionI != "RCP5") & (mod_regionJ == "RCP5"):
-                    ECH4proj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["CH4"], 0] += TMP[: min(ind_final, 400) - 300 + 1, i]
-                elif (mod_regionI != "RCP5") & (mod_regionJ != "RCP5"):
-                    ECH4proj[300: min(ind_final, 400) + 1, 0, 0, kindGHG_index["CH4"], 0] += TMP[: min(ind_final, 400) - 300 + 1, i]
+                if (config.mod_regionI == "RCP5") & (config.mod_regionJ == "RCP5"):
+                    ECH4proj[300: min(config.ind_final, 400) + 1, i, 0, kindGHG_index["CH4"], i] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
+                elif (config.mod_regionI == "RCP5") & (config.mod_regionJ != "RCP5"):
+                    ECH4proj[300: min(config.ind_final, 400) + 1, 0, 0, kindGHG_index["CH4"], i] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
+                elif (config.mod_regionI != "RCP5") & (config.mod_regionJ == "RCP5"):
+                    ECH4proj[300: min(config.ind_final, 400) + 1, i, 0, kindGHG_index["CH4"], 0] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
+                elif (config.mod_regionI != "RCP5") & (config.mod_regionJ != "RCP5"):
+                    ECH4proj[300: min(config.ind_final, 400) + 1, 0, 0, kindGHG_index["CH4"], 0] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
 
 # N2O
-if (scen_EN2O[:3] == "RCP") & (ind_final > ind_cdiac):
-    path = f"data/ENitrousOx_RCP/#DATA.ENitrousOx_RCP.2000-2100_5reg0.rcp{scen_EN2O[3]}{scen_EN2O[5]}_EN2O.csv"
+if (config.scen_EN2O[:3] == "RCP") & (config.ind_final > ind_cdiac):
+    path = f"data/ENitrousOx_RCP/#DATA.ENitrousOx_RCP.2000-2100_5reg0.rcp{config.scen_EN2O[3]}{config.scen_EN2O[5]}_EN2O.csv"
     TMP = load_data(path)
     for i in range(5 + 1):
-        if (mod_regionI == "RCP5") & (mod_regionJ == "RCP5"):
-            EN2Oproj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["N2O"], i] += TMP[: min(ind_final,400) - 300 + 1, i]
-        elif (mod_regionI == "RCP5") & (mod_regionJ != "RCP5"):
-            EN2Oproj[300: min(ind_final, 400) + 1, 0, 0, kindGHG_index["N2O"], i] += TMP[: min(ind_final,400) - 300 + 1, i]
-        elif (mod_regionI != "RCP5") & (mod_regionJ == "RCP5"):
-            EN2Oproj[300: min(ind_final, 400) + 1, i, 0, kindGHG_index["N2O"], 0] += TMP[: min(ind_final,400) - 300 + 1, i]
-        elif (mod_regionI != "RCP5") & (mod_regionJ != "RCP5"):
-            EN2Oproj[300: min(ind_final, 400) + 1, 0, 0, kindGHG_index["N2O"], 0] += TMP[: min(ind_final, 400) - 300 + 1, i]
+        if (config.mod_regionI == "RCP5") & (config.mod_regionJ == "RCP5"):
+            EN2Oproj[300: min(config.ind_final, 400) + 1, i, 0, kindGHG_index["N2O"], i] += TMP[: min(config.ind_final,400) - 300 + 1, i]
+        elif (config.mod_regionI == "RCP5") & (config.mod_regionJ != "RCP5"):
+            EN2Oproj[300: min(config.ind_final, 400) + 1, 0, 0, kindGHG_index["N2O"], i] += TMP[: min(config.ind_final,400) - 300 + 1, i]
+        elif (config.mod_regionI != "RCP5") & (config.mod_regionJ == "RCP5"):
+            EN2Oproj[300: min(config.ind_final, 400) + 1, i, 0, kindGHG_index["N2O"], 0] += TMP[: min(config.ind_final,400) - 300 + 1, i]
+        elif (config.mod_regionI != "RCP5") & (config.mod_regionJ != "RCP5"):
+            EN2Oproj[300: min(config.ind_final, 400) + 1, 0, 0, kindGHG_index["N2O"], 0] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
 
 # =================
 # 1.A. PAST DATASET
@@ -325,11 +325,11 @@ if (scen_EN2O[:3] == "RCP") & (ind_final > ind_cdiac):
 
 
 # with CDIAC as reference
-if data_EFF == "CDIAC":
+if config.data_EFF == "CDIAC":
     EFFpast = EFFcdiac.copy()
 
 # with EDGAR as reference
-elif data_EFF == "EDGAR":
+elif config.data_EFF == "EDGAR":
     EFFpast = EFFedgar.copy()
 
     # follow EDGAR-FT variations after 2008
@@ -348,7 +348,7 @@ elif data_EFF == "EDGAR":
     EFFpast[np.isnan(EFFpast) | np.isinf(EFFpast)] = 0
 
 # with EDGAR as reference
-if data_ECH4 == "EDGAR":
+if config.data_ECH4 == "EDGAR":
     ECH4past = ECH4edgar.copy()
     # follow EDGAR-FT variations after 2008
     for t in range(ind_edgar + 1, ind_cdiac + 1):
@@ -372,7 +372,7 @@ if data_ECH4 == "EDGAR":
     ECH4_0 = ECH4past[50, ...]
 
 # with ACCMIP as reference
-elif data_ECH4 == "ACCMIP":
+elif config.data_ECH4 == "ACCMIP":
     ECH4past = ECH4accmip.copy()
     # follow EDGAR variations after 2000
     for t in range(300 + 1, ind_edgar + 1):
@@ -397,7 +397,7 @@ elif data_ECH4 == "ACCMIP":
     ECH4_0 = ECH4past[50, ...]
 
 # with EPA as reference
-elif data_ECH4 == "EPA":
+elif config.data_ECH4 == "EPA":
     ECH4past = ECH4epa.copy()
     # follow ACCMIP variations before 1990
     for t in range(150, 290)[::-1]:
@@ -415,7 +415,7 @@ elif data_ECH4 == "EPA":
     ECH4_0 = ECH4past[50, ...]
 
 # with EDGAR as reference
-if data_EN2O == "EDGAR":
+if config.data_EN2O == "EDGAR":
     EN2Opast = EN2Oedgar.copy()
     # follow EDGAR-FT variations after 2008
     for t in range(ind_edgar + 1, ind_cdiac + 1):
@@ -439,7 +439,7 @@ if data_EN2O == "EDGAR":
     EN2O_0 = EN2Opast[50, ...]
 
 # with EPA as reference
-elif data_EN2O == "EPA":
+elif config.data_EN2O == "EPA":
     EN2Opast = EN2Oepa.copy()
     # follow EDGAR-HYDE variations before 1990
     for t in range(190, 290)[::-1]:
@@ -457,7 +457,7 @@ elif data_EN2O == "EPA":
 
 # Cut past dataset to right length
 for arr, past in [(EFF, EFFpast), (ECH4, ECH4past), (EN2O, EN2Opast)]:
-    arr[:min(ind_cdiac, ind_final) + 1, ...] = past[:min(ind_cdiac, ind_final) + 1, ...]
+    arr[:min(ind_cdiac, config.ind_final) + 1, ...] = past[:min(ind_cdiac, config.ind_final) + 1, ...]
 
 # ==================
 # 1.B. FINAL DATASET
@@ -465,31 +465,31 @@ for arr, past in [(EFF, EFFpast), (ECH4, ECH4past), (EN2O, EN2Opast)]:
 
 # datasets mixed following various criteria
 for VAR, scen, arr, arr_0, arrproj in [
-    ("FF", scen_EFF, EFF, None, EFFproj), ("CH4", scen_ECH4, ECH4, ECH4_0, ECH4proj), ("N2O", scen_EN2O, EN2O, EN2O_0, EN2Oproj),
+    ("FF", config.scen_EFF, EFF, None, EFFproj), ("CH4", config.scen_ECH4, ECH4, ECH4_0, ECH4proj), ("N2O", config.scen_EN2O, EN2O, EN2O_0, EN2Oproj),
 ]:
     # stop emissions
-    if (scen == "stop") & (ind_final > ind_cdiac):
+    if (scen == "stop") & (config.ind_final > ind_cdiac):
         if VAR in ["FF"]:
             EFF[ind_cdiac + 1:, ...] = 0
         else:
             arr[ind_cdiac + 1:, ...] = arr_0[np.newaxis, ...]
 
     # constant emissions
-    elif (scen == "cst") & (ind_final > ind_cdiac):
+    elif (scen == "cst") & (config.ind_final > ind_cdiac):
         arr[ind_cdiac + 1:, ...] = arr[ind_cdiac, ...][np.newaxis, ...]
 
     # RCP or SRES scenarios
-    elif ((scen[:4] == "SRES") | (scen[:3] == "RCP")) & (ind_final > ind_cdiac):
+    elif ((scen[:4] == "SRES") | (scen[:3] == "RCP")) & (config.ind_final > ind_cdiac):
 
         # raw discontinuity
-        if mod_DATAscen == "raw":
+        if config.mod_DATAscen == "raw":
             arr[ind_cdiac + 1:, ...] = arrproj[ind_cdiac + 1:, ...]
 
         # offset at transition point
-        elif mod_DATAscen == "offset":
+        elif config.mod_DATAscen == "offset":
             arr[ind_cdiac + 1:, ...] = arrproj[ind_cdiac + 1:, ...] - arrproj[
                 ind_cdiac, ...] + arr[ind_cdiac, ...]
-            for t in range(ind_cdiac + 1, ind_final + 1):
+            for t in range(ind_cdiac + 1, config.ind_final + 1):
                 def_regI = bool(np.sum(arrproj[t, :, ..., 1:]))
                 def_regJ = bool(np.sum(arrproj[t, 1:, ..., :]))
                 if not def_regI:
@@ -500,9 +500,9 @@ for VAR, scen, arr, arr_0, arrproj in [
                     arr[t, 1:, ..., :] = 0
 
                     # linear transition over N years
-        elif mod_DATAscen[:6] == "smooth":
-            N = int(mod_DATAscen[6:])
-            if ind_final >= ind_cdiac + N:
+        elif config.mod_DATAscen[:6] == "smooth":
+            N = int(config.mod_DATAscen[6:])
+            if config.ind_final >= ind_cdiac + N:
                 for t in range(ind_cdiac + 1, ind_cdiac + N):
                     arr[t, ...] = (1 - (t - ind_cdiac) / float(N)) * arr[
                         ind_cdiac, ...] + (t - ind_cdiac) / float(N) * arrproj[
@@ -518,8 +518,8 @@ for VAR, scen, arr, arr_0, arrproj in [
                 arr[ind_cdiac + N:, ...] = arrproj[ind_cdiac + N:, ...]
 
         # follow trends of projection
-        elif mod_DATAscen == "trends":
-            for t in range(ind_cdiac + 1, ind_final + 1):
+        elif config.mod_DATAscen == "trends":
+            for t in range(ind_cdiac + 1, config.ind_final + 1):
                 def_regI = bool(np.sum(arrproj[t, :, ..., 1:]))
                 def_regJ = bool(np.sum(arrproj[t, 1:, ..., :]))
                 if def_regI and def_regJ:

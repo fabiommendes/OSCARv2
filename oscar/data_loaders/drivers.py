@@ -5,7 +5,8 @@ from .land_use import LUC, HARV, SHIFT
 from .halogenated import EHFC, EPFC, EODS
 from .short_lived import ENOX, ECO, EVOC, ESO2, EOC, EBC, ENH3, ENOX_0, ECO_0, EVOC_0, ESO2_0, EOC_0, EBC_0, ENH3_0
 from .radiative_forces import RFcon, RFvolc, RFsolar
-from ..config import PI_1750, mod_sector, ind_final, ind_attrib
+from .. import config
+
 
 var_map = {
     "EFF": EFF, "ECH4": ECH4, "EN2O": EN2O, "LUC": LUC, "HARV": HARV, "SHIFT": SHIFT, "EHFC": EHFC, "EPFC": EPFC, "EODS": EODS, "ENOX": ENOX, "ECO": ECO, "EVOC": EVOC, "ESO2": ESO2, "ENH3": ENH3, "EOC": EOC, "EBC": EBC, "RFcon": RFcon, "RFvolc": RFvolc, "RFsolar": RFsolar, "ECH4_0": ECH4_0, "EN2O_0": EN2O_0, "ENOX_0": ENOX_0, "ECO_0": ECO_0, "EVOC_0": EVOC_0, "ESO2_0": ESO2_0, "ENH3_0": ENH3_0, "EOC_0": EOC_0, "EBC_0": EBC_0,
@@ -22,85 +23,85 @@ for VAR, VAR_0 in [
     VAR[:, ...] -= VAR_0[np.newaxis, ...]
 
 # force true 1750 preindustrial (drivers)
-if PI_1750:
+if config.PI_1750:
     EFF[:50 + 1] *= 0
-    EFF[:ind_attrib, 0, :, :, ...] = np.sum(EFF[:ind_attrib, :, :, :, ...], 1)
-    EFF[:ind_attrib, 1, :, :, ...] = 0
+    EFF[:config.ind_attrib, 0, :, :, ...] = np.sum(EFF[:config.ind_attrib, :, :, :, ...], 1)
+    EFF[:config.ind_attrib, 1, :, :, ...] = 0
 
     ECH4[:50 + 1] *= 0
-    ECH4[:ind_attrib, 0, :, :, ...] = np.sum(ECH4[:ind_attrib, :, :, :, ...], 1)
-    ECH4[:ind_attrib, 1, :, :, ...] = 0
+    ECH4[:config.ind_attrib, 0, :, :, ...] = np.sum(ECH4[:config.ind_attrib, :, :, :, ...], 1)
+    ECH4[:config.ind_attrib, 1, :, :, ...] = 0
 
     EN2O[:50 + 1] *= 0
-    EN2O[:ind_attrib, 0, :, :, ...] = np.sum(EN2O[:ind_attrib, :, :, :, ...], 1)
-    EN2O[:ind_attrib, 1, :, :, ...] = 0
+    EN2O[:config.ind_attrib, 0, :, :, ...] = np.sum(EN2O[:config.ind_attrib, :, :, :, ...], 1)
+    EN2O[:config.ind_attrib, 1, :, :, ...] = 0
 
     LUC[:50 + 1] *= 0
-    LUC[:ind_attrib, 0, :, :, ...] = np.sum(LUC[:ind_attrib, :, :, :, ...], 1)
-    LUC[:ind_attrib, 1, :, :, ...] = 0
+    LUC[:config.ind_attrib, 0, :, :, ...] = np.sum(LUC[:config.ind_attrib, :, :, :, ...], 1)
+    LUC[:config.ind_attrib, 1, :, :, ...] = 0
 
     HARV[:50 + 1] *= 0
-    HARV[:ind_attrib, 0, :, :, ...] = np.sum(HARV[:ind_attrib, :, :, :, ...], 1)
-    HARV[:ind_attrib, 1, :, :, ...] = 0
+    HARV[:config.ind_attrib, 0, :, :, ...] = np.sum(HARV[:config.ind_attrib, :, :, :, ...], 1)
+    HARV[:config.ind_attrib, 1, :, :, ...] = 0
 
     SHIFT[:50 + 1] *= 0
-    SHIFT[:ind_attrib, 0, :, :, ...] = np.sum(SHIFT[:ind_attrib, :, :, :, ...], 1)
-    SHIFT[:ind_attrib, 1, :, :, ...] = 0
+    SHIFT[:config.ind_attrib, 0, :, :, ...] = np.sum(SHIFT[:config.ind_attrib, :, :, :, ...], 1)
+    SHIFT[:config.ind_attrib, 1, :, :, ...] = 0
 
     EHFC[:50 + 1] *= 0
-    EHFC[:ind_attrib, 0, :, :, ...] = np.sum(EHFC[:ind_attrib, :, :, :, ...], 1)
-    EHFC[:ind_attrib, 1, :, :, ...] = 0
+    EHFC[:config.ind_attrib, 0, :, :, ...] = np.sum(EHFC[:config.ind_attrib, :, :, :, ...], 1)
+    EHFC[:config.ind_attrib, 1, :, :, ...] = 0
 
     EPFC[:50 + 1] *= 0
-    EPFC[:ind_attrib, 0, :, :, ...] = np.sum(EPFC[:ind_attrib, :, :, :, ...], 1)
-    EPFC[:ind_attrib, 1, :, :, ...] = 0
+    EPFC[:config.ind_attrib, 0, :, :, ...] = np.sum(EPFC[:config.ind_attrib, :, :, :, ...], 1)
+    EPFC[:config.ind_attrib, 1, :, :, ...] = 0
 
     EODS[:50 + 1] *= 0
-    EODS[:ind_attrib, 0, :, :, ...] = np.sum(EODS[:ind_attrib, :, :, :, ...], 1)
-    EODS[:ind_attrib, 1, :, :, ...] = 0
+    EODS[:config.ind_attrib, 0, :, :, ...] = np.sum(EODS[:config.ind_attrib, :, :, :, ...], 1)
+    EODS[:config.ind_attrib, 1, :, :, ...] = 0
 
     ENOX[:50 + 1] *= 0
-    ENOX[:ind_attrib, 0, :, :, ...] = np.sum(ENOX[:ind_attrib, :, :, :, ...], 1)
-    ENOX[:ind_attrib, 1, :, :, ...] = 0
+    ENOX[:config.ind_attrib, 0, :, :, ...] = np.sum(ENOX[:config.ind_attrib, :, :, :, ...], 1)
+    ENOX[:config.ind_attrib, 1, :, :, ...] = 0
 
     ECO[:50 + 1] *= 0
-    ECO[:ind_attrib, 0, :, :, ...] = np.sum(ECO[:ind_attrib, :, :, :, ...], 1)
-    ECO[:ind_attrib, 1, :, :, ...] = 0
+    ECO[:config.ind_attrib, 0, :, :, ...] = np.sum(ECO[:config.ind_attrib, :, :, :, ...], 1)
+    ECO[:config.ind_attrib, 1, :, :, ...] = 0
 
     EVOC[:50 + 1] *= 0
-    EVOC[:ind_attrib, 0, :, :, ...] = np.sum(EVOC[:ind_attrib, :, :, :, ...], 1)
-    EVOC[:ind_attrib, 1, :, :, ...] = 0
+    EVOC[:config.ind_attrib, 0, :, :, ...] = np.sum(EVOC[:config.ind_attrib, :, :, :, ...], 1)
+    EVOC[:config.ind_attrib, 1, :, :, ...] = 0
 
     ESO2[:50 + 1] *= 0
-    ESO2[:ind_attrib, 0, :, :, ...] = np.sum(ESO2[:ind_attrib, :, :, :, ...], 1)
-    ESO2[:ind_attrib, 1, :, :, ...] = 0
+    ESO2[:config.ind_attrib, 0, :, :, ...] = np.sum(ESO2[:config.ind_attrib, :, :, :, ...], 1)
+    ESO2[:config.ind_attrib, 1, :, :, ...] = 0
 
     ENH3[:50 + 1] *= 0
-    ENH3[:ind_attrib, 0, :, :, ...] = np.sum(ENH3[:ind_attrib, :, :, :, ...], 1)
-    ENH3[:ind_attrib, 1, :, :, ...] = 0
+    ENH3[:config.ind_attrib, 0, :, :, ...] = np.sum(ENH3[:config.ind_attrib, :, :, :, ...], 1)
+    ENH3[:config.ind_attrib, 1, :, :, ...] = 0
 
     EOC[:50 + 1] *= 0
-    EOC[:ind_attrib, 0, :, :, ...] = np.sum(EOC[:ind_attrib, :, :, :, ...], 1)
-    EOC[:ind_attrib, 1, :, :, ...] = 0
+    EOC[:config.ind_attrib, 0, :, :, ...] = np.sum(EOC[:config.ind_attrib, :, :, :, ...], 1)
+    EOC[:config.ind_attrib, 1, :, :, ...] = 0
 
     EBC[:50 + 1] *= 0
-    EBC[:ind_attrib, 0, :, :, ...] = np.sum(EBC[:ind_attrib, :, :, :, ...], 1)
-    EBC[:ind_attrib, 1, :, :, ...] = 0
+    EBC[:config.ind_attrib, 0, :, :, ...] = np.sum(EBC[:config.ind_attrib, :, :, :, ...], 1)
+    EBC[:config.ind_attrib, 1, :, :, ...] = 0
 
     RFcon[:50 + 1] *= 0
-    RFcon[:ind_attrib, 0, :, :, ...] = np.sum(RFcon[:ind_attrib, :, :, :, ...], 1)
-    RFcon[:ind_attrib, 1, :, :, ...] = 0
+    RFcon[:config.ind_attrib, 0, :, :, ...] = np.sum(RFcon[:config.ind_attrib, :, :, :, ...], 1)
+    RFcon[:config.ind_attrib, 1, :, :, ...] = 0
 
     RFvolc[:50 + 1] *= 0
-    RFvolc[:ind_attrib, 0, :, :, ...] = np.sum(RFvolc[:ind_attrib, :, :, :, ...], 1)
-    RFvolc[:ind_attrib, 1, :, :, ...] = 0
+    RFvolc[:config.ind_attrib, 0, :, :, ...] = np.sum(RFvolc[:config.ind_attrib, :, :, :, ...], 1)
+    RFvolc[:config.ind_attrib, 1, :, :, ...] = 0
 
     RFsolar[:50 + 1] *= 0
-    RFsolar[:ind_attrib, 0, :, :, ...] = np.sum(RFsolar[:ind_attrib, :, :, :, ...], 1)
-    RFsolar[:ind_attrib, 1, :, :, ...] = 0
+    RFsolar[:config.ind_attrib, 0, :, :, ...] = np.sum(RFsolar[:config.ind_attrib, :, :, :, ...], 1)
+    RFsolar[:config.ind_attrib, 1, :, :, ...] = 0
 
 # timeframed sectoral attribution
-if (mod_sector == "Time") & (300 < ind_final <= 310):
+if (config.mod_sector == "Time") & (300 < config.ind_final <= 310):
     for VAR in (EFF, ECH4, EN2O, LUC, HARV, SHIFT, EHFC, EPFC, EODS, ENOX, ECO, EVOC, ESO2, ENH3, EOC, EBC, RFcon, RFvolc, RFsolar, ):
         VAR[150:200, :, :, 1, :, ...] = VAR[150:200, :, :, 0, :, ...]
         VAR[200:210, :, :, 2, :, ...] = VAR[200:210, :, :, 0, :, ...]
@@ -120,11 +121,11 @@ if (mod_sector == "Time") & (300 < ind_final <= 310):
         VAR[294:296, :, :, 16, :, ...] = VAR[294:296, :, :, 0, :, ...]
         VAR[296:298, :, :, 17, :, ...] = VAR[296:298, :, :, 0, :, ...]
         VAR[298:300, :, :, 18, :, ...] = VAR[298:300, :, :, 0, :, ...]
-        for t in range(300, ind_final + 1):
+        for t in range(300, config.ind_final + 1):
             VAR[t, :, :, 19 + t - 300, :, ...] = VAR[t, :, :, 0, :, ...]
         VAR[150:, :, :, 0, :, ...] = 0
 
-elif (mod_sector == "TimeRCP") & (ind_final == 400):
+elif (config.mod_sector == "TimeRCP") & (config.ind_final == 400):
     for VAR in (EFF, ECH4, EN2O, LUC, HARV, SHIFT, EHFC, EPFC, EODS, ENOX, ECO, EVOC, ESO2, ENH3, EOC, EBC, RFcon, RFvolc, RFsolar, ):
         VAR[311:316, :, 1, :, ...] = VAR[311:316, :, 0, :, ...]
         VAR[316:321, :, 2, :, ...] = VAR[316:321, :, 0, :, ...]
