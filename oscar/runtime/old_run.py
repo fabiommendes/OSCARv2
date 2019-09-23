@@ -13,6 +13,7 @@ nb_PFC = len(PFC)
 nb_ODS = len(ODS)
 
 
+# noinspection PyAttributeOutsideInit
 class Simulation:
     # Global scalar variables
     D_mld_t = mk_scalar()
@@ -196,316 +197,37 @@ class Simulation:
     CTHAW3 = mk_linear_var(nb_regionPF)
     D_CFROZ = mk_linear_var(nb_regionPF)
 
-    def __init__(self, p=p, fT=fT, var_output=["ELUC", "OSNK", "LSNK", "D_CO2", "RF", "D_gst"], plot=[]):
-        # Ocean variables
-        D_SURF = OSNK = D_FIN = D_FOUT = D_FCIRC = None
-
-        # Land variables
-        D_AWET = D_k_igni = D_k_rho = None
-        D_npp = D_efire = D_fmort = D_rh1 = D_fmet = D_rh2 = D_ewet = LSNK = D_EWET = None
-
-        # Land Use
-        NPP_luc = EFIRE_luc = FMORT_luc = RH1_luc = FMET_luc = RH2_luc = EHWP1_luc = EHWP2_luc = EHWP3_luc = ELUC = None
-        D_EBB_CO2 = D_EBB_CH4 = D_EBB_N2O = D_EBB_NOX = D_EBB_CO = D_EBB_VOC = D_EBB_SO2 = D_EBB_NH3 = D_EBB_OC = D_EBB_BC = None
-
-        # Permafrost
-        rD_rhoPF = pthaw_bar = d_pthaw = FTHAW = ETHAW1 = ETHAW2 = ETHAW3 = EPF_CO2 = EPF_CH4 = EPF = None
-
-        # Chemistry
-        D_kOH = D_hv = D_OHSNK_CH4 = D_HVSNK_CH4 = D_XSNK_CH4 = D_FOXI_CH4 = D_HVSNK_N2O = D_OHSNK_HFC = None
-        D_OHSNK_PFC = D_OHSNK_ODS = D_HVSNK_HFC = D_HVSNK_PFC = D_HVSNK_ODS = D_XSNK_HFC = D_XSNK_PFC = None
-        D_XSNK_ODS = D_O3t = D_SO4 = D_POA = D_BC = D_NO3 = D_SOA = D_DUST = D_SALT = D_AERh = None
-
-        # Climate
-        RF_CO2 = RF_CH4 = RF_H2Os = RF_N2O = RF_halo = RF_O3t = RF_O3s = RF_SO4 = RF_POA = RF_BC = RF_NO3 = None
-        RF_SOA = RF_DUST = RF_SALT = RF_cloud = RF_BCsnow = RF_LCC = RF = RF_warm = RF_atm = None
-
-        def do_step_ocean(t):
-            nonlocal D_SURF, OSNK, D_FIN, D_FOUT, D_FCIRC
-
-            # structure
-            D_mld = mld_0 * alpha_mld * (np.exp(gamma_mld * fT * self.D_sst) - 1)
-
-            # fluxes
-            D_FIN = p_circ * v_fg * alpha_CO2 * self.D_CO2
-            D_FOUT = p_circ * v_fg * alpha_CO2 * f_pCO2(self.D_dic, fT * self.D_sst)
-            D_FCIRC = self.D_CSURF * (1 / tau_circ)
-            OSNK = np.sum(D_FOUT - D_FIN)
-
-            # stocks
-            self.D_CSURF += dt * (D_FIN - D_FOUT - D_FCIRC)
-            self.D_dic = alpha_dic * np.sum(self.D_CSURF) / (1 + D_mld / mld_0)
-
-        def do_step_land(t):
-            nonlocal D_AWET, D_k_igni, D_k_rho
-            nonlocal D_npp, D_efire, D_fmort, D_rh1, D_fmet, D_rh2, D_ewet, LSNK, D_EWET
-
-            # land-cover
-            self.D_AREA += dt * (np.sum(LUC[t], 1) - np.sum(LUC[t], 2))
-            D_AWET = AWET_0 * (gamma_wetT * fT * self.D_lst + gamma_wetP * fT * self.D_lyp + gamma_wetC * fT * self.D_CO2)
-
-            # factors
-            D_k_igni = (gamma_igniT * fT * self.D_lst[:, np.newaxis] + gamma_igniP * fT * self.D_lyp[:, np.newaxis] + gamma_igniC * fT * self.D_CO2)
-            D_k_rho = f_rho(fT * self.D_lst[:, np.newaxis], fT * self.D_lyp[:, np.newaxis])
-
-            # fluxes
-            D_npp = npp_0 * f_npp(self.D_CO2, fT * self.D_lst[:, np.newaxis], fT * self.D_lyp[:, np.newaxis])
-            D_efire = igni_0 * ((1 + D_k_igni) * (cveg_0 + self.D_cveg) - cveg_0)
-            D_fmort = mu_0 * self.D_cveg
-            D_rh1 = rho1_0 * ((1 + D_k_rho) * (csoil1_0 + self.D_csoil1) - csoil1_0)
-            D_fmet = k_met * D_rh1
-            D_rh2 = rho2_0 * ((1 + D_k_rho) * (csoil2_0 + self.D_csoil2) - csoil2_0)
-            D_ewet = ewet_0 * np.nan_to_num(np.sum(p_wet * self.D_csoil1, 1) / np.sum(p_wet * csoil1_0, 1))
-            LSNK = np.sum((D_rh1 + D_rh2 + D_efire - D_npp) * (AREA_0 + self.D_AREA))
-            D_EWET = ewet_0 * D_AWET + D_ewet * AWET_0 + D_ewet * D_AWET
-
-            # stocks
-            self.D_cveg += dt * (D_npp - D_fmort - D_efire)
-            self.D_csoil1 += dt * (D_fmort - D_fmet - D_rh1)
-            self.D_csoil2 += dt * (D_fmet - D_rh2)
-
-        def do_step_land_use(t):
-            nonlocal D_EBB_CO2, D_EBB_CH4, D_EBB_N2O, D_EBB_NOX, D_EBB_CO, D_EBB_VOC, D_EBB_SO2, D_EBB_NH3, D_EBB_OC, D_EBB_BC
-            nonlocal NPP_luc, EFIRE_luc, FMORT_luc, RH1_luc, FMET_luc, RH2_luc, EHWP1_luc, EHWP2_luc, EHWP3_luc, ELUC
-
-            # initialization
-            # land-use change
-            for b1 in range(nb_biome):
-                for b2 in range(nb_biome):
-                    self.CVEG_luc[:, b1, b2, t] += (-dt) * (cveg_0 + self.D_cveg)[:, b2] * LUC[t, :, b1, b2]
-                    self.CSOIL1_luc[:, b1, b2, t] += (dt * ((csoil1_0 + self.D_csoil1)[:, b1] - (csoil1_0 + self.D_csoil1)[:, b2]) * LUC[t, :, b1, b2])
-                    self.CSOIL2_luc[:, b1, b2, t] += (dt * ((csoil2_0 + self.D_csoil2)[:, b1] - (csoil2_0 + self.D_csoil2)[:, b2]) * LUC[t, :, b1, b2])
-                    self.CSOIL1_luc[:, b1, b2, t] += (dt * (cveg_0 + self.D_cveg)[:, b1] * (p_AGB[:, b1] * p_HWP0[:, b1] + (1 - p_AGB[:, b1])) * LUC[t, :, b1, b2])
-                    self.CHWP1_luc[:, b1, b2, t] += (dt * (cveg_0 + self.D_cveg)[:, b1] * p_AGB[:, b1] * p_HWP1[:, b1] * LUC[t, :, b1, b2])
-                    self.CHWP2_luc[:, b1, b2, t] += (dt * (cveg_0 + self.D_cveg)[:, b1] * p_AGB[:, b1] * p_HWP2[:, b1] * LUC[t, :, b1, b2])
-                    self.CHWP3_luc[:, b1, b2, t] += (dt * (cveg_0 + self.D_cveg)[:, b1] * p_AGB[:, b1] * p_HWP3[:, b1] * LUC[t, :, b1, b2])
-
-            # harvest
-            for b in range(nb_biome):
-                self.CVEG_luc[:, b, b, t] += dt * -HARV[t, :, b]
-                self.CSOIL1_luc[:, b, b, t] += dt * p_HWP0[:, b] * HARV[t, :, b]
-                self.CHWP1_luc[:, b, b, t] += dt * p_HWP1[:, b] * HARV[t, :, b]
-                self.CHWP2_luc[:, b, b, t] += dt * p_HWP2[:, b] * HARV[t, :, b]
-                self.CHWP3_luc[:, b, b, t] += dt * p_HWP3[:, b] * HARV[t, :, b]
-
-            # shifting cultivation
-            for b1 in range(nb_biome):
-                for b2 in range(b1, nb_biome):
-                    self.CVEG_luc[:, b1, b2, t] += (dt * -(cveg_0 + self.D_cveg)[:, b2] * (1 - np.exp(-mu_0[:, b2] * tau_shift)) * SHIFT[t, :, b1, b2])
-                    self.CSOIL1_luc[:, b1, b2, t] += (dt * (cveg_0 + self.D_cveg)[:, b1] * (1 - np.exp(-mu_0[:, b1] * tau_shift)) * (p_AGB[:, b1] * p_HWP0[:, b1] + (1 - p_AGB[:, b1])) * SHIFT[t, :, b1, b2])
-                    self.CHWP1_luc[:, b1, b2, t] += (dt * (cveg_0 + self.D_cveg)[:, b1] * (1 - np.exp(-mu_0[:, b1] * tau_shift)) * p_AGB[:, b1] * p_HWP1[:, b1] * SHIFT[t, :, b1, b2])
-                    self.CHWP2_luc[:, b1, b2, t] += (dt * (cveg_0 + self.D_cveg)[:, b1] * (1 - np.exp(-mu_0[:, b1] * tau_shift)) * p_AGB[:, b1] * p_HWP2[:, b1] * SHIFT[t, :, b1, b2])
-                    self.CHWP3_luc[:, b1, b2, t] += (dt * (cveg_0 + self.D_cveg)[:, b1] * (1 - np.exp(-mu_0[:, b1] * tau_shift)) * p_AGB[:, b1] * p_HWP3[:, b1] * SHIFT[t, :, b1, b2])
-                    self.CVEG_luc[:, b2, b1, t] += (dt * -(cveg_0 + self.D_cveg)[:, b1] * (1 - np.exp(-mu_0[:, b1] * tau_shift)) * SHIFT[t, :, b1, b2])
-                    self.CSOIL1_luc[:, b2, b1, t] += (dt * (cveg_0 + self.D_cveg)[:, b2] * (1 - np.exp(-mu_0[:, b2] * tau_shift)) * (p_AGB[:, b2] * p_HWP0[:, b2] + (1 - p_AGB[:, b2])) * SHIFT[t, :, b1, b2])
-                    self.CHWP1_luc[:, b2, b1, t] += (dt * (cveg_0 + self.D_cveg)[:, b2] * (1 - np.exp(-mu_0[:, b2] * tau_shift)) * p_AGB[:, b2] * p_HWP1[:, b2] * SHIFT[t, :, b1, b2])
-                    self.CHWP2_luc[:, b2, b1, t] += (dt * (cveg_0 + self.D_cveg)[:, b2] * (1 - np.exp(-mu_0[:, b2] * tau_shift)) * p_AGB[:, b2] * p_HWP2[:, b2] * SHIFT[t, :, b1, b2])
-                    self.CHWP3_luc[:, b2, b1, t] += (dt * (cveg_0 + self.D_cveg)[:, b2] * (1 - np.exp(-mu_0[:, b2] * tau_shift)) * p_AGB[:, b2] * p_HWP3[:, b2] * SHIFT[t, :, b1, b2])
-
-            # fluxes
-            # book-keeping model
-            NPP_luc = 0 * self.CVEG_luc
-            EFIRE_luc = (igni_0 * (1 + D_k_igni))[:, np.newaxis, :, np.newaxis] * self.CVEG_luc
-            FMORT_luc = mu_0[:, np.newaxis, :, np.newaxis] * self.CVEG_luc
-            RH1_luc = (rho1_0 * (1 + D_k_rho))[:, np.newaxis, :, np.newaxis] * self.CSOIL1_luc
-            FMET_luc = k_met * RH1_luc
-            RH2_luc = (rho2_0 * (1 + D_k_rho))[:, np.newaxis, :, np.newaxis] * self.CSOIL2_luc
-            EHWP1_luc = np.zeros([nb_regionI, nb_biome, nb_biome, ind_final + 1], dtype=dty)
-            EHWP1_luc[:, :, :, : t + 1] = r_HWP1[np.newaxis, np.newaxis, np.newaxis, t::-1] * self.CHWP1_luc[:, :, :, : t + 1]
-            EHWP2_luc = np.zeros([nb_regionI, nb_biome, nb_biome, ind_final + 1], dtype=dty)
-            EHWP2_luc[:, :, :, : t + 1] = r_HWP2[np.newaxis, np.newaxis, np.newaxis, t::-1] * self.CHWP2_luc[:, :, :, : t + 1]
-            EHWP3_luc = np.zeros([nb_regionI, nb_biome, nb_biome, ind_final + 1], dtype=dty)
-            EHWP3_luc[:, :, :, : t + 1] = r_HWP3[np.newaxis, np.newaxis, np.newaxis, t::-1] * self.CHWP3_luc[:, :, :, : t + 1]
-            ELUC = np.sum(np.sum(np.sum(RH1_luc + RH2_luc + EFIRE_luc + EHWP1_luc + EHWP2_luc + EHWP3_luc - NPP_luc, 3), 2), 1)
-
-            # biomass burning
-            def biomass_burning_diff(alpha_BB):
-                new = np.newaxis
-                diff = np.sum(alpha_BB * (igni_0 * cveg_0 * self.D_AREA + D_efire * AREA_0 + D_efire * self.D_AREA), 1)
-                diff += p_HWP1_bb * np.sum(np.sum(np.sum(alpha_BB[:, :, new, new] * EHWP1_luc, 3), 2), 1)
-                diff += np.sum(np.sum(np.sum(alpha_BB[:, new, :, new] * EFIRE_luc, 3), 2), 1)
-                return diff
-
-            D_EBB_CO2 = biomass_burning_diff(alpha_BB_CO2)
-            D_EBB_CH4 = biomass_burning_diff(alpha_BB_CH4)
-            D_EBB_N2O = biomass_burning_diff(alpha_BB_N2O)
-            D_EBB_NOX = biomass_burning_diff(alpha_BB_NOX)
-            D_EBB_CO = biomass_burning_diff(alpha_BB_CO)
-            D_EBB_VOC = biomass_burning_diff(alpha_BB_VOC)
-            D_EBB_SO2 = biomass_burning_diff(alpha_BB_SO2)
-            D_EBB_NH3 = biomass_burning_diff(alpha_BB_NH3)
-            D_EBB_OC = biomass_burning_diff(alpha_BB_OC)
-            D_EBB_BC = biomass_burning_diff(alpha_BB_BC)
-
-            # stocks
-            self.CVEG_luc += dt * (NPP_luc - FMORT_luc - EFIRE_luc)
-            self.CSOIL1_luc += dt * (FMORT_luc - FMET_luc - RH1_luc)
-            self.CSOIL2_luc += dt * (FMET_luc - RH2_luc)
-            self.CHWP1_luc += dt * -EHWP1_luc
-            self.CHWP2_luc += dt * -EHWP2_luc
-            self.CHWP3_luc += dt * -EHWP3_luc
-
-        def do_step_permafrost(t):
-            nonlocal rD_rhoPF, pthaw_bar, d_pthaw, FTHAW, ETHAW1, ETHAW2, ETHAW3, EPF_CO2, EPF_CH4, EPF
-
-            # factors
-            rD_rhoPF = np.exp(w_rhoPF * gamma_rhoPF1 * w_reg_lstPF * fT * self.D_gst + w_rhoPF * gamma_rhoPF2 * (w_reg_lstPF * fT * self.D_gst) ** 2) - 1
-
-            # fraction thawed
-            pthaw_bar = -pthaw_min + (1 + pthaw_min) / (1 + ((1 / pthaw_min + 1) ** k_pthaw - 1) * np.exp(-gamma_pthaw * k_pthaw * w_reg_lstPF * fT * self.D_gst)) ** (1 / k_pthaw)
-            d_pthaw = f_v_PF(pthaw_bar, self.pthaw) * (pthaw_bar - self.pthaw)
-            self.pthaw += dt * d_pthaw
-
-            # fluxes
-            FTHAW = CFROZ_0 * d_pthaw
-            ETHAW1 = 1 / tau_PF1 * (1 + rD_rhoPF) * self.CTHAW1
-            ETHAW2 = 1 / tau_PF2 * (1 + rD_rhoPF) * self.CTHAW2
-            ETHAW3 = 1 / tau_PF3 * (1 + rD_rhoPF) * self.CTHAW3
-            EPF_CO2 = (1 - p_PF_CH4) * (ETHAW1 + ETHAW2 + ETHAW3 + p_PF_inst * FTHAW)
-            EPF_CH4 = 1000.0 * p_PF_CH4 * (ETHAW1 + ETHAW2 + ETHAW3 + p_PF_inst * FTHAW)
-            EPF = EPF_CO2 + 0.001 * EPF_CH4
-
-            # stocks
-            self.D_CFROZ -= dt * FTHAW
-            self.CTHAW1 += dt * (p_PF1 * (1 - p_PF_inst) * FTHAW - ETHAW1)
-            self.CTHAW2 += dt * (p_PF2 * (1 - p_PF_inst) * FTHAW - ETHAW2)
-            self.CTHAW3 += dt * (p_PF3 * (1 - p_PF_inst) * FTHAW - ETHAW3)
-
-        def do_step_chemestry(t):
-            nonlocal D_kOH, D_hv, D_OHSNK_CH4, D_HVSNK_CH4, D_XSNK_CH4, D_FOXI_CH4, D_HVSNK_N2O
-            nonlocal D_OHSNK_HFC, D_OHSNK_PFC, D_OHSNK_ODS, D_HVSNK_HFC, D_HVSNK_PFC, D_HVSNK_ODS, D_XSNK_HFC, D_XSNK_PFC
-            nonlocal D_XSNK_ODS, D_O3t, D_SO4, D_POA, D_BC, D_NO3, D_SOA, D_DUST, D_SALT, D_AERh
-
-            # factors
-            D_kOH = f_kOH(self.D_CH4, self.D_O3s, fT * self.D_gst, np.sum(ENOX[t] + D_EBB_NOX), np.sum(ECO[t] + D_EBB_CO), np.sum(EVOC[t] + D_EBB_VOC))
-            D_hv = f_hv(self.D_N2O_lag, self.D_EESC, fT * self.D_gst)
-
-            # fluxes
-            D_OHSNK_CH4 = -alpha_CH4 / tau_CH4_OH * (CH4_0 * D_kOH + self.D_CH4 + D_kOH * self.D_CH4)
-            D_HVSNK_CH4 = -alpha_CH4 / tau_CH4_hv * (CH4_0 * D_hv + self.D_CH4_lag + D_hv * self.D_CH4_lag)
-            D_XSNK_CH4 = -alpha_CH4 * (1 / tau_CH4_soil + 1 / tau_CH4_ocean) * self.D_CH4
-            D_FOXI_CH4 = -0.001 * (1.0 * np.sum(ECH4[t]) + np.sum(D_EBB_CH4) + np.sum(D_EWET) + D_OHSNK_CH4 + D_HVSNK_CH4 + D_XSNK_CH4)
-            D_HVSNK_N2O = -alpha_N2O / tau_N2O_hv * (N2O_0 * D_hv + self.D_N2O_lag + D_hv * self.D_N2O_lag)
-            D_OHSNK_HFC = -alpha_HFC / tau_HFC_OH * (HFC_0 * D_kOH + self.D_HFC + D_kOH * self.D_HFC)
-            D_OHSNK_PFC = -alpha_PFC / tau_PFC_OH * (PFC_0 * D_kOH + self.D_PFC + D_kOH * self.D_PFC)
-            D_OHSNK_ODS = -alpha_ODS / tau_ODS_OH * (ODS_0 * D_kOH + self.D_ODS + D_kOH * self.D_ODS)
-            D_HVSNK_HFC = -alpha_HFC / tau_HFC_hv * (HFC_0 * D_hv + self.D_HFC_lag + D_hv * self.D_HFC_lag)
-            D_HVSNK_PFC = -alpha_PFC / tau_PFC_hv * (PFC_0 * D_hv + self.D_PFC_lag + D_hv * self.D_PFC_lag)
-            D_HVSNK_ODS = -alpha_ODS / tau_ODS_hv * (ODS_0 * D_hv + self.D_ODS_lag + D_hv * self.D_ODS_lag)
-            D_XSNK_HFC = -alpha_HFC / tau_HFC_othr * self.D_HFC
-            D_XSNK_PFC = -alpha_PFC / tau_PFC_othr * self.D_PFC
-            D_XSNK_ODS = -alpha_ODS / tau_ODS_othr * self.D_ODS
-
-            # stocks
-            D_O3t = chi_O3t_CH4 * np.log(1 + self.D_CH4 / CH4_0) + Gamma_O3t * fT * self.D_gst
-            D_O3t += chi_O3t_NOX * np.sum(w_reg_NOX * np.sum(p_reg4 * (ENOX[t] + D_EBB_NOX)[:, np.newaxis], 0))
-            D_O3t += chi_O3t_CO * np.sum(w_reg_CO * np.sum(p_reg4 * (ECO[t] + D_EBB_CO)[:, np.newaxis], 0))
-            D_O3t += chi_O3t_VOC * np.sum(w_reg_VOC * np.sum(p_reg4 * (EVOC[t] + D_EBB_VOC)[:, np.newaxis], 0))
-            self.D_EESC = np.sum(f_fracrel(tau_lag) * (n_Cl + alpha_Br * n_Br) * self.D_ODS_lag)
-            self.D_O3s = chi_O3s_EESC * self.D_EESC + chi_O3s_N2O * self.D_N2O_lag * (1 - self.D_EESC / EESC_x) + Gamma_O3s * fT * self.D_gst
-            D_SO4 = alpha_SO4 * tau_SO2 * np.sum(w_reg_SO2 * np.sum(p_reg4 * (ESO2[t] + D_EBB_SO2)[:, np.newaxis], 0)) + alpha_SO4 * tau_DMS * 0 + Gamma_SO4 * fT * self.D_gst
-            D_POA = tau_OMff * alpha_POM * np.sum(w_reg_OC * np.sum(p_reg4 * (EOC[t])[:, np.newaxis], 0)) + tau_OMbb * alpha_POM * np.sum(D_EBB_OC) + Gamma_POA * fT * self.D_gst
-            D_BC = tau_BCff * np.sum(w_reg_BC * np.sum(p_reg4 * (EBC[t])[:, np.newaxis], 0)) + tau_BCbb * np.sum(D_EBB_BC) + Gamma_BC * fT * self.D_gst
-            D_NO3 = alpha_NO3 * tau_NOX * np.sum(ENOX[t] + D_EBB_NOX) + alpha_NO3 * tau_NH3 * np.sum(ENH3[t] + D_EBB_NH3) + Gamma_NO3 * fT * self.D_gst
-            D_SOA = tau_VOC * np.sum(EVOC[t] + D_EBB_VOC) + tau_BVOC * 0 + Gamma_SOA * fT * self.D_gst
-            D_DUST = 0 * (tau_DUST * 0 + Gamma_DUST * fT * self.D_gst)
-            D_SALT = 0 * (tau_SALT * 0 + Gamma_SALT * fT * self.D_gst)
-            D_AERh = solub_SO4 * D_SO4 + solub_POA * D_POA + solub_BC * D_BC + solub_NO3 * D_NO3 + solub_SOA * D_SOA + solub_DUST * D_DUST + solub_SALT * D_SALT
-
-        def do_step_atmosphere(t):
-            # stocks
-            self.D_CO2 += dt * (1 / alpha_CO2) * (np.sum(EFF[t]) + np.sum(ELUC) + LSNK + OSNK + D_FOXI_CH4 + np.sum(EPF_CO2))
-            self.D_CH4 += dt * (1 / alpha_CH4) * (np.sum(ECH4[t]) + np.sum(D_EBB_CH4) + np.sum(D_EWET) + np.sum(EPF_CH4) + D_OHSNK_CH4 + D_HVSNK_CH4 + D_XSNK_CH4)
-            self.D_N2O += dt * (1 / alpha_N2O) * (np.sum(EN2O[t]) + np.sum(D_EBB_N2O) + D_HVSNK_N2O)
-            self.D_HFC += dt * (1 / alpha_HFC) * (np.sum(EHFC[t], 0) + D_OHSNK_HFC + D_HVSNK_HFC + D_XSNK_HFC)
-            self.D_PFC += dt * (1 / alpha_PFC) * (np.sum(EPFC[t], 0) + D_OHSNK_PFC + D_HVSNK_PFC + D_XSNK_PFC)
-            self.D_ODS += dt * (1 / alpha_ODS) * (np.sum(EODS[t], 0) + D_OHSNK_ODS + D_HVSNK_ODS + D_XSNK_ODS)
-            self.D_CH4_lag += dt * ((1 / tau_lag) * self.D_CH4 - (1 / tau_lag) * self.D_CH4_lag)
-            self.D_N2O_lag += dt * ((1 / tau_lag) * self.D_N2O - (1 / tau_lag) * self.D_N2O_lag)
-            self.D_HFC_lag += dt * ((1 / tau_lag) * self.D_HFC - (1 / tau_lag) * self.D_HFC_lag)
-            self.D_PFC_lag += dt * ((1 / tau_lag) * self.D_PFC - (1 / tau_lag) * self.D_PFC_lag)
-            self.D_ODS_lag += dt * ((1 / tau_lag) * self.D_ODS - (1 / tau_lag) * self.D_ODS_lag)
-
-        def do_step_climate(t):
-            nonlocal RF_CO2, RF_CH4, RF_H2Os, RF_N2O, RF_halo, RF_O3t, RF_O3s, RF_SO4, RF_POA, RF_BC, RF_NO3
-            nonlocal RF_SOA, RF_DUST, RF_SALT, RF_cloud, RF_BCsnow, RF_LCC, RF, RF_warm, RF_atm
-
-            # fluxes
-            # per component
-            RF_CO2 = f_RF_CO2(self.D_CO2)
-            RF_CH4 = f_RF_CH4(self.D_CH4) - (f_RF_overlap(self.D_CH4, self.D_N2O) - f_RF_overlap(0, self.D_N2O))
-            RF_H2Os = f_RF_H2Os(self.D_CH4_lag)
-            RF_N2O = f_RF_N2O(self.D_N2O) - (f_RF_overlap(self.D_CH4, self.D_N2O) - f_RF_overlap(self.D_CH4, 0))
-            RF_halo = np.sum(radeff_HFC * self.D_HFC) + np.sum(radeff_PFC * self.D_PFC) + np.sum(radeff_ODS * self.D_ODS)
-            RF_O3t = radeff_O3t * D_O3t
-            RF_O3s = radeff_O3s * self.D_O3s
-            RF_SO4 = radeff_SO4 * D_SO4
-            RF_POA = radeff_POA * D_POA
-            RF_BC = radeff_BC * D_BC
-            RF_NO3 = radeff_NO3 * D_NO3
-            RF_SOA = radeff_SOA * D_SOA
-            RF_DUST = radeff_DUST * D_DUST
-            RF_SALT = radeff_SALT * D_SALT
-            RF_cloud = k_BC_adjust * RF_BC + Phi_0 * np.log(1 + D_AERh / AERh_0)
-            RF_BCsnow = radeff_BCsnow * np.sum(w_reg_BCsnow * np.sum(p_reg9 * (EBC[t] + D_EBB_BC)[:, np.newaxis], 0))
-            RF_LCC = np.sum(alpha_LCC * self.D_AREA)
-
-            # totals
-            RF = RF_CO2 + RF_CH4 + RF_H2Os + RF_N2O + RF_halo + RF_O3t + RF_O3s + RF_SO4 + RF_POA + RF_BC + RF_NO3 + RF_SOA + RF_DUST + RF_SALT + RF_cloud + RF_BCsnow + RF_LCC + RFcon[t] + RFvolc[t] + RFsolar[t]
-            RF_warm = RF_CO2 + RF_CH4 + RF_H2Os + RF_N2O + RF_halo + RF_O3t + RF_O3s + RF_SO4 + RF_POA + RF_BC + RF_NO3 + RF_SOA + RF_DUST + RF_SALT + RF_cloud + warmeff_BCsnow * RF_BCsnow + warmeff_LCC * RF_LCC + RFcon[t] + warmeff_volc * RFvolc[t] + RFsolar[t]
-            RF_atm = p_atm_CO2 * RF_CO2 + p_atm_noCO2 * (RF_CH4 + RF_N2O + RF_halo) + p_atm_O3t * RF_O3t + p_atm_strat * (RF_O3s + RF_H2Os) + p_atm_scatter * (RF_SO4 + RF_POA + RF_NO3 + RF_SOA + RF_DUST + RF_SALT + RFvolc[t]) + p_atm_absorb * RF_BC + p_atm_cloud * (RF_cloud + RFcon[t]) + p_atm_alb * (RF_BCsnow + RF_LCC) + p_atm_solar * RFsolar[t]
-
-            # stocks
-            # temperatures
-            self.D_gst += dt * (1 / tau_gst) * (lambda_0 * RF_warm - self.D_gst - theta_0 * (self.D_gst - self.D_gst0))
-            self.D_gst0 += dt * (1 / tau_gst0) * theta_0 * (self.D_gst - self.D_gst0)
-            self.D_sst = w_reg_sst * self.D_gst
-            self.D_lst = w_reg_lst * self.D_gst
-
-            # precipitations
-            self.D_gyp = alpha_gyp * self.D_gst + beta_gyp * RF_atm
-            self.D_lyp = w_reg_lyp * self.D_gyp
-
-            # ocean
-            self.D_OHC += dt * p_OHC * alpha_OHC * (RF - self.D_gst / lambda_0)
-            D_pH = f_pH(self.D_CO2)
-
-        # ==========================================================================
-        # ==========================================================================
-        print('STARTING SIMULATION')
+    def __init__(self, p=p, fT=fT, outputs=["ELUC", "OSNK", "LSNK", "D_CO2", "RF", "D_gst"], plot='all'):
         var_plot = self.plot_vars(plot)
-
-        # --------------------------------------------------------------------------
-        # Run variables
-        #
+        self.dt = dt = 1 / p
 
         # ocean
         self.D_dic = np.array([0], dtype=dty)
         self.D_CSURF = np.zeros([nb_obox], dtype=dty)
 
         # save variables
-        var_timeseries = list(set(var_output) | set(var_plot))
-        values_timeseries = [getattr(self, name + '_t') for name in var_timeseries]
+        self.var_timeseries = list(set(outputs) | set(var_plot))
 
         # =======
         # B. RUN
         # =======
-        dt = 1 / p
-        print('\n'.join(var_timeseries))
+        print('STARTING SIMULATION')
+        print('\n'.join(self.var_timeseries))
 
         for t in range(1, ind_final + 1):
             for tt in range(p):
-                do_step_ocean(t)
-                do_step_land(t)
-                do_step_land_use(t)
-                do_step_permafrost(t)
-                do_step_chemestry(t)
-                do_step_atmosphere(t)
-                do_step_climate(t)
+                self.step_ocean(t)
+                self.step_land(t)
+                self.step_land_use(t)
+                self.step_permafrost(t)
+                self.step_chemestry(t)
+                self.step_atmosphere(t)
+                self.step_climate(t)
 
                 # save time series variables
                 loc = locals()
-                for name, arr in zip(var_timeseries, values_timeseries):
+                for name in self.var_timeseries:
+                    arr = getattr(self, name + '_t')
                     try:
                         run = loc[name]
                     except KeyError:
@@ -518,9 +240,255 @@ class Simulation:
 
         # OUTPUTS
         output = []
-        for name in var_output:
+        for name in outputs:
             output.append(getattr(self, name + '_t'))
         self.output = output
+
+    def step_ocean(self, t):
+        dt = self.dt
+
+        # structure
+        D_mld = mld_0 * alpha_mld * (np.exp(gamma_mld * fT * self.D_sst) - 1)
+
+        # fluxes
+        self.D_FIN = p_circ * v_fg * alpha_CO2 * self.D_CO2
+        self.D_FOUT = p_circ * v_fg * alpha_CO2 * f_pCO2(self.D_dic, fT * self.D_sst)
+        self.D_FCIRC = self.D_CSURF * (1 / tau_circ)
+        self.OSNK = np.sum(self.D_FOUT - self.D_FIN)
+
+        # stocks
+        self.D_CSURF += dt * (self.D_FIN - self.D_FOUT - self.D_FCIRC)
+        self.D_dic = alpha_dic * np.sum(self.D_CSURF) / (1 + D_mld / mld_0)
+
+    def step_land(self, t):
+        dt = self.dt
+
+        # land-cover
+        self.D_AREA += dt * (np.sum(LUC[t], 1) - np.sum(LUC[t], 2))
+        self.D_AWET = AWET_0 * (gamma_wetT * fT * self.D_lst + gamma_wetP * fT * self.D_lyp + gamma_wetC * fT * self.D_CO2)
+
+        # factors
+        self.D_k_igni = (gamma_igniT * fT * self.D_lst[:, np.newaxis] + gamma_igniP * fT * self.D_lyp[:, np.newaxis] + gamma_igniC * fT * self.D_CO2)
+        self.D_k_rho = f_rho(fT * self.D_lst[:, np.newaxis], fT * self.D_lyp[:, np.newaxis])
+
+        # fluxes
+        self.D_npp = npp_0 * f_npp(self.D_CO2, fT * self.D_lst[:, np.newaxis], fT * self.D_lyp[:, np.newaxis])
+        self.D_efire = igni_0 * ((1 + self.D_k_igni) * (cveg_0 + self.D_cveg) - cveg_0)
+        self.D_fmort = mu_0 * self.D_cveg
+        self.D_rh1 = rho1_0 * ((1 + self.D_k_rho) * (csoil1_0 + self.D_csoil1) - csoil1_0)
+        self.D_fmet = k_met * self.D_rh1
+        self.D_rh2 = rho2_0 * ((1 + self.D_k_rho) * (csoil2_0 + self.D_csoil2) - csoil2_0)
+        self.D_ewet = ewet_0 * np.nan_to_num(np.sum(p_wet * self.D_csoil1, 1) / np.sum(p_wet * csoil1_0, 1))
+        self.LSNK = np.sum((self.D_rh1 + self.D_rh2 + self.D_efire - self.D_npp) * (AREA_0 + self.D_AREA))
+        self.D_EWET = ewet_0 * self.D_AWET + self.D_ewet * AWET_0 + self.D_ewet * self.D_AWET
+
+        # stocks
+        self.D_cveg += dt * (self.D_npp - self.D_fmort - self.D_efire)
+        self.D_csoil1 += dt * (self.D_fmort - self.D_fmet - self.D_rh1)
+        self.D_csoil2 += dt * (self.D_fmet - self.D_rh2)
+
+    def step_land_use(self, t):
+        dt = self.dt
+        # initialization
+        # land-use change
+        for b1 in range(nb_biome):
+            for b2 in range(nb_biome):
+                self.CVEG_luc[:, b1, b2, t] += (-dt) * (cveg_0 + self.D_cveg)[:, b2] * LUC[t, :, b1, b2]
+                self.CSOIL1_luc[:, b1, b2, t] += (dt * ((csoil1_0 + self.D_csoil1)[:, b1] - (csoil1_0 + self.D_csoil1)[:, b2]) * LUC[t, :, b1, b2])
+                self.CSOIL2_luc[:, b1, b2, t] += (dt * ((csoil2_0 + self.D_csoil2)[:, b1] - (csoil2_0 + self.D_csoil2)[:, b2]) * LUC[t, :, b1, b2])
+                self.CSOIL1_luc[:, b1, b2, t] += (dt * (cveg_0 + self.D_cveg)[:, b1] * (p_AGB[:, b1] * p_HWP0[:, b1] + (1 - p_AGB[:, b1])) * LUC[t, :, b1, b2])
+                self.CHWP1_luc[:, b1, b2, t] += (dt * (cveg_0 + self.D_cveg)[:, b1] * p_AGB[:, b1] * p_HWP1[:, b1] * LUC[t, :, b1, b2])
+                self.CHWP2_luc[:, b1, b2, t] += (dt * (cveg_0 + self.D_cveg)[:, b1] * p_AGB[:, b1] * p_HWP2[:, b1] * LUC[t, :, b1, b2])
+                self.CHWP3_luc[:, b1, b2, t] += (dt * (cveg_0 + self.D_cveg)[:, b1] * p_AGB[:, b1] * p_HWP3[:, b1] * LUC[t, :, b1, b2])
+
+        # harvest
+        for b in range(nb_biome):
+            self.CVEG_luc[:, b, b, t] += dt * -HARV[t, :, b]
+            self.CSOIL1_luc[:, b, b, t] += dt * p_HWP0[:, b] * HARV[t, :, b]
+            self.CHWP1_luc[:, b, b, t] += dt * p_HWP1[:, b] * HARV[t, :, b]
+            self.CHWP2_luc[:, b, b, t] += dt * p_HWP2[:, b] * HARV[t, :, b]
+            self.CHWP3_luc[:, b, b, t] += dt * p_HWP3[:, b] * HARV[t, :, b]
+
+        # shifting cultivation
+        for b1 in range(nb_biome):
+            for b2 in range(b1, nb_biome):
+                self.CVEG_luc[:, b1, b2, t] += (dt * -(cveg_0 + self.D_cveg)[:, b2] * (1 - np.exp(-mu_0[:, b2] * tau_shift)) * SHIFT[t, :, b1, b2])
+                self.CSOIL1_luc[:, b1, b2, t] += (dt * (cveg_0 + self.D_cveg)[:, b1] * (1 - np.exp(-mu_0[:, b1] * tau_shift)) * (p_AGB[:, b1] * p_HWP0[:, b1] + (1 - p_AGB[:, b1])) * SHIFT[t, :, b1, b2])
+                self.CHWP1_luc[:, b1, b2, t] += (dt * (cveg_0 + self.D_cveg)[:, b1] * (1 - np.exp(-mu_0[:, b1] * tau_shift)) * p_AGB[:, b1] * p_HWP1[:, b1] * SHIFT[t, :, b1, b2])
+                self.CHWP2_luc[:, b1, b2, t] += (dt * (cveg_0 + self.D_cveg)[:, b1] * (1 - np.exp(-mu_0[:, b1] * tau_shift)) * p_AGB[:, b1] * p_HWP2[:, b1] * SHIFT[t, :, b1, b2])
+                self.CHWP3_luc[:, b1, b2, t] += (dt * (cveg_0 + self.D_cveg)[:, b1] * (1 - np.exp(-mu_0[:, b1] * tau_shift)) * p_AGB[:, b1] * p_HWP3[:, b1] * SHIFT[t, :, b1, b2])
+                self.CVEG_luc[:, b2, b1, t] += (dt * -(cveg_0 + self.D_cveg)[:, b1] * (1 - np.exp(-mu_0[:, b1] * tau_shift)) * SHIFT[t, :, b1, b2])
+                self.CSOIL1_luc[:, b2, b1, t] += (dt * (cveg_0 + self.D_cveg)[:, b2] * (1 - np.exp(-mu_0[:, b2] * tau_shift)) * (p_AGB[:, b2] * p_HWP0[:, b2] + (1 - p_AGB[:, b2])) * SHIFT[t, :, b1, b2])
+                self.CHWP1_luc[:, b2, b1, t] += (dt * (cveg_0 + self.D_cveg)[:, b2] * (1 - np.exp(-mu_0[:, b2] * tau_shift)) * p_AGB[:, b2] * p_HWP1[:, b2] * SHIFT[t, :, b1, b2])
+                self.CHWP2_luc[:, b2, b1, t] += (dt * (cveg_0 + self.D_cveg)[:, b2] * (1 - np.exp(-mu_0[:, b2] * tau_shift)) * p_AGB[:, b2] * p_HWP2[:, b2] * SHIFT[t, :, b1, b2])
+                self.CHWP3_luc[:, b2, b1, t] += (dt * (cveg_0 + self.D_cveg)[:, b2] * (1 - np.exp(-mu_0[:, b2] * tau_shift)) * p_AGB[:, b2] * p_HWP3[:, b2] * SHIFT[t, :, b1, b2])
+
+        # fluxes
+        # book-keeping model
+        self.NPP_luc = 0 * self.CVEG_luc
+        self.EFIRE_luc = (igni_0 * (1 + self.D_k_igni))[:, np.newaxis, :, np.newaxis] * self.CVEG_luc
+        self.FMORT_luc = mu_0[:, np.newaxis, :, np.newaxis] * self.CVEG_luc
+        self.RH1_luc = (rho1_0 * (1 + self.D_k_rho))[:, np.newaxis, :, np.newaxis] * self.CSOIL1_luc
+        self.FMET_luc = k_met * self.RH1_luc
+        self.RH2_luc = (rho2_0 * (1 + self.D_k_rho))[:, np.newaxis, :, np.newaxis] * self.CSOIL2_luc
+        self.EHWP1_luc = np.zeros([nb_regionI, nb_biome, nb_biome, ind_final + 1], dtype=dty)
+        self.EHWP1_luc[:, :, :, : t + 1] = r_HWP1[np.newaxis, np.newaxis, np.newaxis, t::-1] * self.CHWP1_luc[:, :, :, : t + 1]
+        self.EHWP2_luc = np.zeros([nb_regionI, nb_biome, nb_biome, ind_final + 1], dtype=dty)
+        self.EHWP2_luc[:, :, :, : t + 1] = r_HWP2[np.newaxis, np.newaxis, np.newaxis, t::-1] * self.CHWP2_luc[:, :, :, : t + 1]
+        self.EHWP3_luc = np.zeros([nb_regionI, nb_biome, nb_biome, ind_final + 1], dtype=dty)
+        self.EHWP3_luc[:, :, :, : t + 1] = r_HWP3[np.newaxis, np.newaxis, np.newaxis, t::-1] * self.CHWP3_luc[:, :, :, : t + 1]
+        self.ELUC = np.sum(np.sum(np.sum(self.RH1_luc + self.RH2_luc + self.EFIRE_luc + self.EHWP1_luc + self.EHWP2_luc + self.EHWP3_luc - self.NPP_luc, 3), 2), 1)
+
+        # biomass burning
+        def biomass_burning_diff(alpha_BB):
+            new = np.newaxis
+            diff = np.sum(alpha_BB * (igni_0 * cveg_0 * self.D_AREA + self.D_efire * AREA_0 + self.D_efire * self.D_AREA), 1)
+            diff += p_HWP1_bb * np.sum(np.sum(np.sum(alpha_BB[:, :, new, new] * self.EHWP1_luc, 3), 2), 1)
+            diff += np.sum(np.sum(np.sum(alpha_BB[:, new, :, new] * self.EFIRE_luc, 3), 2), 1)
+            return diff
+
+        self.D_EBB_CO2 = biomass_burning_diff(alpha_BB_CO2)
+        self.D_EBB_CH4 = biomass_burning_diff(alpha_BB_CH4)
+        self.D_EBB_N2O = biomass_burning_diff(alpha_BB_N2O)
+        self.D_EBB_NOX = biomass_burning_diff(alpha_BB_NOX)
+        self.D_EBB_CO = biomass_burning_diff(alpha_BB_CO)
+        self.D_EBB_VOC = biomass_burning_diff(alpha_BB_VOC)
+        self.D_EBB_SO2 = biomass_burning_diff(alpha_BB_SO2)
+        self.D_EBB_NH3 = biomass_burning_diff(alpha_BB_NH3)
+        self.D_EBB_OC = biomass_burning_diff(alpha_BB_OC)
+        self.D_EBB_BC = biomass_burning_diff(alpha_BB_BC)
+
+        # stocks
+        self.CVEG_luc += dt * (self.NPP_luc - self.FMORT_luc - self.EFIRE_luc)
+        self.CSOIL1_luc += dt * (self.FMORT_luc - self.FMET_luc - self.RH1_luc)
+        self.CSOIL2_luc += dt * (self.FMET_luc - self.RH2_luc)
+        self.CHWP1_luc += dt * -self.EHWP1_luc
+        self.CHWP2_luc += dt * -self.EHWP2_luc
+        self.CHWP3_luc += dt * -self.EHWP3_luc
+
+    def step_permafrost(self, t):
+        dt = self.dt
+
+        # factors
+        self.rD_rhoPF = np.exp(w_rhoPF * gamma_rhoPF1 * w_reg_lstPF * fT * self.D_gst + w_rhoPF * gamma_rhoPF2 * (w_reg_lstPF * fT * self.D_gst) ** 2) - 1
+
+        # fraction thawed
+        self.pthaw_bar = -pthaw_min + (1 + pthaw_min) / (1 + ((1 / pthaw_min + 1) ** k_pthaw - 1) * np.exp(-gamma_pthaw * k_pthaw * w_reg_lstPF * fT * self.D_gst)) ** (1 / k_pthaw)
+        self.d_pthaw = f_v_PF(self.pthaw_bar, self.pthaw) * (self.pthaw_bar - self.pthaw)
+        self.pthaw += dt * self.d_pthaw
+
+        # fluxes
+        self.FTHAW = CFROZ_0 * self.d_pthaw
+        self.ETHAW1 = 1 / tau_PF1 * (1 + self.rD_rhoPF) * self.CTHAW1
+        self.ETHAW2 = 1 / tau_PF2 * (1 + self.rD_rhoPF) * self.CTHAW2
+        self.ETHAW3 = 1 / tau_PF3 * (1 + self.rD_rhoPF) * self.CTHAW3
+        self.EPF_CO2 = (1 - p_PF_CH4) * (self.ETHAW1 + self.ETHAW2 + self.ETHAW3 + p_PF_inst * self.FTHAW)
+        self.EPF_CH4 = 1000.0 * p_PF_CH4 * (self.ETHAW1 + self.ETHAW2 + self.ETHAW3 + p_PF_inst * self.FTHAW)
+        self.EPF = self.EPF_CO2 + 0.001 * self.EPF_CH4
+
+        # stocks
+        self.D_CFROZ -= dt * self.FTHAW
+        self.CTHAW1 += dt * (p_PF1 * (1 - p_PF_inst) * self.FTHAW - self.ETHAW1)
+        self.CTHAW2 += dt * (p_PF2 * (1 - p_PF_inst) * self.FTHAW - self.ETHAW2)
+        self.CTHAW3 += dt * (p_PF3 * (1 - p_PF_inst) * self.FTHAW - self.ETHAW3)
+
+    def step_chemestry(self, t):
+        dt = self.dt
+
+        # factors
+        self.D_kOH = f_kOH(self.D_CH4, self.D_O3s, fT * self.D_gst, np.sum(ENOX[t] + self.D_EBB_NOX), np.sum(ECO[t] + self.D_EBB_CO), np.sum(EVOC[t] + self.D_EBB_VOC))
+        self.D_hv = f_hv(self.D_N2O_lag, self.D_EESC, fT * self.D_gst)
+
+        # fluxes
+        self.D_OHSNK_CH4 = -alpha_CH4 / tau_CH4_OH * (CH4_0 * self.D_kOH + self.D_CH4 + self.D_kOH * self.D_CH4)
+        self.D_HVSNK_CH4 = -alpha_CH4 / tau_CH4_hv * (CH4_0 * self.D_hv + self.D_CH4_lag + self.D_hv * self.D_CH4_lag)
+        self.D_XSNK_CH4 = -alpha_CH4 * (1 / tau_CH4_soil + 1 / tau_CH4_ocean) * self.D_CH4
+        self.D_FOXI_CH4 = -0.001 * (1.0 * np.sum(ECH4[t]) + np.sum(self.D_EBB_CH4) + np.sum(self.D_EWET) + self.D_OHSNK_CH4 + self.D_HVSNK_CH4 + self.D_XSNK_CH4)
+        self.D_HVSNK_N2O = -alpha_N2O / tau_N2O_hv * (N2O_0 * self.D_hv + self.D_N2O_lag + self.D_hv * self.D_N2O_lag)
+        self.D_OHSNK_HFC = -alpha_HFC / tau_HFC_OH * (HFC_0 * self.D_kOH + self.D_HFC + self.D_kOH * self.D_HFC)
+        self.D_OHSNK_PFC = -alpha_PFC / tau_PFC_OH * (PFC_0 * self.D_kOH + self.D_PFC + self.D_kOH * self.D_PFC)
+        self.D_OHSNK_ODS = -alpha_ODS / tau_ODS_OH * (ODS_0 * self.D_kOH + self.D_ODS + self.D_kOH * self.D_ODS)
+        self.D_HVSNK_HFC = -alpha_HFC / tau_HFC_hv * (HFC_0 * self.D_hv + self.D_HFC_lag + self.D_hv * self.D_HFC_lag)
+        self.D_HVSNK_PFC = -alpha_PFC / tau_PFC_hv * (PFC_0 * self.D_hv + self.D_PFC_lag + self.D_hv * self.D_PFC_lag)
+        self.D_HVSNK_ODS = -alpha_ODS / tau_ODS_hv * (ODS_0 * self.D_hv + self.D_ODS_lag + self.D_hv * self.D_ODS_lag)
+        self.D_XSNK_HFC = -alpha_HFC / tau_HFC_othr * self.D_HFC
+        self.D_XSNK_PFC = -alpha_PFC / tau_PFC_othr * self.D_PFC
+        self.D_XSNK_ODS = -alpha_ODS / tau_ODS_othr * self.D_ODS
+
+        # stocks
+        self.D_O3t = chi_O3t_CH4 * np.log(1 + self.D_CH4 / CH4_0) + Gamma_O3t * fT * self.D_gst
+        self.D_O3t += chi_O3t_NOX * np.sum(w_reg_NOX * np.sum(p_reg4 * (ENOX[t] + self.D_EBB_NOX)[:, np.newaxis], 0))
+        self.D_O3t += chi_O3t_CO * np.sum(w_reg_CO * np.sum(p_reg4 * (ECO[t] + self.D_EBB_CO)[:, np.newaxis], 0))
+        self.D_O3t += chi_O3t_VOC * np.sum(w_reg_VOC * np.sum(p_reg4 * (EVOC[t] + self.D_EBB_VOC)[:, np.newaxis], 0))
+        self.D_EESC = np.sum(f_fracrel(tau_lag) * (n_Cl + alpha_Br * n_Br) * self.D_ODS_lag)
+        self.D_O3s = chi_O3s_EESC * self.D_EESC + chi_O3s_N2O * self.D_N2O_lag * (1 - self.D_EESC / EESC_x) + Gamma_O3s * fT * self.D_gst
+        self.D_SO4 = alpha_SO4 * tau_SO2 * np.sum(w_reg_SO2 * np.sum(p_reg4 * (ESO2[t] + self.D_EBB_SO2)[:, np.newaxis], 0)) + alpha_SO4 * tau_DMS * 0 + Gamma_SO4 * fT * self.D_gst
+        self.D_POA = tau_OMff * alpha_POM * np.sum(w_reg_OC * np.sum(p_reg4 * (EOC[t])[:, np.newaxis], 0)) + tau_OMbb * alpha_POM * np.sum(self.D_EBB_OC) + Gamma_POA * fT * self.D_gst
+        self.D_BC = tau_BCff * np.sum(w_reg_BC * np.sum(p_reg4 * (EBC[t])[:, np.newaxis], 0)) + tau_BCbb * np.sum(self.D_EBB_BC) + Gamma_BC * fT * self.D_gst
+        self.D_NO3 = alpha_NO3 * tau_NOX * np.sum(ENOX[t] + self.D_EBB_NOX) + alpha_NO3 * tau_NH3 * np.sum(ENH3[t] + self.D_EBB_NH3) + Gamma_NO3 * fT * self.D_gst
+        self.D_SOA = tau_VOC * np.sum(EVOC[t] + self.D_EBB_VOC) + tau_BVOC * 0 + Gamma_SOA * fT * self.D_gst
+        self.D_DUST = 0 * (tau_DUST * 0 + Gamma_DUST * fT * self.D_gst)
+        self.D_SALT = 0 * (tau_SALT * 0 + Gamma_SALT * fT * self.D_gst)
+        self.D_AERh = solub_SO4 * self.D_SO4 + solub_POA * self.D_POA + solub_BC * self.D_BC + solub_NO3 * self.D_NO3 + solub_SOA * self.D_SOA + solub_DUST * self.D_DUST + solub_SALT * self.D_SALT
+
+    def step_atmosphere(self, t):
+        dt = self.dt
+
+        # stocks
+        self.D_CO2 += dt * (1 / alpha_CO2) * (np.sum(EFF[t]) + np.sum(self.ELUC) + self.LSNK + self.OSNK + self.D_FOXI_CH4 + np.sum(self.EPF_CO2))
+        self.D_CH4 += dt * (1 / alpha_CH4) * (np.sum(ECH4[t]) + np.sum(self.D_EBB_CH4) + np.sum(self.D_EWET) + np.sum(self.EPF_CH4) + self.D_OHSNK_CH4 + self.D_HVSNK_CH4 + self.D_XSNK_CH4)
+        self.D_N2O += dt * (1 / alpha_N2O) * (np.sum(EN2O[t]) + np.sum(self.D_EBB_N2O) + self.D_HVSNK_N2O)
+        self.D_HFC += dt * (1 / alpha_HFC) * (np.sum(EHFC[t], 0) + self.D_OHSNK_HFC + self.D_HVSNK_HFC + self.D_XSNK_HFC)
+        self.D_PFC += dt * (1 / alpha_PFC) * (np.sum(EPFC[t], 0) + self.D_OHSNK_PFC + self.D_HVSNK_PFC + self.D_XSNK_PFC)
+        self.D_ODS += dt * (1 / alpha_ODS) * (np.sum(EODS[t], 0) + self.D_OHSNK_ODS + self.D_HVSNK_ODS + self.D_XSNK_ODS)
+        self.D_CH4_lag += dt * ((1 / tau_lag) * self.D_CH4 - (1 / tau_lag) * self.D_CH4_lag)
+        self.D_N2O_lag += dt * ((1 / tau_lag) * self.D_N2O - (1 / tau_lag) * self.D_N2O_lag)
+        self.D_HFC_lag += dt * ((1 / tau_lag) * self.D_HFC - (1 / tau_lag) * self.D_HFC_lag)
+        self.D_PFC_lag += dt * ((1 / tau_lag) * self.D_PFC - (1 / tau_lag) * self.D_PFC_lag)
+        self.D_ODS_lag += dt * ((1 / tau_lag) * self.D_ODS - (1 / tau_lag) * self.D_ODS_lag)
+
+    def step_climate(self, t):
+        dt = self.dt
+
+        # fluxes
+        # per component
+        self.RF_CO2 = f_RF_CO2(self.D_CO2)
+        self.RF_CH4 = f_RF_CH4(self.D_CH4) - (f_RF_overlap(self.D_CH4, self.D_N2O) - f_RF_overlap(0, self.D_N2O))
+        self.RF_H2Os = f_RF_H2Os(self.D_CH4_lag)
+        self.RF_N2O = f_RF_N2O(self.D_N2O) - (f_RF_overlap(self.D_CH4, self.D_N2O) - f_RF_overlap(self.D_CH4, 0))
+        self.RF_halo = np.sum(radeff_HFC * self.D_HFC) + np.sum(radeff_PFC * self.D_PFC) + np.sum(radeff_ODS * self.D_ODS)
+        self.RF_O3t = radeff_O3t * self.D_O3t
+        self.RF_O3s = radeff_O3s * self.D_O3s
+        self.RF_SO4 = radeff_SO4 * self.D_SO4
+        self.RF_POA = radeff_POA * self.D_POA
+        self.RF_BC = radeff_BC * self.D_BC
+        self.RF_NO3 = radeff_NO3 * self.D_NO3
+        self.RF_SOA = radeff_SOA * self.D_SOA
+        self.RF_DUST = radeff_DUST * self.D_DUST
+        self.RF_SALT = radeff_SALT * self.D_SALT
+        self.RF_cloud = k_BC_adjust * self.RF_BC + Phi_0 * np.log(1 + self.D_AERh / AERh_0)
+        self.RF_BCsnow = radeff_BCsnow * np.sum(w_reg_BCsnow * np.sum(p_reg9 * (EBC[t] + self.D_EBB_BC)[:, np.newaxis], 0))
+        self.RF_LCC = np.sum(alpha_LCC * self.D_AREA)
+
+        # totals
+        self.RF = self.RF_CO2 + self.RF_CH4 + self.RF_H2Os + self.RF_N2O + self.RF_halo + self.RF_O3t + self.RF_O3s + self.RF_SO4 + self.RF_POA + self.RF_BC + self.RF_NO3 + self.RF_SOA + self.RF_DUST + self.RF_SALT + self.RF_cloud + self.RF_BCsnow + self.RF_LCC + RFcon[t] + RFvolc[t] + RFsolar[t]
+        self.RF_warm = self.RF_CO2 + self.RF_CH4 + self.RF_H2Os + self.RF_N2O + self.RF_halo + self.RF_O3t + self.RF_O3s + self.RF_SO4 + self.RF_POA + self.RF_BC + self.RF_NO3 + self.RF_SOA + self.RF_DUST + self.RF_SALT + self.RF_cloud + warmeff_BCsnow * self.RF_BCsnow + warmeff_LCC * self.RF_LCC + RFcon[t] + warmeff_volc * RFvolc[t] + RFsolar[t]
+        self.RF_atm = p_atm_CO2 * self.RF_CO2 + p_atm_noCO2 * (self.RF_CH4 + self.RF_N2O + self.RF_halo) + p_atm_O3t * self.RF_O3t + p_atm_strat * (self.RF_O3s + self.RF_H2Os) + p_atm_scatter * (self.RF_SO4 + self.RF_POA + self.RF_NO3 + self.RF_SOA + self.RF_DUST + self.RF_SALT + RFvolc[t]) + p_atm_absorb * self.RF_BC + p_atm_cloud * (self.RF_cloud + RFcon[t]) + p_atm_alb * (self.RF_BCsnow + self.RF_LCC) + p_atm_solar * RFsolar[t]
+
+        # stocks
+        # temperatures
+        self.D_gst += dt * (1 / tau_gst) * (lambda_0 * self.RF_warm - self.D_gst - theta_0 * (self.D_gst - self.D_gst0))
+        self.D_gst0 += dt * (1 / tau_gst0) * theta_0 * (self.D_gst - self.D_gst0)
+        self.D_sst = w_reg_sst * self.D_gst
+        self.D_lst = w_reg_lst * self.D_gst
+
+        # precipitations
+        self.D_gyp = alpha_gyp * self.D_gst + beta_gyp * self.RF_atm
+        self.D_lyp = w_reg_lyp * self.D_gyp
+
+        # ocean
+        self.D_OHC += dt * p_OHC * alpha_OHC * (self.RF - self.D_gst / lambda_0)
+        self.D_pH = f_pH(self.D_CO2)
 
     def plot_vars(self, plot):
         # plot variables
@@ -563,7 +531,7 @@ class Simulation:
 
 
 def OSCAR_lite(var_output=["D_CO2", "D_CH4", "D_N2O", "RF_halo", "D_O3t", "D_O3s", "D_SO4", "D_POA", "D_BC", "D_NO3", "D_SOA", "D_AERh", "RF", "D_gst"], plot="all"):
-    sim = Simulation(var_output=var_output, plot=plot)
+    sim = Simulation(outputs=var_output, plot=plot)
     # all_vars = set(var_output) | set(sim.plot_variables(plot))
     # print('STARTING SIMULATION')
     # sim.track(all_vars)
