@@ -1,8 +1,8 @@
 import numpy as np
 
 from ..config import ind_final, dty
-from ..runtime.oscar_data import nb_regionI, nb_biome
-from ..runtime.oscar_param import nb_obox, nb_regionPF
+from .oscar_data import nb_regionI, nb_biome
+from .oscar_param import nb_obox, nb_regionPF
 
 
 def reduce_driver(driver):
