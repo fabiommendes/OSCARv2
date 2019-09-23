@@ -5,27 +5,27 @@ import numpy as np
 
 from .constants import HFC, PFC, ODS
 from .data import load_data, load_data_and_header
-from . import config
+from . import conf
 
 __all__ = ['CO2_ipcc', 'CO2_lawdome', 'CO2_noaa_gl', 'CO2_noaa_ml', 'EFF_gcp', 'ELUC_gcp', 'LSNK_gcp', 'OSNK_gcp', 'd_CO2_gcp', 'CH4_0', 'CH4_agage', 'CH4_cmip5', 'CH4_ipcc', 'CH4_lawdome', 'N2O_0', 'N2O_agage', 'N2O_cmip5', 'N2O_ipcc',
     'N2O_lawdome', 'ODS_0', 'ODS_cmip5', 'ODS_ipcc', 'PFC', 'PFC_0', 'PFC_cmip5', 'PFC_ipcc', 'HFC', 'HFC_0', 'HFC_cmip5', 'HFC_ipcc', 'RF_AER_ipcc', 'RF_Alb_ipcc', 'RF_O3_ipcc', 'RF_WMGHG_ipcc', 'RF_cmip5', 'RF_ipcc', ]
 
 
 def _load_historical(path, size, fill):
-    data = np.ones([size], dtype=config.dty) * np.nan
+    data = np.ones([size], dtype=conf.dty) * np.nan
     aux = load_data(path)
     data[fill:] = aux[:, 0]
     return data
 
 
 def _load_co2_flux(n, tmp):
-    arr = np.ones([314 + 1], dtype=config.dty) * np.nan
+    arr = np.ones([314 + 1], dtype=conf.dty) * np.nan
     arr[259:] = tmp[:, n]
     return arr
 
 
 def _load_halogenated(kind, path, size, fill):
-    arr = np.ones([size, len(kind)], dtype=config.dty) * np.nan
+    arr = np.ones([size, len(kind)], dtype=conf.dty) * np.nan
     for i, var in enumerate(kind):
         path = path.format(VAR=var)
         if os.path.isfile(path):
@@ -34,7 +34,7 @@ def _load_halogenated(kind, path, size, fill):
     return arr
 
 
-def _empty(size, nan_start=None, nan_end=None, dtype=config.dty):
+def _empty(size, nan_start=None, nan_end=None, dtype=conf.dty):
     arr = np.zeros(size, dtype=dtype)
     if nan_start is not None:
         arr[:nan_start] = np.nan
@@ -147,9 +147,9 @@ PFC_cmip5 = _load_halogenated(PFC, _path_cmip5, size=305 + 1, fill=65)
 ODS_cmip5 = _load_halogenated(ODS, _path_cmip5, size=305 + 1, fill=65)
 
 #: Preindustrial HaloC concentrations {ppt} [IPCC WG1, 2013] (annexe 2) and [Meinshausen et al., 2011]
-HFC_0 = np.zeros([len(HFC)], dtype=config.dty)
-PFC_0 = np.zeros([len(PFC)], dtype=config.dty)
-ODS_0 = np.zeros([len(ODS)], dtype=config.dty)
+HFC_0 = np.zeros([len(HFC)], dtype=conf.dty)
+PFC_0 = np.zeros([len(PFC)], dtype=conf.dty)
+ODS_0 = np.zeros([len(ODS)], dtype=conf.dty)
 PFC_0[PFC.index("CF4")] = 35.0
 ODS_0[ODS.index("CH3Br")] = 5.8
 ODS_0[ODS.index("CH3Cl")] = 480.0

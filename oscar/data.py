@@ -2,11 +2,11 @@ import numpy as np
 import csv
 import os
 from functools import lru_cache
-from . import config
+from . import conf
 
 
 @lru_cache(128)
-def load_data(path, start=None, dtype=config.dty, use='csv'):
+def load_data(path, start=None, dtype=conf.dty, use='csv'):
     """
     Return an array with config.data_loaders loaded from given path.
     """
@@ -41,7 +41,7 @@ def load_data_and_header(path):
     from given path.
     """
     header, *data = csv.reader(open(path, "r"))
-    return np.array(data, dtype=config.dty), header
+    return np.array(data, dtype=conf.dty), header
 
 
 def load_header(path):

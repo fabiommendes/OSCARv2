@@ -5,7 +5,7 @@ from .util import land_use_var, region_biome2_age_timeseries, region_timeseries
 from ..data_loaders import nb_biome, nb_regionI
 from ..params import cveg_0, csoil1_0, csoil2_0, p_AGB, p_HWP0, p_HWP1, p_HWP2, p_HWP3, mu_0, tau_shift, igni_0, rho1_0, k_met, rho2_0, r_HWP1, r_HWP2, r_HWP3, AREA_0, p_HWP1_bb, alpha_BB_CO2, alpha_BB_CH4, alpha_BB_N2O, \
     alpha_BB_NOX, alpha_BB_CO, alpha_BB_VOC, alpha_BB_SO2, alpha_BB_NH3, alpha_BB_OC, alpha_BB_BC
-from .. import config
+from .. import conf
 
 
 class LandUseSimulatorMixin:
@@ -117,11 +117,11 @@ class LandUseSimulatorMixin:
         self.RH1_luc = (rho1_0 * (1 + self.D_k_rho))[:, np.newaxis, :, np.newaxis] * self.CSOIL1_luc
         self.FMET_luc = k_met * self.RH1_luc
         self.RH2_luc = (rho2_0 * (1 + self.D_k_rho))[:, np.newaxis, :, np.newaxis] * self.CSOIL2_luc
-        self.EHWP1_luc = np.zeros([nb_regionI, nb_biome, nb_biome, config.ind_final + 1], dtype=config.dty)
+        self.EHWP1_luc = np.zeros([nb_regionI, nb_biome, nb_biome, conf.ind_final + 1], dtype=conf.dty)
         self.EHWP1_luc[:, :, :, : t + 1] = r_HWP1[np.newaxis, np.newaxis, np.newaxis, t::-1] * self.CHWP1_luc[:, :, :, : t + 1]
-        self.EHWP2_luc = np.zeros([nb_regionI, nb_biome, nb_biome, config.ind_final + 1], dtype=config.dty)
+        self.EHWP2_luc = np.zeros([nb_regionI, nb_biome, nb_biome, conf.ind_final + 1], dtype=conf.dty)
         self.EHWP2_luc[:, :, :, : t + 1] = r_HWP2[np.newaxis, np.newaxis, np.newaxis, t::-1] * self.CHWP2_luc[:, :, :, : t + 1]
-        self.EHWP3_luc = np.zeros([nb_regionI, nb_biome, nb_biome, config.ind_final + 1], dtype=config.dty)
+        self.EHWP3_luc = np.zeros([nb_regionI, nb_biome, nb_biome, conf.ind_final + 1], dtype=conf.dty)
         self.EHWP3_luc[:, :, :, : t + 1] = r_HWP3[np.newaxis, np.newaxis, np.newaxis, t::-1] * self.CHWP3_luc[:, :, :, : t + 1]
         self.ELUC = np.sum(np.sum(np.sum(self.RH1_luc + self.RH2_luc + self.EFIRE_luc + self.EHWP1_luc + self.EHWP2_luc + self.EHWP3_luc - self.NPP_luc, 3), 2), 1)
 

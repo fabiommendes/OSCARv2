@@ -2,7 +2,7 @@ import numpy as np
 from scipy.optimize import fmin
 
 from ..data import load_data
-from .. import config
+from .. import conf
 
 ##################################################
 #   6. AEROSOLS
@@ -17,7 +17,7 @@ alpha_SO4 = 96 / 32.0
 
 #: Conversion of POM from {Tg(OC)} to {Tg(OM)}
 alpha_POM_map = {"default": 1.4, "GFDL": 1.6, "CSIRO": 1.3}
-alpha_POM = alpha_POM_map[config.mod_POAconv]
+alpha_POM = alpha_POM_map[conf.mod_POAconv]
 
 #: Conversion of NO3 from {TgN} to {Tg(NO3)}
 alpha_NO3 = 62 / 14.0
@@ -34,45 +34,45 @@ alpha_NO3 = 62 / 14.0
 #: from HTAP experiments [Yu et al., 2013] (table 6 extended; provided by author)
 #: Sulfate
 w_reg_SO2_map = {
-    "mean-HTAP": np.array([-3.51, -3.87, -3.92, -2.85, -3.92], dtype=config.dty) / -3.51,
-    "CAMCHEM": np.array([-4.26, -5.01, -4.86, -3.29, -4.55], dtype=config.dty) / -4.26,
-    "GISS-PUCCINI": np.array([-2.73, -3.88, -2.92, -1.78, -3.44], dtype=config.dty) / -2.73,
-    "GMI": np.array([-3.61, -3.55, -3.96, -3.30, -3.59], dtype=config.dty) / -3.61,
-    "GOCART": np.array([-4.05, -3.86, -4.68, -3.79, -3.06], dtype=config.dty) / -4.05,
-    "INCA2": np.array([-4.03, -4.52, -4.27, -3.33, -5.45], dtype=config.dty) / -4.03,
-    "LLNL-IMPACT": np.array([-3.70, -3.74, -4.27, -2.84, -4.82], dtype=config.dty) / -3.70,
-    "SPRINTARS": np.array([-2.16, -2.51, -2.53, -1.64, -2.56], dtype=config.dty) / -2.16,
-    "": np.array([1, 1, 1, 1, 1], dtype=config.dty),
+    "mean-HTAP": np.array([-3.51, -3.87, -3.92, -2.85, -3.92], dtype=conf.dty) / -3.51,
+    "CAMCHEM": np.array([-4.26, -5.01, -4.86, -3.29, -4.55], dtype=conf.dty) / -4.26,
+    "GISS-PUCCINI": np.array([-2.73, -3.88, -2.92, -1.78, -3.44], dtype=conf.dty) / -2.73,
+    "GMI": np.array([-3.61, -3.55, -3.96, -3.30, -3.59], dtype=conf.dty) / -3.61,
+    "GOCART": np.array([-4.05, -3.86, -4.68, -3.79, -3.06], dtype=conf.dty) / -4.05,
+    "INCA2": np.array([-4.03, -4.52, -4.27, -3.33, -5.45], dtype=conf.dty) / -4.03,
+    "LLNL-IMPACT": np.array([-3.70, -3.74, -4.27, -2.84, -4.82], dtype=conf.dty) / -3.70,
+    "SPRINTARS": np.array([-2.16, -2.51, -2.53, -1.64, -2.56], dtype=conf.dty) / -2.16,
+    "": np.array([1, 1, 1, 1, 1], dtype=conf.dty),
 }
-w_reg_SO2 = w_reg_SO2_map[config.mod_SO4regsat]
+w_reg_SO2 = w_reg_SO2_map[conf.mod_SO4regsat]
 
 #: Primary organic aerosols
 w_reg_OC_map = {
-    "mean-HTAP": np.array([-4.00, -4.39, -4.30, -3.68, -4.09], dtype=config.dty) / -4.00,
-    "CAMCHEM": np.array([-3.30, -3.90, -3.23, -2.80, -3.71], dtype=config.dty) / -3.30,
-    "GISS-PUCCINI": np.array([-6.26, -5.86, -6.07, -6.44, -6.38], dtype=config.dty) / -6.26,
-    "GMI": np.array([-4.62, -5.30, -6.13, -4.22, -4.16], dtype=config.dty) / -4.62,
-    "GOCART": np.array([-3.57, -3.65, -3.39, -3.28, -4.00], dtype=config.dty) / -3.57,
-    "INCA2": np.array([-3.07, -4.27, -3.33, -2.88, -2.66], dtype=config.dty) / -3.07,
-    "LLNL-IMPACT": np.array([-1.31, -1.41, -1.97, -0.99, -1.29], dtype=config.dty) / -1.31,
-    "SPRINTARS": np.array([-5.86, -6.32, -5.97, -5.12, -6.45], dtype=config.dty) / -5.86,
-    "": np.array([1, 1, 1, 1, 1], dtype=config.dty),
+    "mean-HTAP": np.array([-4.00, -4.39, -4.30, -3.68, -4.09], dtype=conf.dty) / -4.00,
+    "CAMCHEM": np.array([-3.30, -3.90, -3.23, -2.80, -3.71], dtype=conf.dty) / -3.30,
+    "GISS-PUCCINI": np.array([-6.26, -5.86, -6.07, -6.44, -6.38], dtype=conf.dty) / -6.26,
+    "GMI": np.array([-4.62, -5.30, -6.13, -4.22, -4.16], dtype=conf.dty) / -4.62,
+    "GOCART": np.array([-3.57, -3.65, -3.39, -3.28, -4.00], dtype=conf.dty) / -3.57,
+    "INCA2": np.array([-3.07, -4.27, -3.33, -2.88, -2.66], dtype=conf.dty) / -3.07,
+    "LLNL-IMPACT": np.array([-1.31, -1.41, -1.97, -0.99, -1.29], dtype=conf.dty) / -1.31,
+    "SPRINTARS": np.array([-5.86, -6.32, -5.97, -5.12, -6.45], dtype=conf.dty) / -5.86,
+    "": np.array([1, 1, 1, 1, 1], dtype=conf.dty),
 }
-w_reg_OC = w_reg_OC_map[config.mod_POAregsat]
+w_reg_OC = w_reg_OC_map[conf.mod_POAregsat]
 
 #: Black carbon
 w_reg_BC_map = {
-    "mean-HTAP": np.array([29.51, 27.31, 37.36, 28.36, 25.31], dtype=config.dty) / 29.51,
-    "CAMCHEM": np.array([27.56, 28.00, 35.71, 25.24, 24.08], dtype=config.dty) / 27.56,
-    "GISS-PUCCINI": np.array([60.41, 51.67, 69.53, 65.06, 45.46], dtype=config.dty) / 60.41,
-    "GMI": np.array([26.68, 25.80, 42.13, 24.81, 15.00], dtype=config.dty) / 26.68,
-    "GOCART": np.array([46.20, 42.30, 52.21, 45.87, 43.71], dtype=config.dty) / 46.20,
-    "INCA2": np.array([17.32, 16.88, 20.37, 14.14, 23.69], dtype=config.dty) / 17.32,
-    "LLNL-IMPACT": np.array([7.25, 6.63, 12.99, 5.66, 5.56], dtype=config.dty) / 7.25,
-    "SPRINTARS": np.array([21.16, 19.93, 28.58, 17.75, 19.69], dtype=config.dty) / 21.16,
-    "": np.array([1, 1, 1, 1, 1], dtype=config.dty),
+    "mean-HTAP": np.array([29.51, 27.31, 37.36, 28.36, 25.31], dtype=conf.dty) / 29.51,
+    "CAMCHEM": np.array([27.56, 28.00, 35.71, 25.24, 24.08], dtype=conf.dty) / 27.56,
+    "GISS-PUCCINI": np.array([60.41, 51.67, 69.53, 65.06, 45.46], dtype=conf.dty) / 60.41,
+    "GMI": np.array([26.68, 25.80, 42.13, 24.81, 15.00], dtype=conf.dty) / 26.68,
+    "GOCART": np.array([46.20, 42.30, 52.21, 45.87, 43.71], dtype=conf.dty) / 46.20,
+    "INCA2": np.array([17.32, 16.88, 20.37, 14.14, 23.69], dtype=conf.dty) / 17.32,
+    "LLNL-IMPACT": np.array([7.25, 6.63, 12.99, 5.66, 5.56], dtype=conf.dty) / 7.25,
+    "SPRINTARS": np.array([21.16, 19.93, 28.58, 17.75, 19.69], dtype=conf.dty) / 21.16,
+    "": np.array([1, 1, 1, 1, 1], dtype=conf.dty),
 }
-w_reg_BC = w_reg_BC_map[config.mod_BCregsat]
+w_reg_BC = w_reg_BC_map[conf.mod_BCregsat]
 
 # -------------
 # 6.2.2. ACCMIP
@@ -86,7 +86,7 @@ prd = {
 # load pre-processed ACCMIP/CMIP5 results for specified model
 # sulfate
 def load_accmip(var, sim):
-    path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{config.mod_SO4load}.{prd[sim]}.{sim}_{var}.csv"
+    path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{conf.mod_SO4load}.{prd[sim]}.{sim}_{var}.csv"
     return load_data(path).copy()
 
 ESO2_histS = load_accmip('ESO2', 'hist')
@@ -110,14 +110,14 @@ EDMS_rcp85S = load_accmip('EDMS', 'rcp85')
 SO4_rcp85S = load_accmip('SO4', 'rcp85')
 tas_rcp85S = load_accmip('tas', 'rcp85')
 
-ESO2_allS = np.array(list(ESO2_histS)+list(ESO2_histS)+list(ESO2_histS)+list(ESO2_histS)+list(ESO2_rcp26S)+list(ESO2_rcp45S)+list(ESO2_rcp60S)+list(ESO2_rcp85S), dtype=config.dty)
-EDMS_allS = np.array(list(EDMS_histS)+list(EDMS_histS)+list(EDMS_histS)+list(EDMS_histS)+list(EDMS_rcp26S)+list(EDMS_rcp45S)+list(EDMS_rcp60S)+list(EDMS_rcp85S), dtype=config.dty)
-SO4_allS = np.array(list(SO4_histS)+list(SO4_histS)+list(SO4_histS)+list(SO4_histS)+list(SO4_rcp26S)+list(SO4_rcp45S)+list(SO4_rcp60S)+list(SO4_rcp85S), dtype=config.dty)
-tas_allS = np.array(list(tas_histS)+list(tas_histS)+list(tas_histS)+list(tas_histS)+list(tas_rcp26S)+list(tas_rcp45S)+list(tas_rcp60S)+list(tas_rcp85S), dtype=config.dty)
+ESO2_allS = np.array(list(ESO2_histS) + list(ESO2_histS) + list(ESO2_histS) + list(ESO2_histS) + list(ESO2_rcp26S) + list(ESO2_rcp45S) + list(ESO2_rcp60S) + list(ESO2_rcp85S), dtype=conf.dty)
+EDMS_allS = np.array(list(EDMS_histS) + list(EDMS_histS) + list(EDMS_histS) + list(EDMS_histS) + list(EDMS_rcp26S) + list(EDMS_rcp45S) + list(EDMS_rcp60S) + list(EDMS_rcp85S), dtype=conf.dty)
+SO4_allS = np.array(list(SO4_histS) + list(SO4_histS) + list(SO4_histS) + list(SO4_histS) + list(SO4_rcp26S) + list(SO4_rcp45S) + list(SO4_rcp60S) + list(SO4_rcp85S), dtype=conf.dty)
+tas_allS = np.array(list(tas_histS) + list(tas_histS) + list(tas_histS) + list(tas_histS) + list(tas_rcp26S) + list(tas_rcp45S) + list(tas_rcp60S) + list(tas_rcp85S), dtype=conf.dty)
 
 # primary organic aerosols
 def load_organic_aero_chem(sim, VAR):
-    path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{config.mod_POAload}.{prd[sim]}.{sim}_{VAR}.csv"
+    path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{conf.mod_POAload}.{prd[sim]}.{sim}_{VAR}.csv"
     TMP = load_data(path)
     return TMP[:,0].copy()
 
@@ -143,10 +143,10 @@ EOMBB_rcp85P = load_organic_aero_chem('rcp85', 'EOMBB')
 POA_rcp85P = load_organic_aero_chem('rcp85', 'POA')
 tas_rcp85P = load_organic_aero_chem('rcp85', 'tas')
 
-EOM_allP = np.array(list(EOM_histP)+list(EOM_histP)+list(EOM_histP)+list(EOM_histP)+list(EOM_rcp26P)+list(EOM_rcp45P)+list(EOM_rcp60P)+list(EOM_rcp85P), dtype=config.dty)
-EOMBB_allP = np.array(list(EOMBB_histP)+list(EOMBB_histP)+list(EOMBB_histP)+list(EOMBB_histP)+list(EOMBB_rcp26P)+list(EOMBB_rcp45P)+list(EOMBB_rcp60P)+list(EOMBB_rcp85P), dtype=config.dty)
-POA_allP = np.array(list(POA_histP)+list(POA_histP)+list(POA_histP)+list(POA_histP)+list(POA_rcp26P)+list(POA_rcp45P)+list(POA_rcp60P)+list(POA_rcp85P), dtype=config.dty)
-tas_allP = np.array(list(tas_histP)+list(tas_histP)+list(tas_histP)+list(tas_histP)+list(tas_rcp26P)+list(tas_rcp45P)+list(tas_rcp60P)+list(tas_rcp85P), dtype=config.dty)
+EOM_allP = np.array(list(EOM_histP) + list(EOM_histP) + list(EOM_histP) + list(EOM_histP) + list(EOM_rcp26P) + list(EOM_rcp45P) + list(EOM_rcp60P) + list(EOM_rcp85P), dtype=conf.dty)
+EOMBB_allP = np.array(list(EOMBB_histP) + list(EOMBB_histP) + list(EOMBB_histP) + list(EOMBB_histP) + list(EOMBB_rcp26P) + list(EOMBB_rcp45P) + list(EOMBB_rcp60P) + list(EOMBB_rcp85P), dtype=conf.dty)
+POA_allP = np.array(list(POA_histP) + list(POA_histP) + list(POA_histP) + list(POA_histP) + list(POA_rcp26P) + list(POA_rcp45P) + list(POA_rcp60P) + list(POA_rcp85P), dtype=conf.dty)
+tas_allP = np.array(list(tas_histP) + list(tas_histP) + list(tas_histP) + list(tas_histP) + list(tas_rcp26P) + list(tas_rcp45P) + list(tas_rcp60P) + list(tas_rcp85P), dtype=conf.dty)
 
 # black carbon
 # for sim in ["hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
@@ -155,7 +155,7 @@ tas_allP = np.array(list(tas_histP)+list(tas_histP)+list(tas_histP)+list(tas_his
 
 
 def load_black_carbon(sim, VAR):
-    path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{config.mod_BCload}.{prd[sim]}.{sim}_{VAR}.csv"
+    path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{conf.mod_BCload}.{prd[sim]}.{sim}_{VAR}.csv"
     TMP = load_data(path)
     return TMP[:,0].copy()
 
@@ -180,20 +180,20 @@ EBCBB_rcp85B = load_black_carbon('rcp85', 'EBCBB')
 BC_rcp85B = load_black_carbon('rcp85', 'BC')
 tas_rcp85B = load_black_carbon('rcp85', 'tas')
 
-EBC_allB = np.array(list(EBC_histB)+list(EBC_histB)+list(EBC_histB)+list(EBC_histB)+list(EBC_rcp26B)+list(EBC_rcp45B)+list(EBC_rcp60B)+list(EBC_rcp85B), dtype=config.dty)
-EBCBB_allB = np.array(list(EBCBB_histB)+list(EBCBB_histB)+list(EBCBB_histB)+list(EBCBB_histB)+list(EBCBB_rcp26B)+list(EBCBB_rcp45B)+list(EBCBB_rcp60B)+list(EBCBB_rcp85B), dtype=config.dty)
-BC_allB = np.array(list(BC_histB)+list(BC_histB)+list(BC_histB)+list(BC_histB)+list(BC_rcp26B)+list(BC_rcp45B)+list(BC_rcp60B)+list(BC_rcp85B), dtype=config.dty)
-tas_allB = np.array(list(tas_histB)+list(tas_histB)+list(tas_histB)+list(tas_histB)+list(tas_rcp26B)+list(tas_rcp45B)+list(tas_rcp60B)+list(tas_rcp85B), dtype=config.dty)
+EBC_allB = np.array(list(EBC_histB) + list(EBC_histB) + list(EBC_histB) + list(EBC_histB) + list(EBC_rcp26B) + list(EBC_rcp45B) + list(EBC_rcp60B) + list(EBC_rcp85B), dtype=conf.dty)
+EBCBB_allB = np.array(list(EBCBB_histB) + list(EBCBB_histB) + list(EBCBB_histB) + list(EBCBB_histB) + list(EBCBB_rcp26B) + list(EBCBB_rcp45B) + list(EBCBB_rcp60B) + list(EBCBB_rcp85B), dtype=conf.dty)
+BC_allB = np.array(list(BC_histB) + list(BC_histB) + list(BC_histB) + list(BC_histB) + list(BC_rcp26B) + list(BC_rcp45B) + list(BC_rcp60B) + list(BC_rcp85B), dtype=conf.dty)
+tas_allB = np.array(list(tas_histB) + list(tas_histB) + list(tas_histB) + list(tas_histB) + list(tas_rcp26B) + list(tas_rcp45B) + list(tas_rcp60B) + list(tas_rcp85B), dtype=conf.dty)
 
 # nitrate
-if not config.mod_NO3load in ["Bellouin2011", "Hauglustaine2014"]:
+if not conf.mod_NO3load in ["Bellouin2011", "Hauglustaine2014"]:
     # for sim in ["hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
     #     for VAR in ["ENOX", "ENH3", "NO3"] + ["tas2"]:
     #         print(f'{VAR}_{sim}N = load_nitrate({sim!r}, {VAR!r})')
 
 
     def load_nitrate(sim, VAR):
-        path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{config.mod_NO3load}.{prd[sim]}.{sim}_{VAR}.csv"
+        path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{conf.mod_NO3load}.{prd[sim]}.{sim}_{VAR}.csv"
         TMP = load_data(path)
         return TMP[:,0].copy()
 
@@ -218,19 +218,19 @@ if not config.mod_NO3load in ["Bellouin2011", "Hauglustaine2014"]:
     NO3_rcp85N = load_nitrate('rcp85', 'NO3')
     tas2_rcp85N = load_nitrate('rcp85', 'tas2')
 
-    ENOX_allN = np.array(list(ENOX_histN)+list(ENOX_histN)+list(ENOX_histN)+list(ENOX_histN)+list(ENOX_rcp26N)+list(ENOX_rcp45N)+list(ENOX_rcp60N)+list(ENOX_rcp85N), dtype=config.dty)
-    ENH3_allN = np.array(list(ENH3_histN)+list(ENH3_histN)+list(ENH3_histN)+list(ENH3_histN)+list(ENH3_rcp26N)+list(ENH3_rcp45N)+list(ENH3_rcp60N)+list(ENH3_rcp85N), dtype=config.dty)
-    NO3_allN = np.array(list(NO3_histN)+list(NO3_histN)+list(NO3_histN)+list(NO3_histN)+list(NO3_rcp26N)+list(NO3_rcp45N)+list(NO3_rcp60N)+list(NO3_rcp85N), dtype=config.dty)
-    tas2_allN = np.array(list(tas2_histN)+list(tas2_histN)+list(tas2_histN)+list(tas2_histN)+list(tas2_rcp26N)+list(tas2_rcp45N)+list(tas2_rcp60N)+list(tas2_rcp85N), dtype=config.dty)
+    ENOX_allN = np.array(list(ENOX_histN) + list(ENOX_histN) + list(ENOX_histN) + list(ENOX_histN) + list(ENOX_rcp26N) + list(ENOX_rcp45N) + list(ENOX_rcp60N) + list(ENOX_rcp85N), dtype=conf.dty)
+    ENH3_allN = np.array(list(ENH3_histN) + list(ENH3_histN) + list(ENH3_histN) + list(ENH3_histN) + list(ENH3_rcp26N) + list(ENH3_rcp45N) + list(ENH3_rcp60N) + list(ENH3_rcp85N), dtype=conf.dty)
+    NO3_allN = np.array(list(NO3_histN) + list(NO3_histN) + list(NO3_histN) + list(NO3_histN) + list(NO3_rcp26N) + list(NO3_rcp45N) + list(NO3_rcp60N) + list(NO3_rcp85N), dtype=conf.dty)
+    tas2_allN = np.array(list(tas2_histN) + list(tas2_histN) + list(tas2_histN) + list(tas2_histN) + list(tas2_rcp26N) + list(tas2_rcp45N) + list(tas2_rcp60N) + list(tas2_rcp85N), dtype=conf.dty)
 
 # secondary organic aerosols
-if config.mod_SOAload != "":
+if conf.mod_SOAload != "":
     # for sim in ["hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
     #     for VAR in ["EVOC", "EBVOC", "SOA"] + ["tas2"]:
     #         print(f'{VAR}_{sim}Q = load_secondary_aerosols({sim!r}, {VAR!r})')
 
     def load_secondary_aerosols(sim, VAR):
-        path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{config.mod_SOAload}.{prd[sim]}.{sim}_{VAR}.csv"
+        path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{conf.mod_SOAload}.{prd[sim]}.{sim}_{VAR}.csv"
         TMP = load_data(path)
         return TMP[:,0].copy()
 
@@ -255,10 +255,10 @@ if config.mod_SOAload != "":
     SOA_rcp85Q = load_secondary_aerosols('rcp85', 'SOA')
     tas2_rcp85Q = load_secondary_aerosols('rcp85', 'tas2')
 
-    EVOC_allQ = np.array(list(EVOC_histQ)+list(EVOC_histQ)+list(EVOC_histQ)+list(EVOC_histQ)+list(EVOC_rcp26Q)+list(EVOC_rcp45Q)+list(EVOC_rcp60Q)+list(EVOC_rcp85Q), dtype=config.dty)
-    EBVOC_allQ = np.array(list(EBVOC_histQ)+list(EBVOC_histQ)+list(EBVOC_histQ)+list(EBVOC_histQ)+list(EBVOC_rcp26Q)+list(EBVOC_rcp45Q)+list(EBVOC_rcp60Q)+list(EBVOC_rcp85Q), dtype=config.dty)
-    SOA_allQ = np.array(list(SOA_histQ)+list(SOA_histQ)+list(SOA_histQ)+list(SOA_histQ)+list(SOA_rcp26Q)+list(SOA_rcp45Q)+list(SOA_rcp60Q)+list(SOA_rcp85Q), dtype=config.dty)
-    tas2_allQ = np.array(list(tas2_histQ)+list(tas2_histQ)+list(tas2_histQ)+list(tas2_histQ)+list(tas2_rcp26Q)+list(tas2_rcp45Q)+list(tas2_rcp60Q)+list(tas2_rcp85Q), dtype=config.dty)
+    EVOC_allQ = np.array(list(EVOC_histQ) + list(EVOC_histQ) + list(EVOC_histQ) + list(EVOC_histQ) + list(EVOC_rcp26Q) + list(EVOC_rcp45Q) + list(EVOC_rcp60Q) + list(EVOC_rcp85Q), dtype=conf.dty)
+    EBVOC_allQ = np.array(list(EBVOC_histQ) + list(EBVOC_histQ) + list(EBVOC_histQ) + list(EBVOC_histQ) + list(EBVOC_rcp26Q) + list(EBVOC_rcp45Q) + list(EBVOC_rcp60Q) + list(EBVOC_rcp85Q), dtype=conf.dty)
+    SOA_allQ = np.array(list(SOA_histQ) + list(SOA_histQ) + list(SOA_histQ) + list(SOA_histQ) + list(SOA_rcp26Q) + list(SOA_rcp45Q) + list(SOA_rcp60Q) + list(SOA_rcp85Q), dtype=conf.dty)
+    tas2_allQ = np.array(list(tas2_histQ) + list(tas2_histQ) + list(tas2_histQ) + list(tas2_histQ) + list(tas2_rcp26Q) + list(tas2_rcp45Q) + list(tas2_rcp60Q) + list(tas2_rcp85Q), dtype=conf.dty)
 
 # mineral dusts
 # for sim in ["hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
@@ -267,7 +267,7 @@ if config.mod_SOAload != "":
 
 
 def load_mineral_dusts(sim, VAR):
-    path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{config.mod_DUSTload}.{prd[sim]}.{sim}_{VAR}.csv"
+    path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{conf.mod_DUSTload}.{prd[sim]}.{sim}_{VAR}.csv"
     return load_data(path)[:, 0].copy()
 
 EDUST_histD = load_mineral_dusts('hist', 'EDUST')
@@ -286,9 +286,9 @@ EDUST_rcp85D = load_mineral_dusts('rcp85', 'EDUST')
 DUST_rcp85D = load_mineral_dusts('rcp85', 'DUST')
 tas_rcp85D = load_mineral_dusts('rcp85', 'tas')
 
-EDUST_allD = np.array(list(EDUST_histD)+list(EDUST_histD)+list(EDUST_histD)+list(EDUST_histD)+list(EDUST_rcp26D)+list(EDUST_rcp45D)+list(EDUST_rcp60D)+list(EDUST_rcp85D), dtype=config.dty)
-DUST_allD = np.array(list(DUST_histD)+list(DUST_histD)+list(DUST_histD)+list(DUST_histD)+list(DUST_rcp26D)+list(DUST_rcp45D)+list(DUST_rcp60D)+list(DUST_rcp85D), dtype=config.dty)
-tas_allD = np.array(list(tas_histD)+list(tas_histD)+list(tas_histD)+list(tas_histD)+list(tas_rcp26D)+list(tas_rcp45D)+list(tas_rcp60D)+list(tas_rcp85D), dtype=config.dty)
+EDUST_allD = np.array(list(EDUST_histD) + list(EDUST_histD) + list(EDUST_histD) + list(EDUST_histD) + list(EDUST_rcp26D) + list(EDUST_rcp45D) + list(EDUST_rcp60D) + list(EDUST_rcp85D), dtype=conf.dty)
+DUST_allD = np.array(list(DUST_histD) + list(DUST_histD) + list(DUST_histD) + list(DUST_histD) + list(DUST_rcp26D) + list(DUST_rcp45D) + list(DUST_rcp60D) + list(DUST_rcp85D), dtype=conf.dty)
+tas_allD = np.array(list(tas_histD) + list(tas_histD) + list(tas_histD) + list(tas_histD) + list(tas_rcp26D) + list(tas_rcp45D) + list(tas_rcp60D) + list(tas_rcp85D), dtype=conf.dty)
 
 # sea salts
 # for sim in ["hist", "rcp26", "rcp45", "rcp60", "rcp85"]:
@@ -297,7 +297,7 @@ tas_allD = np.array(list(tas_histD)+list(tas_histD)+list(tas_histD)+list(tas_his
 
 
 def load_sea_salts(sim, VAR):
-    path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{config.mod_SALTload}.{prd[sim]}.{sim}_{VAR}.csv"
+    path = f"data/AeroChem_ACCMIP/#DATA.AeroChem_{conf.mod_SALTload}.{prd[sim]}.{sim}_{VAR}.csv"
     return load_data(path)[:, 0].copy()
 
 ESALT_histT = load_sea_salts('hist', 'ESALT')
@@ -316,9 +316,9 @@ ESALT_rcp85T = load_sea_salts('rcp85', 'ESALT')
 SALT_rcp85T = load_sea_salts('rcp85', 'SALT')
 tas3_rcp85T = load_sea_salts('rcp85', 'tas3')
 
-ESALT_allT = np.array(list(ESALT_histT)+list(ESALT_histT)+list(ESALT_histT)+list(ESALT_histT)+list(ESALT_rcp26T)+list(ESALT_rcp45T)+list(ESALT_rcp60T)+list(ESALT_rcp85T), dtype=config.dty)
-SALT_allT = np.array(list(SALT_histT)+list(SALT_histT)+list(SALT_histT)+list(SALT_histT)+list(SALT_rcp26T)+list(SALT_rcp45T)+list(SALT_rcp60T)+list(SALT_rcp85T), dtype=config.dty)
-tas3_allT = np.array(list(tas3_histT)+list(tas3_histT)+list(tas3_histT)+list(tas3_histT)+list(tas3_rcp26T)+list(tas3_rcp45T)+list(tas3_rcp60T)+list(tas3_rcp85T), dtype=config.dty)
+ESALT_allT = np.array(list(ESALT_histT) + list(ESALT_histT) + list(ESALT_histT) + list(ESALT_histT) + list(ESALT_rcp26T) + list(ESALT_rcp45T) + list(ESALT_rcp60T) + list(ESALT_rcp85T), dtype=conf.dty)
+SALT_allT = np.array(list(SALT_histT) + list(SALT_histT) + list(SALT_histT) + list(SALT_histT) + list(SALT_rcp26T) + list(SALT_rcp45T) + list(SALT_rcp60T) + list(SALT_rcp85T), dtype=conf.dty)
+tas3_allT = np.array(list(tas3_histT) + list(tas3_histT) + list(tas3_histT) + list(tas3_histT) + list(tas3_rcp26T) + list(tas3_rcp45T) + list(tas3_rcp60T) + list(tas3_rcp85T), dtype=conf.dty)
 
 # definition of parameters
 # lifetimes of sulfate precursors {yr}
@@ -399,7 +399,7 @@ tau_BCff = abs(tau_BCff)
 tau_BCbb = abs(tau_BCbb)
 
 # nitrate
-if not config.mod_NO3load in ["Bellouin2011", "Hauglustaine2014"]:
+if not conf.mod_NO3load in ["Bellouin2011", "Hauglustaine2014"]:
     diff = NO3_allN - np.mean(NO3_allN[:10])
 
 
@@ -414,7 +414,7 @@ if not config.mod_NO3load in ["Bellouin2011", "Hauglustaine2014"]:
     tau_NH3 = np.abs(tau_NH3)
 
 # secondary organic aerosols
-if config.mod_SOAload != "":
+if conf.mod_SOAload != "":
     diff = SOA_allQ - np.mean(SOA_allQ[:10])
 
 
@@ -460,19 +460,19 @@ tau_SALT = abs(tau_SALT)
 
 # load config.data_loaders for nitrate aerosols
 # from HadGEM2 [Bellouin et al., 2011] (also RCP and CMIP5 config.data_loaders)
-if config.mod_NO3load == "Bellouin2011":
-    ENOX_nitrate = np.array([5.7, 37.4, 18.4, 16.3, 16.6, 23.8, 18.4, 16.3, 16.6, 23.8], dtype=config.dty)
-    ENH3_nitrate = np.array([16.6, 41.4, 67.2, 49.2, 63.0, 70.0, 67.2, 49.2, 63.0, 70.0], dtype=config.dty)
-    tas_nitrate = np.array([13.55, 14.07, 15.39, 16.46, 17.07, 18.66, 13.55, 13.55, 13.55, 13.55], dtype=config.dty)
-    NO3_nitrate = np.array([0.05, 0.34, 0.56, 0.29, 0.41, 0.52, 0.63, 0.36, 0.50, 0.68], dtype=config.dty)
+if conf.mod_NO3load == "Bellouin2011":
+    ENOX_nitrate = np.array([5.7, 37.4, 18.4, 16.3, 16.6, 23.8, 18.4, 16.3, 16.6, 23.8], dtype=conf.dty)
+    ENH3_nitrate = np.array([16.6, 41.4, 67.2, 49.2, 63.0, 70.0, 67.2, 49.2, 63.0, 70.0], dtype=conf.dty)
+    tas_nitrate = np.array([13.55, 14.07, 15.39, 16.46, 17.07, 18.66, 13.55, 13.55, 13.55, 13.55], dtype=conf.dty)
+    NO3_nitrate = np.array([0.05, 0.34, 0.56, 0.29, 0.41, 0.52, 0.63, 0.36, 0.50, 0.68], dtype=conf.dty)
 
 # from LMDz4-INCA3 [Hauglustaine et al., 2014] (tables 1,5)
-elif config.mod_NO3load == "Hauglustaine2014":
-    ENOX_nitrate = np.array([10, 36, 29, 26, 14, 32, 26, 14, 30, 27, 13, 38, 30, 21, 21, 14], dtype=config.dty)
-    ENH3_nitrate = np.array([21, 29, 41, 46, 58, 35, 36, 33, 36, 43, 51, 42, 48, 57, 33, 57], dtype=config.dty)
-    tas_nitrate = np.array([0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00], dtype=config.dty)
+elif conf.mod_NO3load == "Hauglustaine2014":
+    ENOX_nitrate = np.array([10, 36, 29, 26, 14, 32, 26, 14, 30, 27, 13, 38, 30, 21, 21, 14], dtype=conf.dty)
+    ENH3_nitrate = np.array([21, 29, 41, 46, 58, 35, 36, 33, 36, 43, 51, 42, 48, 57, 33, 57], dtype=conf.dty)
+    tas_nitrate = np.array([0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00], dtype=conf.dty)
     # NO3_nitrate = np.array([0.23,0.48,0.46,0.47,0.37,0.48,0.46,0.42,0.47,0.48,0.40,0.54,0.52,0.52,0.47,0.43], dtype=config.dty) # HNO3 and NO3-
-    NO3_nitrate = np.array([0.09, 0.18, 0.21, 0.23, 0.21, 0.2, 0.2, 0.18, 0.19, 0.21, 0.21, 0.23, 0.24, 0.25, 0.2, 0.22], dtype=config.dty)  # NO3- only
+    NO3_nitrate = np.array([0.09, 0.18, 0.21, 0.23, 0.21, 0.2, 0.2, 0.18, 0.19, 0.21, 0.21, 0.23, 0.24, 0.25, 0.2, 0.22], dtype=conf.dty)  # NO3- only
 
 # fit of parameters (defined in previous section)
 diff = NO3_nitrate - NO3_nitrate[0]
@@ -481,12 +481,12 @@ diff = NO3_nitrate - NO3_nitrate[0]
 def err(var):
     conc = np.abs(var[0]) * alpha_NO3 * (ENOX_nitrate - ENOX_nitrate[0]) + np.abs(var[1]) * alpha_NO3 * (ENH3_nitrate - ENH3_nitrate[0])
     clim = var[2] * (tas_nitrate - tas_nitrate[0])
-    if config.mod_NO3load == "Hauglustaine2014":
+    if conf.mod_NO3load == "Hauglustaine2014":
         clim = 0 * clim
     return np.sum((diff - (conc + clim)) ** 2)
 
 tau_NOX, tau_NH3, Gamma_NO3 = fmin(err, [0.01, 0.01, 0], disp=False)
 tau_NOX = abs(tau_NOX)
 tau_NH3 = abs(tau_NH3)
-if config.mod_NO3load == "Hauglustaine2014":
+if conf.mod_NO3load == "Hauglustaine2014":
     Gamma_NO3 = 0 * Gamma_NO3

@@ -7,7 +7,7 @@ from .radiative_forces import f_RF_CO2
 from ..data_loaders import nb_regionI, regionI_index, load_data_and_header
 from ..data import load_data
 from .. import historical
-from .. import config
+from .. import conf
 
 CO2_0 = historical.CO2_0
 
@@ -27,7 +27,7 @@ CO2_0 = historical.CO2_0
 # historical global temperatures from NOAA/NCDC {degC}
 # from [Smith et al., 2008] updated from website
 def historical_temperatures(model):
-    arr = np.ones([314 + 1], dtype=config.dty) * np.nan
+    arr = np.ones([314 + 1], dtype=conf.dty) * np.nan
     path = f"data/HistClim_NOAA-NCDC/#DATA.HistClim_NOAA-NCDC.1880-2014.{model}.csv"
     arr[180:] = load_data(path)[:, 0]
     return arr
@@ -39,14 +39,14 @@ sst_ncdc = historical_temperatures("sst")
 
 # historical global temperature from GISTEMP {degC}
 # from [Hansen et al., 2010] updated from website
-gst_giss = np.ones([314 + 1], dtype=config.dty) * np.nan
+gst_giss = np.ones([314 + 1], dtype=conf.dty) * np.nan
 path = f"data/HistClim_GISTEMP/#DATA.HistClim_GISTEMP.1880-2014.gst.csv"
 TMP = load_data(path)
 gst_giss[180:] = TMP[:, 0]
 
 # historical global temperature from HadCRUT4 {degC}
 # from [Morice et al., 2012] updated from website
-gst_had = np.ones([314 + 1], dtype=config.dty) * np.nan
+gst_had = np.ones([314 + 1], dtype=conf.dty) * np.nan
 path = "data/HistClim_HadCRUT4/#DATA.HistClim_HadCRUT4.1850-2014.gst.csv"
 TMP = load_data(path)
 gst_had[150:] = TMP[:, 0]
@@ -64,7 +64,7 @@ lng = {
 # load pre-processed CMIP5 results for specified model
 # config.data_loaders related to temperature change
 def load_cmip5_temperature_change(sim):
-    path = f"data/Climate_CMIP5/#DATA.Climate_{config.mod_TEMPresp}.{lng[config.mod_TEMPresp]}yr_(7var).{sim}_global.csv"
+    path = f"data/Climate_CMIP5/#DATA.Climate_{conf.mod_TEMPresp}.{lng[conf.mod_TEMPresp]}yr_(7var).{sim}_global.csv"
     TMP, lgd = load_data_and_header(path)
     gst = TMP[:, lgd.index("tas")]
     erb = TMP[:, lgd.index("rsdt")] - TMP[:, lgd.index("rsut")] - TMP[:, lgd.index("rlut")]
@@ -77,7 +77,7 @@ gst_quadT, erb_quadT = load_cmip5_temperature_change('quad')
 
 # config.data_loaders related to precipitations change
 def load_precipitation_change(sim):
-    path = f"data/Climate_CMIP5/#DATA.Climate_{config.mod_PRECresp}.{lng[config.mod_PRECresp]}yr_(7var).{sim}_global.csv"
+    path = f"data/Climate_CMIP5/#DATA.Climate_{conf.mod_PRECresp}.{lng[conf.mod_PRECresp]}yr_(7var).{sim}_global.csv"
     TMP, lgd = load_data_and_header(path)
     gst = TMP[:, lgd.index("tas")]
     gyp = TMP[:, lgd.index("pr")]
@@ -120,8 +120,8 @@ diff = gst_quadT - np.mean(gst_ctrlT, 0)
 
 def err(var):
     clim = T4x * (1
-            - var[2] * np.exp(-np.arange(0.5, lng[config.mod_TEMPresp] + 0.5, 1) / var[0])
-            - (1 - var[2]) * np.exp(-np.arange(0.5, lng[config.mod_TEMPresp] + 0.5, 1) / var[1]))
+                  - var[2] * np.exp(-np.arange(0.5, lng[conf.mod_TEMPresp] + 0.5, 1) / var[0])
+                  - (1 - var[2]) * np.exp(-np.arange(0.5, lng[conf.mod_TEMPresp] + 0.5, 1) / var[1]))
     return np.sum((diff - clim) ** 2)
 
 
@@ -163,7 +163,7 @@ beta_gyp = -np.abs(beta_gyp) / f_RF_CO2(3 * CO2_0)
 
 # factors from [Andrews et al., 2010] (tab. 3)
 # assumptions following [Allan et al., 2014]
-if config.mod_PRECradfact == "Andrews2010":
+if conf.mod_PRECradfact == "Andrews2010":
     p_atm_CO2 = 0.8
     p_atm_noCO2 = 0.5
     p_atm_O3t = -0.3
@@ -176,7 +176,7 @@ if config.mod_PRECradfact == "Andrews2010":
 
 # factors from [Kvalevag et al., 2013] (tab. 2; highest perturbation)
 # assumptions following [Allan et al., 2014] and nil if not given
-elif config.mod_PRECradfact == "Kvalevag2013":
+elif conf.mod_PRECradfact == "Kvalevag2013":
     p_atm_CO2 = 2.0 / 3.6
     p_atm_noCO2 = 0.5 / 1.8
     p_atm_O3t = 0.0  # not given
@@ -202,7 +202,7 @@ beta_gyp /= p_atm_CO2
 # historical sea climate from HadISST1 {degC}&{Mha}
 # from [Rayner et al., 2003] updated from website
 def load_sea_climate(var):
-    arr = np.ones([314 + 1], dtype=config.dty) * np.nan
+    arr = np.ones([314 + 1], dtype=conf.dty) * np.nan
     path = f"data/HistOcean_HadISST1/#DATA.HistOcean_HadISST1.1870-2014_18x10lat.{var}.csv"
     path2 = "data/HistOcean_HadISST1/#DATA.HistOcean_HadISST1.1870-2014_18x10lat.SURF.csv"
     TMP = load_data(path)
@@ -217,7 +217,7 @@ sic_had = load_sea_climate("sic")
 
 # historical sea climate from ERSST4 {degC}
 # from [Huang et al., 2015] updated from website
-sst_ncdc2 = np.ones([314 + 1], dtype=config.dty) * np.nan
+sst_ncdc2 = np.ones([314 + 1], dtype=conf.dty) * np.nan
 path = "data/HistOcean_ERSST4/#DATA.HistOcean_ERSST4.1854-2014_18x10lat.sst.csv"
 path2 = "data/HistOcean_ERSST4/#DATA.HistOcean_ERSST4.1854-2014_18x10lat.SURF.csv"
 TMP = load_data(path)
@@ -228,7 +228,7 @@ sst_ncdc2[154:] /= np.sum(TMP2[:, :], 1)
 # historical ocean heat content
 # from [Levitus et al., 2012] updated from website
 # reference period is whole period
-D_OHC_nodc = np.ones([311 + 1], dtype=config.dty) * np.nan
+D_OHC_nodc = np.ones([311 + 1], dtype=conf.dty) * np.nan
 path = "data/HistOcean_NOAA-NODC/#DATA.HistOcean_NOAA-NODC.1955-2011.D_OHC.csv"
 TMP = load_data(path)
 D_OHC_nodc[255:] = TMP[:, 0]
@@ -247,16 +247,16 @@ prd = {
 
 # load pre-processed CMIP5 results for specified model
 # temperature patterns based on 'abrupt4xCO2'
-if config.mod_TEMPpattern == "4xCO2":
+if conf.mod_TEMPpattern == "4xCO2":
     def load_abrupt4xCO2(sim):
         # global
-        path = f"data/Climate_CMIP5/#DATA.Climate_{config.mod_TEMPresp}.{lng[config.mod_TEMPresp]}yr_(7var).{sim}_global.csv"
+        path = f"data/Climate_CMIP5/#DATA.Climate_{conf.mod_TEMPresp}.{lng[conf.mod_TEMPresp]}yr_(7var).{sim}_global.csv"
         TMP, lgd = load_data_and_header(path)
         gst = TMP[:, lgd.index("tas")]
 
         # local
-        path = f"data/Climate_CMIP5/#DATA.Climate_{config.mod_TEMPresp}.{lng[config.mod_TEMPresp]}yr_18x10lat.{sim}_tos.csv"
-        path2 = f"data/Climate_CMIP5/#DATA.Climate_{config.mod_TEMPresp}.{lng[config.mod_TEMPresp]}yr_18x10lat.SURF.csv"
+        path = f"data/Climate_CMIP5/#DATA.Climate_{conf.mod_TEMPresp}.{lng[conf.mod_TEMPresp]}yr_18x10lat.{sim}_tos.csv"
+        path2 = f"data/Climate_CMIP5/#DATA.Climate_{conf.mod_TEMPresp}.{lng[conf.mod_TEMPresp]}yr_18x10lat.SURF.csv"
         TMP = load_data(path)
         TMP2 = load_data(path2)
         tos = np.sum(TMP * TMP2, 1) / np.sum(TMP2, 1)
@@ -267,20 +267,20 @@ if config.mod_TEMPpattern == "4xCO2":
     gst_quadTR, tos_quadTR = load_abrupt4xCO2("quad")
 
 # temperature patterns based on 'historical' and 'rcp'
-elif config.mod_TEMPpattern == "hist&RCPs":
+elif conf.mod_TEMPpattern == "hist&RCPs":
     def load_temp_historical(sim):
         # global
-        path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{config.mod_TEMPresp}.{prd[sim]}_(3var).{sim}_global.csv"
+        path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{conf.mod_TEMPresp}.{prd[sim]}_(3var).{sim}_global.csv"
         if os.path.isfile(path):
-            path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{config.mod_TEMPresp}.{prd[sim]}_(3var).{sim}_global.csv"
+            path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{conf.mod_TEMPresp}.{prd[sim]}_(3var).{sim}_global.csv"
             TMP, lgd = load_data_and_header(path)
             gst = TMP[:, lgd.index("tas")]
 
         # local
-        path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{config.mod_TEMPresp}.{prd[sim]}_18x10lat.{sim}_tos.csv"
+        path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{conf.mod_TEMPresp}.{prd[sim]}_18x10lat.{sim}_tos.csv"
         if os.path.isfile(path):
             TMP = load_data(path)
-            TMP2 = load_data(f"data/ClimReg_CMIP5/#DATA.ClimReg_{config.mod_TEMPresp}.251yr_18x10lat.SURF.csv")
+            TMP2 = load_data(f"data/ClimReg_CMIP5/#DATA.ClimReg_{conf.mod_TEMPresp}.251yr_18x10lat.SURF.csv")
             tos = np.sum(TMP * TMP2[:len(TMP)], 1) / np.sum(TMP2[:len(TMP)], 1)
         return gst, tos
 
@@ -324,22 +324,22 @@ def get_TR(var, sim):
 
 # aggregate all experiments
 def aggregate(VAR):
-    if config.mod_TEMPpattern == "4xCO2":
-        return np.array(list(quadTR(VAR)), dtype=config.dty)
-    elif config.mod_TEMPpattern == "hist&RCPs":
+    if conf.mod_TEMPpattern == "4xCO2":
+        return np.array(list(quadTR(VAR)), dtype=conf.dty)
+    elif conf.mod_TEMPpattern == "hist&RCPs":
         res = []
         for sim in ["rcp26", "rcp45", "rcp60", "rcp85"]:
-            path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{config.mod_TEMPresp}.{prd[sim]}_(3var).{sim}_global.csv"
+            path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{conf.mod_TEMPresp}.{prd[sim]}_(3var).{sim}_global.csv"
             if os.path.isfile(path):
                 res += list(histTR(VAR)) + list(get_TR(VAR, sim))
         if res == []:
             res.extend(list(histTR(VAR)))
-        return np.array(res, dtype=config.dty)
+        return np.array(res, dtype=conf.dty)
     else:
         raise ValueError
 
 
-if config.mod_TEMPpattern in ("4xCO2", "hist&RCPs"):
+if conf.mod_TEMPpattern in ("4xCO2", "hist&RCPs"):
     tos_allTR = aggregate("tos")
     gst_allTR = aggregate("gst")
 
@@ -375,21 +375,21 @@ p_OHC = 1 - 0.03 - 0.01 - 0.02
 
 # fonction relating surface pH and atmospheric CO2
 # from [Tans, 2009] based on [Tans, 2008]
-if config.mod_ACIDsurf == "Tans2009":
+if conf.mod_ACIDsurf == "Tans2009":
 
     def f_pH(D_CO2):
         D_pH = -0.85 * np.log(1 + D_CO2 / CO2_0)
-        return np.array(D_pH, dtype=config.dty)
+        return np.array(D_pH, dtype=conf.dty)
 
 
 # from [Bernie et al., 2010]
-elif config.mod_ACIDsurf == "Bernie2010":
+elif conf.mod_ACIDsurf == "Bernie2010":
 
     def f_pH(D_CO2):
         D_pH = (-0.00173 * D_CO2
                 + 1.3264e-6 * (2 * CO2_0 * D_CO2 + D_CO2 ** 2)
                 - 4.4943e-10 * (3 * D_CO2 * CO2_0 ** 2 + 3 * CO2_0 * D_CO2 ** 2 + D_CO2 ** 3))
-        return np.array(D_pH, dtype=config.dty)
+        return np.array(D_pH, dtype=conf.dty)
 
 
 # ----------------
@@ -410,7 +410,7 @@ elif config.mod_ACIDsurf == "Bernie2010":
 # historical local climate from CRU {degC}&{mm}
 # from [Harris et al., 2014]
 def load_historical_climate(var):
-    arr = np.zeros([314 + 1, nb_regionI], dtype=config.dty)
+    arr = np.zeros([314 + 1, nb_regionI], dtype=conf.dty)
     path = f"data/HistLand_CRU/#DATA.HistLand_CRU.1901-2014_114reg1.{var}.csv"
     TMP = load_data(path)
 
@@ -419,7 +419,7 @@ def load_historical_climate(var):
 
     for i in range(1, 114 + 1):
         arr[201:, regionI_index[i]] += TMP[:, i - 1] * TMP2[:, i - 1]
-    TMP = np.zeros([314 + 1, nb_regionI], dtype=config.dty)
+    TMP = np.zeros([314 + 1, nb_regionI], dtype=conf.dty)
     for i in range(1, 114 + 1):
         TMP[201:, regionI_index[i]] += TMP2[:, i - 1]
     arr /= TMP[:, :]
@@ -431,14 +431,14 @@ lyp_cru = load_historical_climate("lyp")
 
 # historical local climate from GHCN+CAMS {degC}
 # from [Fan and van den Dool, 2008] updated from website
-lst_ghcn = np.zeros([314 + 1, nb_regionI], dtype=config.dty)
+lst_ghcn = np.zeros([314 + 1, nb_regionI], dtype=conf.dty)
 path = f"data/HistLand_GHCN-CAMS/#DATA.HistLand_GHCN-CAMS.1948-2014_114reg1.lst.csv"
 path2 = "data/HistLand_GHCN-CAMS/#DATA.HistLand_GHCN-CAMS.1948-2014_114reg1.AREA.csv"
 TMP = load_data(path)
 TMP2 = load_data(path2)
 for i in range(1, 114 + 1):
     lst_ghcn[248:, regionI_index[i]] += TMP[:, i - 1] * TMP2[:, i - 1]
-TMP = np.zeros([314 + 1, nb_regionI], dtype=config.dty)
+TMP = np.zeros([314 + 1, nb_regionI], dtype=conf.dty)
 for i in range(1, 114 + 1):
     TMP[248:, regionI_index[i]] += TMP2[:, i - 1]
 lst_ghcn /= TMP[:, :]
@@ -457,21 +457,21 @@ prd = {
 
 # load pre-processed CMIP5 results for specified model
 # temperature patterns based on 'abrupt4xCO2'
-if config.mod_TEMPpattern == "4xCO2":
+if conf.mod_TEMPpattern == "4xCO2":
     def load_temp_patterns(sim):
         # global
-        path = f"data/Climate_CMIP5/#DATA.Climate_{config.mod_TEMPresp}.{lng[config.mod_TEMPresp]}yr_(7var).{sim}global.csv"
+        path = f"data/Climate_CMIP5/#DATA.Climate_{conf.mod_TEMPresp}.{lng[conf.mod_TEMPresp]}yr_(7var).{sim}global.csv"
         TMP, lgd = load_data_and_header(path)
         gst = TMP[:, lgd.index("tas")]
 
         # local
         # tas = np.zeros([lng[config.mod_TEMPresp],nb_regionI], dtype=config.dty)
-        path = f"data/Climate_CMIP5/#DATA.Climate_{config.mod_TEMPresp}.{lng[config.mod_TEMPresp]}yr_114reg1.{sim}_tas.csv"
-        path2 = f"data/Climate_CMIP5/#DATA.Climate_{config.mod_TEMPresp}.{lng[config.mod_TEMPresp]}yr_114reg1.AREA.csv"
+        path = f"data/Climate_CMIP5/#DATA.Climate_{conf.mod_TEMPresp}.{lng[conf.mod_TEMPresp]}yr_114reg1.{sim}_tas.csv"
+        path2 = f"data/Climate_CMIP5/#DATA.Climate_{conf.mod_TEMPresp}.{lng[conf.mod_TEMPresp]}yr_114reg1.AREA.csv"
         TMP = load_data(path)
         TMP2 = load_data(path2)
-        tas = np.zeros([len(TMP), nb_regionI], dtype=config.dty)
-        area = np.zeros([len(TMP), nb_regionI], dtype=config.dty)
+        tas = np.zeros([len(TMP), nb_regionI], dtype=conf.dty)
+        area = np.zeros([len(TMP), nb_regionI], dtype=conf.dty)
         for i in range(1, 114 + 1):
             tas[:, regionI_index[i]] += TMP[:, i - 1] * TMP2[:len(TMP), i - 1]
             area[:, regionI_index[i]] += TMP2[:len(TMP), i - 1]
@@ -486,22 +486,22 @@ if config.mod_TEMPpattern == "4xCO2":
 
 
 # temperature patterns based on 'historical' and 'rcp'
-elif config.mod_TEMPpattern == "hist&RCPs":
+elif conf.mod_TEMPpattern == "hist&RCPs":
     def load_temperature_patterns(sim):
         # global
-        path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{config.mod_TEMPresp}.{prd[sim]}_(3var).{sim}_global.csv"
+        path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{conf.mod_TEMPresp}.{prd[sim]}_(3var).{sim}_global.csv"
         if os.path.isfile(path):
             TMP, lgd = load_data_and_header(path)
             gst = TMP[:, lgd.index("tas")]
 
         # local
-        path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{config.mod_TEMPresp}.{prd[sim]}_114reg1.{sim}_tas.csv"
+        path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{conf.mod_TEMPresp}.{prd[sim]}_114reg1.{sim}_tas.csv"
         if os.path.isfile(path):
-            path2 = f"data/ClimReg_CMIP5/#DATA.ClimReg_{config.mod_TEMPresp}.251yr_114reg1.AREA.csv"
+            path2 = f"data/ClimReg_CMIP5/#DATA.ClimReg_{conf.mod_TEMPresp}.251yr_114reg1.AREA.csv"
             TMP = load_data(path)
             TMP2 = load_data(path2)
-            tas = np.zeros([len(TMP), nb_regionI], dtype=config.dty)
-            area = np.zeros([len(TMP), nb_regionI], dtype=config.dty)
+            tas = np.zeros([len(TMP), nb_regionI], dtype=conf.dty)
+            area = np.zeros([len(TMP), nb_regionI], dtype=conf.dty)
             for i in range(1, 114 + 1):
                 tas[:, regionI_index[i]] += TMP[:, i - 1] * TMP2[:len(TMP), i - 1]
                 area[:, regionI_index[i]] += TMP2[:len(TMP), i - 1]
@@ -526,19 +526,19 @@ nrcp = 0
 
 def aggregate(VAR):
     global nrcp
-    if config.mod_TEMPpattern == "4xCO2":
-        return np.array(list(quadTR(VAR)), dtype=config.dty)
-    elif config.mod_TEMPpattern == "hist&RCPs":
+    if conf.mod_TEMPpattern == "4xCO2":
+        return np.array(list(quadTR(VAR)), dtype=conf.dty)
+    elif conf.mod_TEMPpattern == "hist&RCPs":
         res = []
         nrcp = 0
         for sim in ["rcp26", "rcp45", "rcp60", "rcp85"]:
-            path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{config.mod_TEMPresp}.{prd[sim]}_(3var).{sim}_global.csv"
+            path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{conf.mod_TEMPresp}.{prd[sim]}_(3var).{sim}_global.csv"
             if os.path.isfile(path):
                 nrcp += 1
                 res += list(histTR(VAR)) + list(get_TR(VAR, sim))
         if res == []:
             res += list(histTR(VAR))
-        return np.array(res, dtype=config.dty)
+        return np.array(res, dtype=conf.dty)
 
 
 gst_allTR = aggregate("gst")
@@ -547,12 +547,12 @@ tas_allTR = aggregate("tas")
 
 # decadal means
 def decadal_means(base):
-    if config.mod_TEMPpattern == "4xCO2":
-        arr = np.zeros([lng[config.mod_TEMPresp] - 10] + list(np.shape(base)[1:]), dtype=config.dty)
-        for t in range(lng[config.mod_TEMPresp] - 10):
+    if conf.mod_TEMPpattern == "4xCO2":
+        arr = np.zeros([lng[conf.mod_TEMPresp] - 10] + list(np.shape(base)[1:]), dtype=conf.dty)
+        for t in range(lng[conf.mod_TEMPresp] - 10):
             arr[t, ...] = np.mean(base[t:t + 10, ...], 0)
-    elif config.mod_TEMPpattern == "hist&RCPs":
-        arr = np.zeros([(156 - 10) + nrcp * (95 - 10)] + list(np.shape(base)[1:]), dtype=config.dty)
+    elif conf.mod_TEMPpattern == "hist&RCPs":
+        arr = np.zeros([(156 - 10) + nrcp * (95 - 10)] + list(np.shape(base)[1:]), dtype=conf.dty)
         for t in range(156 - 10):
             arr[t, ...] = np.mean(base[t:t + 10, ...], 0)
         for n in range(nrcp):
@@ -568,7 +568,7 @@ tas_decTR = decadal_means(tas_allTR)
 
 # definition of parameter
 # scaling of local surface temperature over gst {.}
-w_reg_lst = np.zeros([nb_regionI], dtype=config.dty)
+w_reg_lst = np.zeros([nb_regionI], dtype=conf.dty)
 
 # fit of parameter
 for i in range(nb_regionI):
@@ -584,20 +584,20 @@ for i in range(nb_regionI):
 
 # load pre-processed CMIP5 results for specified model
 # precipitation patterns based on 'abrupt4xCO2'
-if config.mod_PRECpattern == "4xCO2":
+if conf.mod_PRECpattern == "4xCO2":
     def _load_mod_prec(sim):
         # global
-        path = f"data/Climate_CMIP5/#DATA.Climate_{config.mod_PRECresp}.{lng[config.mod_PRECresp]}yr_(7var).{sim}_global.csv"
+        path = f"data/Climate_CMIP5/#DATA.Climate_{conf.mod_PRECresp}.{lng[conf.mod_PRECresp]}yr_(7var).{sim}_global.csv"
         TMP, lgd = load_data_and_header(path)
         gyp = TMP[:, lgd.index("pr")]
 
         # local
-        path = f"data/Climate_CMIP5/#DATA.Climate_{config.mod_PRECresp}.{lng[config.mod_PRECresp]}yr_114reg1.{sim}_pr.csv"
-        path2 = f"data/Climate_CMIP5/#DATA.Climate_{config.mod_PRECresp}.{lng[config.mod_PRECresp]}yr_114reg1.AREA.csv"
+        path = f"data/Climate_CMIP5/#DATA.Climate_{conf.mod_PRECresp}.{lng[conf.mod_PRECresp]}yr_114reg1.{sim}_pr.csv"
+        path2 = f"data/Climate_CMIP5/#DATA.Climate_{conf.mod_PRECresp}.{lng[conf.mod_PRECresp]}yr_114reg1.AREA.csv"
         TMP = load_data(path)
         TMP2 = load_data(path2)
-        pr = np.zeros([len(TMP), nb_regionI], dtype=config.dty)
-        area = np.zeros([len(TMP), nb_regionI], dtype=config.dty)
+        pr = np.zeros([len(TMP), nb_regionI], dtype=conf.dty)
+        area = np.zeros([len(TMP), nb_regionI], dtype=conf.dty)
         for i in range(1, 114 + 1):
             pr[:, regionI_index[i]] += TMP[:, i - 1] * TMP2[:len(TMP), i - 1]
             area[:, regionI_index[i]] += TMP2[:len(TMP), i - 1]
@@ -611,22 +611,22 @@ if config.mod_PRECpattern == "4xCO2":
 
 
 # precipitation patterns based on 'historical' and 'rcp'
-elif config.mod_PRECpattern == "hist&RCPs":
+elif conf.mod_PRECpattern == "hist&RCPs":
     def load_precipitation(sim):
         # global
-        path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{config.mod_PRECresp}.{prd[sim]}_(3var).{sim}_global.csv"
+        path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{conf.mod_PRECresp}.{prd[sim]}_(3var).{sim}_global.csv"
         if os.path.isfile(path):
             TMP, lgd = load_data_and_header(path)
             gyp = TMP[:, lgd.index("pr")]
 
         # local
-        path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{config.mod_PRECresp}.{prd[sim]}_114reg1.{sim}_pr.csv"
-        path2 = f"data/ClimReg_CMIP5/#DATA.ClimReg_{config.mod_PRECresp}.251yr_114reg1.AREA.csv"
+        path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{conf.mod_PRECresp}.{prd[sim]}_114reg1.{sim}_pr.csv"
+        path2 = f"data/ClimReg_CMIP5/#DATA.ClimReg_{conf.mod_PRECresp}.251yr_114reg1.AREA.csv"
         if os.path.isfile(path):
             TMP = load_data(path)
             TMP2 = load_data(path2)
-            pr = np.zeros([len(TMP), nb_regionI], dtype=config.dty)
-            area = np.zeros([len(TMP), nb_regionI], dtype=config.dty)
+            pr = np.zeros([len(TMP), nb_regionI], dtype=conf.dty)
+            area = np.zeros([len(TMP), nb_regionI], dtype=conf.dty)
             for i in range(1, 114 + 1):
                 pr[:, regionI_index[i]] += TMP[:, i - 1] * TMP2[:len(TMP), i - 1]
                 area[:, regionI_index[i]] += TMP2[:len(TMP), i - 1]
@@ -661,19 +661,19 @@ def getPR(var, sim):
 def aggregate(VAR):
     global nrcp
 
-    if config.mod_PRECpattern == "4xCO2":
-        return np.array(list(quadPR(VAR)), dtype=config.dty)
-    elif config.mod_PRECpattern == "hist&RCPs":
+    if conf.mod_PRECpattern == "4xCO2":
+        return np.array(list(quadPR(VAR)), dtype=conf.dty)
+    elif conf.mod_PRECpattern == "hist&RCPs":
         res = []
         nrcp = 0
         for sim in ["rcp26", "rcp45", "rcp60", "rcp85"]:
-            path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{config.mod_PRECresp}.{prd[sim]}_(3var).{sim}_global.csv"
+            path = f"data/ClimReg_CMIP5/#DATA.ClimReg_{conf.mod_PRECresp}.{prd[sim]}_(3var).{sim}_global.csv"
             if os.path.isfile(path):
                 nrcp += 1
                 res += list(histPR(VAR)) + list(getPR(VAR, sim))
         if res == []:
             res += list(histPR(VAR))
-        return np.array(res, dtype=config.dty)
+        return np.array(res, dtype=conf.dty)
 
 
 gyp_allPR = aggregate("gyp")
@@ -682,19 +682,19 @@ pr_allPR = aggregate("pr")
 
 # decadal means
 def decadal_means(base):
-    if config.mod_PRECpattern == "4xCO2":
-        dec = np.zeros([lng[config.mod_PRECresp] - 10] + list(np.shape(base)[1:]), dtype=config.dty)
-        for t in range(lng[config.mod_PRECresp] - 10):
+    if conf.mod_PRECpattern == "4xCO2":
+        dec = np.zeros([lng[conf.mod_PRECresp] - 10] + list(np.shape(base)[1:]), dtype=conf.dty)
+        for t in range(lng[conf.mod_PRECresp] - 10):
             dec[t, ...] = np.mean(base[t:t + 10, ...], 0)
-    elif config.mod_PRECpattern == "hist&RCPs":
-        dec = np.zeros([(156 - 10) + nrcp * (95 - 10)] + list(np.shape(base)[1:]), dtype=config.dty)
+    elif conf.mod_PRECpattern == "hist&RCPs":
+        dec = np.zeros([(156 - 10) + nrcp * (95 - 10)] + list(np.shape(base)[1:]), dtype=conf.dty)
         for t in range(156 - 10):
             dec[t, ...] = np.mean(base[t:t + 10, ...], 0)
         for n in range(nrcp):
             for t in range(95 - 10):
                 dec[(156 - 10) + n * (95 - 10) + t, ...] = np.mean(base[(156 - 10) + n * (95 - 10) + t:(156 - 10) + n * (95 - 10) + t + 10, ...], 0)
     else:
-        raise ValueError(config.mod_PRECpattern)
+        raise ValueError(conf.mod_PRECpattern)
     return dec
 
 
@@ -703,7 +703,7 @@ pr_decPR = decadal_means(pr_allPR)
 
 # definition of parameter
 # scaling of local yearly precipitations over gst {.}
-w_reg_lyp = np.zeros([nb_regionI], dtype=config.dty)
+w_reg_lyp = np.zeros([nb_regionI], dtype=conf.dty)
 
 # fit of parameter
 for i in range(nb_regionI):

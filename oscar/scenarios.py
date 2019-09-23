@@ -1,13 +1,13 @@
 import numpy as np
 
-from . import config
+from . import conf
 from .data import load_data
 
 __all__ = ['CO2_rcp', 'CH4_rcp', 'N2O_rcp']
 
 
 def _load_rcp_scenario(var):
-    arr = np.ones([800 + 1, 6], dtype=config.dty) * np.nan
+    arr = np.ones([800 + 1, 6], dtype=conf.dty) * np.nan
     for n, rcp in enumerate(["rcp26", "rcp45", "rcp60", "rcp85", "rcp45to26", "rcp60to45"]):
         aux = load_data(f"data/Scenario_ECP/#DATA.Scenario_ECP.2000-2500.{rcp}_{var}.csv")
         arr[300:, n] = aux[:, 0]

@@ -6,7 +6,7 @@ from .regions import nb_regionJ, nb_kind, nb_regionI, nb_sector, regionJ_index, 
 from .greenhouse import ind_cdiac, ind_edgar
 from ..data import load_data_and_header, load_data
 from ..constants import HFC, PFC, ODS
-from ..import config
+from ..import conf
 
 nb_HFC = len(HFC)
 nb_PFC = len(PFC)
@@ -16,9 +16,9 @@ nb_ODS = len(ODS)
 #   3. HALOGENATED COMPOUNDS
 ##################################################
 
-EHFC = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_HFC], dtype=config.dty)  # {kt/yr}
-EPFC = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_PFC], dtype=config.dty)  # {kt/yr}
-EODS = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_ODS], dtype=config.dty)  # {kt/yr}
+EHFC = np.zeros([conf.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_HFC], dtype=conf.dty)  # {kt/yr}
+EPFC = np.zeros([conf.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_PFC], dtype=conf.dty)  # {kt/yr}
+EODS = np.zeros([conf.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_ODS], dtype=conf.dty)  # {kt/yr}
 
 # ==========
 # 3.1. EDGAR
@@ -28,7 +28,7 @@ EODS = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_region
 # see [JRC, 2011]
 
 # HFCs
-EHFCedgar = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_HFC], dtype=config.dty)
+EHFCedgar = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_HFC], dtype=conf.dty)
 for VAR in HFC:
     path = f"data/EHaloComp_EDGAR/#DATA.EHaloComp_EDGAR.1970-{1700 + ind_edgar}_114reg0.E{VAR}.csv"
     TMP = load_data(path)
@@ -36,7 +36,7 @@ for VAR in HFC:
         EHFCedgar[270: ind_edgar + 1, regionJ_index[i], 0, kindGHG_index["HFC"], regionI_index[i], HFC.index(VAR)] += TMP[: ind_edgar - 270 + 1, i]
 
 # PFCs
-EPFCedgar = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_PFC], dtype=config.dty)
+EPFCedgar = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_PFC], dtype=conf.dty)
 for VAR in PFC:
     path = f"data/EHaloComp_EDGAR/#DATA.EHaloComp_EDGAR.1970-{1700 + ind_edgar}_114reg0.E{VAR}.csv"
     TMP = load_data(path)
@@ -51,7 +51,7 @@ for VAR in PFC:
 # see [JRC, 2013]
 
 # HFCs
-EHFCeft = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_HFC], dtype=config.dty)
+EHFCeft = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_HFC], dtype=conf.dty)
 for VAR in HFC:
     path = f"data/EHaloComp_EDGAR-FT/#DATA.EHaloComp_EDGAR-FT.2008-2010_114reg0.E{VAR}.csv"
     TMP = load_data(path)
@@ -59,7 +59,7 @@ for VAR in HFC:
         EHFCeft[308: 310 + 1, regionJ_index[i], 0, kindGHG_index["HFC"], regionI_index[i], HFC.index(VAR)] += TMP[: 310 - 308 + 1, i]
 
 # PFCs
-EPFCeft = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_PFC], dtype=config.dty)
+EPFCeft = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_PFC], dtype=conf.dty)
 for VAR in PFC:
     path = f"data/EHaloComp_EDGAR-FT/#DATA.EHaloComp_EDGAR-FT.2008-2010_114reg0.E{VAR}.csv"
     TMP = load_data(path)
@@ -71,70 +71,70 @@ for VAR in PFC:
 # ==========
 
 # ODSs
-EODScmip5 = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_ODS], dtype=config.dty)
+EODScmip5 = np.zeros([ind_cdiac + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_ODS], dtype=conf.dty)
 path = "data/EHaloComp_CMIP5/#DATA.EHaloComp_CMIP5.1765-2005_(16ghg).EODS.csv"
 TMP, lgd = load_data_and_header(path)
 for x in range(len(lgd)):
-    EODScmip5[65: 305 + 1, 0, 0, kindGHG_index["ODS"], 0, ODS.index(lgd[x])] = TMP[: min(config.ind_final, 305) - 65 + 1, x]
+    EODScmip5[65: 305 + 1, 0, 0, kindGHG_index["ODS"], 0, ODS.index(lgd[x])] = TMP[: min(conf.ind_final, 305) - 65 + 1, x]
 
 # extend dataset following RCP unique projection
 path = "data/EHaloComp_RCP/#DATA.EHaloComp_RCP.2000-2100_(16ghg).rcp85_EODS.csv"
 TMP, lgd = load_data_and_header(path)
 for x in range(len(lgd)):
-    EODScmip5[306: ind_cdiac + 1, 0, 0, kindGHG_index["ODS"], 0, ODS.index(lgd[x])] = TMP[6: min(config.ind_final, ind_cdiac) - 300 + 1, x]
+    EODScmip5[306: ind_cdiac + 1, 0, 0, kindGHG_index["ODS"], 0, ODS.index(lgd[x])] = TMP[6: min(conf.ind_final, ind_cdiac) - 300 + 1, x]
 
 # ========
 # 3.4. RCP
 # ========
 
 # initialization of projected drivers
-EHFCproj = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_HFC], dtype=config.dty)
-EPFCproj = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_PFC], dtype=config.dty)
-EODSproj = np.zeros([config.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_ODS], dtype=config.dty)
+EHFCproj = np.zeros([conf.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_HFC], dtype=conf.dty)
+EPFCproj = np.zeros([conf.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_PFC], dtype=conf.dty)
+EODSproj = np.zeros([conf.ind_final + 1, nb_regionJ, nb_sector, nb_kind, nb_regionI, nb_ODS], dtype=conf.dty)
 
 # projection of emissions under RCP scenarios
 # from [Meinshausen et al., 2011]
 
 # HFCs
-if (config.scen_Ehalo[:3] == "RCP") & (config.ind_final > ind_cdiac):
+if (conf.scen_Ehalo[:3] == "RCP") & (conf.ind_final > ind_cdiac):
     for VAR in HFC:
-        path = f"data/EHaloComp_RCP/#DATA.EHaloComp_RCP.2000-2100_5reg0.rcp{config.scen_Ehalo[3]}{config.scen_Ehalo[5]}_E{VAR}.csv"
+        path = f"data/EHaloComp_RCP/#DATA.EHaloComp_RCP.2000-2100_5reg0.rcp{conf.scen_Ehalo[3]}{conf.scen_Ehalo[5]}_E{VAR}.csv"
 
         if os.path.isfile(path):
             TMP = load_data(path)
             for i in range(4 + 1):
-                if (config.mod_regionI == "RCP5") & (config.mod_regionJ == "RCP5"):
-                    EHFCproj[300: min(config.ind_final, 400) + 1, i, 0, kindGHG_index["HFC"], i, HFC.index(VAR)] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
-                elif (config.mod_regionI == "RCP5") & (config.mod_regionJ != "RCP5"):
-                    EHFCproj[300: min(config.ind_final, 400) + 1, 0, 0, kindGHG_index["HFC"], i, HFC.index(VAR)] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
-                elif (config.mod_regionI != "RCP5") & (config.mod_regionJ == "RCP5"):
-                    EHFCproj[300: min(config.ind_final, 400) + 1, i, 0, kindGHG_index["HFC"], 0, HFC.index(VAR)] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
+                if (conf.mod_regionI == "RCP5") & (conf.mod_regionJ == "RCP5"):
+                    EHFCproj[300: min(conf.ind_final, 400) + 1, i, 0, kindGHG_index["HFC"], i, HFC.index(VAR)] += TMP[: min(conf.ind_final, 400) - 300 + 1, i]
+                elif (conf.mod_regionI == "RCP5") & (conf.mod_regionJ != "RCP5"):
+                    EHFCproj[300: min(conf.ind_final, 400) + 1, 0, 0, kindGHG_index["HFC"], i, HFC.index(VAR)] += TMP[: min(conf.ind_final, 400) - 300 + 1, i]
+                elif (conf.mod_regionI != "RCP5") & (conf.mod_regionJ == "RCP5"):
+                    EHFCproj[300: min(conf.ind_final, 400) + 1, i, 0, kindGHG_index["HFC"], 0, HFC.index(VAR)] += TMP[: min(conf.ind_final, 400) - 300 + 1, i]
                 else:
-                    EHFCproj[300: min(config.ind_final, 400) + 1, 0, 0, kindGHG_index["HFC"], 0, HFC.index(VAR)] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
+                    EHFCproj[300: min(conf.ind_final, 400) + 1, 0, 0, kindGHG_index["HFC"], 0, HFC.index(VAR)] += TMP[: min(conf.ind_final, 400) - 300 + 1, i]
 
 # PFCs
-if (config.scen_Ehalo[:3] == "RCP") & (config.ind_final > ind_cdiac):
+if (conf.scen_Ehalo[:3] == "RCP") & (conf.ind_final > ind_cdiac):
     for VAR in PFC:
-        path = f"data/EHaloComp_RCP/#DATA.EHaloComp_RCP.2000-2100_5reg0.rcp{config.scen_Ehalo[3]}{config.scen_Ehalo[5]}_E{VAR}.csv"
+        path = f"data/EHaloComp_RCP/#DATA.EHaloComp_RCP.2000-2100_5reg0.rcp{conf.scen_Ehalo[3]}{conf.scen_Ehalo[5]}_E{VAR}.csv"
 
         if os.path.isfile(path):
             TMP = load_data(path)
             for i in range(4 + 1):
-                if (config.mod_regionI == "RCP5") & (config.mod_regionJ == "RCP5"):
-                    EPFCproj[300: min(config.ind_final, 400) + 1, i, 0, kindGHG_index["PFC"], i, PFC.index(VAR)] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
-                elif (config.mod_regionI == "RCP5") & (config.mod_regionJ != "RCP5"):
-                    EPFCproj[300: min(config.ind_final, 400) + 1, 0, 0, kindGHG_index["PFC"], i, PFC.index(VAR)] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
-                elif (config.mod_regionI != "RCP5") & (config.mod_regionJ == "RCP5"):
-                    EPFCproj[300: min(config.ind_final, 400) + 1, i, 0, kindGHG_index["PFC"], 0, PFC.index(VAR)] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
+                if (conf.mod_regionI == "RCP5") & (conf.mod_regionJ == "RCP5"):
+                    EPFCproj[300: min(conf.ind_final, 400) + 1, i, 0, kindGHG_index["PFC"], i, PFC.index(VAR)] += TMP[: min(conf.ind_final, 400) - 300 + 1, i]
+                elif (conf.mod_regionI == "RCP5") & (conf.mod_regionJ != "RCP5"):
+                    EPFCproj[300: min(conf.ind_final, 400) + 1, 0, 0, kindGHG_index["PFC"], i, PFC.index(VAR)] += TMP[: min(conf.ind_final, 400) - 300 + 1, i]
+                elif (conf.mod_regionI != "RCP5") & (conf.mod_regionJ == "RCP5"):
+                    EPFCproj[300: min(conf.ind_final, 400) + 1, i, 0, kindGHG_index["PFC"], 0, PFC.index(VAR)] += TMP[: min(conf.ind_final, 400) - 300 + 1, i]
                 else:
-                    EPFCproj[300: min(config.ind_final, 400) + 1, 0, 0, kindGHG_index["PFC"], 0, PFC.index(VAR)] += TMP[: min(config.ind_final, 400) - 300 + 1, i]
+                    EPFCproj[300: min(conf.ind_final, 400) + 1, 0, 0, kindGHG_index["PFC"], 0, PFC.index(VAR)] += TMP[: min(conf.ind_final, 400) - 300 + 1, i]
 
 # ODSs
-if (config.scen_Ehalo[:3] == "RCP") & (config.ind_final > ind_cdiac):
-    path = f"data/EHaloComp_RCP/#DATA.EHaloComp_RCP.2000-2100_(16ghg).rcp{config.scen_Ehalo[3]}{config.scen_Ehalo[5]}_EODS.csv"
+if (conf.scen_Ehalo[:3] == "RCP") & (conf.ind_final > ind_cdiac):
+    path = f"data/EHaloComp_RCP/#DATA.EHaloComp_RCP.2000-2100_(16ghg).rcp{conf.scen_Ehalo[3]}{conf.scen_Ehalo[5]}_EODS.csv"
     TMP, lgd = load_data_and_header(path)
     for x in range(len(lgd)):
-        EODSproj[300: min(config.ind_final, 400) + 1, 0, 0, kindGHG_index["ODS"], 0, ODS.index(lgd[x])] = TMP[: min(config.ind_final, 400) - 300 + 1, x]
+        EODSproj[300: min(conf.ind_final, 400) + 1, 0, 0, kindGHG_index["ODS"], 0, ODS.index(lgd[x])] = TMP[: min(conf.ind_final, 400) - 300 + 1, x]
 
 # =================
 # 3.A. PAST DATASET
@@ -143,7 +143,7 @@ if (config.scen_Ehalo[:3] == "RCP") & (config.ind_final > ind_cdiac):
 # datasets mixed following trends
 
 # with EDGAR as reference
-if config.data_Ehalo == "EDGAR":
+if conf.data_Ehalo == "EDGAR":
     EHFCpast = EHFCedgar.copy()
     # follow EDGAR-FT variations after 2008
     for t in range(ind_edgar + 1, ind_cdiac + 1):
@@ -160,7 +160,7 @@ if config.data_Ehalo == "EDGAR":
 
 VAR = "PFC"
 # with EDGAR as reference
-if config.data_Ehalo == "EDGAR":
+if conf.data_Ehalo == "EDGAR":
     EPFCpast = EPFCedgar.copy()
     # follow EDGAR-FT variations after 2008
     for t in range(ind_edgar + 1, ind_cdiac + 1):
@@ -182,16 +182,16 @@ if config.data_Ehalo == "EDGAR":
                 EPFCpast[t, ..., x] = EPFCpast[270, ..., x] * ((t - 189) / (270 - 189.)) ** 2
 
 # with CMIP5 as reference
-if config.data_Ehalo == config.data_Ehalo:  # FIXME: is this so?
+if conf.data_Ehalo == conf.data_Ehalo:  # FIXME: is this so?
     EODSpast = EODScmip5.copy()
     # linear extrapolation before 1765
     for t in range(50, 65):
         EODSpast[t, ...] = EODSpast[65, ...] * (t - 50) / float(65 - 50)
 
 # cut past dataset to right length
-EHFC[:min(ind_cdiac, config.ind_final) + 1, ...] = EHFCpast[:min(ind_cdiac, config.ind_final) + 1, ...]
-EPFC[:min(ind_cdiac, config.ind_final) + 1, ...] = EPFCpast[:min(ind_cdiac, config.ind_final) + 1, ...]
-EODS[:min(ind_cdiac, config.ind_final) + 1, ...] = EODSpast[:min(ind_cdiac, config.ind_final) + 1, ...]
+EHFC[:min(ind_cdiac, conf.ind_final) + 1, ...] = EHFCpast[:min(ind_cdiac, conf.ind_final) + 1, ...]
+EPFC[:min(ind_cdiac, conf.ind_final) + 1, ...] = EPFCpast[:min(ind_cdiac, conf.ind_final) + 1, ...]
+EODS[:min(ind_cdiac, conf.ind_final) + 1, ...] = EODSpast[:min(ind_cdiac, conf.ind_final) + 1, ...]
 
 # ==================
 # 3.B. FINAL DATASET
@@ -203,24 +203,24 @@ for arr, arrproj in [
 ]:
 
     # stop emissions
-    if (config.scen_Ehalo == "stop") & (config.ind_final > ind_cdiac):
+    if (conf.scen_Ehalo == "stop") & (conf.ind_final > ind_cdiac):
         arr[ind_cdiac + 1:, ...] = 0
 
     # constant emissions
-    elif (config.scen_Ehalo == "cst") & (config.ind_final > ind_cdiac):
+    elif (conf.scen_Ehalo == "cst") & (conf.ind_final > ind_cdiac):
         arr[ind_cdiac + 1:, ...] = arr[ind_cdiac, ...][np.newaxis, ...]
 
         # RCP scenarios
-    elif (config.scen_Ehalo[:3] == "RCP") & (config.ind_final > ind_cdiac):
+    elif (conf.scen_Ehalo[:3] == "RCP") & (conf.ind_final > ind_cdiac):
 
         # raw discontinuity
-        if config.mod_DATAscen == "raw":
+        if conf.mod_DATAscen == "raw":
             arr[ind_cdiac + 1:, ...] = arrproj[ind_cdiac + 1:, ...]
 
         # offset at transition point
-        elif config.mod_DATAscen == "offset":
+        elif conf.mod_DATAscen == "offset":
             arr[ind_cdiac + 1:, ...] = arrproj[ind_cdiac + 1:, ...] - arrproj[ind_cdiac, ...] + arr[ind_cdiac, ...]
-            for t in range(ind_cdiac + 1, config.ind_final + 1):
+            for t in range(ind_cdiac + 1, conf.ind_final + 1):
                 def_regI = bool(np.sum(arrproj[t, :, ..., 1:]))
                 def_regJ = bool(np.sum(arrproj[t, 1:, ..., :]))
                 if not def_regI:
@@ -231,9 +231,9 @@ for arr, arrproj in [
                     arr[t, 1:, ..., :] = 0
 
                     # linear transition over N years
-        elif config.mod_DATAscen[:6] == "smooth":
-            N = int(config.mod_DATAscen[6:])
-            if config.ind_final >= ind_cdiac + N:
+        elif conf.mod_DATAscen[:6] == "smooth":
+            N = int(conf.mod_DATAscen[6:])
+            if conf.ind_final >= ind_cdiac + N:
                 for t in range(ind_cdiac + 1, ind_cdiac + N):
                     arr[t, ...] = (1 - (t - ind_cdiac) / float(N)) * arr[ind_cdiac, ...] + (t - ind_cdiac) / float(N) * arrproj[ind_cdiac + N, ...]
                     def_regI = bool(np.sum(arrproj[t, :, ..., 1:]))
@@ -247,8 +247,8 @@ for arr, arrproj in [
                 arr[ind_cdiac + N:, ...] = arrproj[ind_cdiac + N:, ...]
 
         # follow trends of projection
-        elif config.mod_DATAscen == "trends":
-            for t in range(ind_cdiac + 1, config.ind_final + 1):
+        elif conf.mod_DATAscen == "trends":
+            for t in range(ind_cdiac + 1, conf.ind_final + 1):
                 def_regI = bool(np.sum(arrproj[t, :, ..., 1:]))
                 def_regJ = bool(np.sum(arrproj[t, 1:, ..., :]))
                 if def_regI and def_regJ:
