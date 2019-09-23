@@ -3,7 +3,7 @@ from functools import partial
 
 import numpy as np
 
-from oscar.constants import HFC, PFC, ODS
+from .constants import HFC, PFC, ODS
 from .config import dty
 from .data import load_data, load_data_and_header
 
@@ -48,7 +48,7 @@ def _update_rf(path, total, start, mapping, volcanic='Volcano'):
     Update radiative forces for all arrays in given mapping.
 
     Args:
-         path: Path to data file.
+         path: Path to data_loaders file.
          total: Array holding total radiative forcing.
          mapping: A map between column names to arrays holding the given RFs.
          volcanic: Volcanic RF are handled differently. Sets the column name for volcanic RFs.
@@ -72,7 +72,7 @@ _load_cmip5 = partial(_load_historical, size=305 + 1, fill=65)
 
 #: Historic CO2 from IPCC-AR5 {ppm} [IPCC WG1, 2013] annexe 2
 CO2_ipcc = _load_ipcc("data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1750-2011.CO2.csv")
-CO2_0 = np.array([CO2_ipcc[50]], dtype=dty)
+CO2_0 = CO2_ipcc[50]
 
 #: Historic CO2 from CMIP5 {ppm} [Meinshausen et al., 2011]
 CO2_cmip5 = _load_cmip5("data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.CO2.csv")
@@ -99,7 +99,7 @@ del _aux, _load_co2_flux
 
 #: Historic CH4 from IPCC-AR5 {ppb} [IPCC WG1, 2013] annexe 2
 CH4_ipcc = _load_ipcc("data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1750-2011.CH4.csv")
-CH4_0 = np.array([CH4_ipcc[50]], dtype=dty)
+CH4_0 = CH4_ipcc[50]
 
 #: Historic CH4 from CMIP5 {ppb} [Meinshausen et al., 2011]
 CH4_cmip5 = _load_cmip5("data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.CH4.csv")
@@ -116,7 +116,7 @@ CH4_lawdome = load_data("data/HistAtmo_NOAA-NCDC/#DATA.HistAtmo_NOAA-NCDC.(IceCo
 
 #: Historic N2O from IPCC-AR5 {ppb} [IPCC WG1, 2013] annexe 2
 N2O_ipcc = _load_ipcc("data/HistAtmo_IPCC-AR5/#DATA.HistAtmo_IPCC-AR5.1750-2011.N2O.csv")
-N2O_0 = np.array([N2O_ipcc[50]], dtype=dty)
+N2O_0 = N2O_ipcc[50]
 
 #: Historic N2O from CMIP5 {ppb} [Meinshausen et al., 2011]
 N2O_cmip5 = _load_cmip5("data/HistAtmo_CMIP5/#DATA.HistAtmo_CMIP5.1765-2005.N2O.csv")

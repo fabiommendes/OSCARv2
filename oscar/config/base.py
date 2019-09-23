@@ -2,7 +2,7 @@ import os
 import sys
 
 path = os.path.dirname(os.path.dirname(__file__))
-script_path = os.path.join(path, "runtime", "oscar.py")
+script_path = os.path.join(path, "simulation", "simulation.py")
 
 
 def random_config_module():

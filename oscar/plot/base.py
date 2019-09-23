@@ -4,8 +4,8 @@ from matplotlib.font_manager import FontProperties
 
 from .. import historical
 from .. import scenarios
-from ..runtime.oscar_data import ind_cdiac, ind_final
-from ..runtime.oscar_param import alpha_CO2, AREA_0, alpha_CH4, tau_CH4_OH, alpha_N2O, tau_N2O_hv, gamma_age, tau_lag, tau_CH4_hv, tau_CH4_soil, tau_CH4_ocean, chi_O3s_EESC, EESC_x, gst_giss, gst_had, gst_ncdc, chi_O3s_N2O
+from ..data_loaders import ind_cdiac, ind_final
+from ..params import alpha_CO2, AREA_0, alpha_CH4, tau_CH4_OH, alpha_N2O, tau_N2O_hv, gamma_age, tau_lag, tau_CH4_hv, tau_CH4_soil, tau_CH4_ocean, chi_O3s_EESC, EESC_x, gst_giss, gst_had, gst_ncdc, chi_O3s_N2O
 
 
 def plot_CO2(D_CO2, OSNK, LSNK, ELUC, EFF, D_AREA, D_npp, D_efire, D_fmort, D_rh1, D_fmet, D_rh2, D_FIN, D_FOUT, D_FCIRC, D_MORT_luc, D_EFIRE_luc, D_RH1_luc, D_RH2_luc, EHWP1_luc, EHWP2_luc, EHWP3_luc,):

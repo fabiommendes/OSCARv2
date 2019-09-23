@@ -109,7 +109,7 @@ def tokens(st):
 @fn.curry(2)
 def apply_replacement(replacement, path):
     """
-    Apply replacement to data
+    Apply replacement to data_loaders
     """
     debug = os.environ.get('DEBUG', 'false').lower() in ('1', 'true')
 

@@ -1,5 +1,3 @@
-import csv
+from oscar.simulation import run
 
-from oscar.runtime.oscar import OSCAR_lite
-
-OUT = OSCAR_lite(plot="all")
+run(plot="all")
